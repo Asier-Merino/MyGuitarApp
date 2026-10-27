@@ -1,0 +1,15 @@
+{
+  "name": "myguitarapp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "App personal (PWA) para practicar teoría musical de guitarra.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "start": "npx serve .",
+    "icons": "node tools/make-icons.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
