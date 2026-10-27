@@ -426,8 +426,9 @@ Objetivo: el esqueleto de la app funcionando en el iPhone a través de GitHub Pa
 - [x] PWA: `manifest.webmanifest` (`display: standalone`), iconos (generados: un diseño simple y original, por ejemplo un mástil estilizado), metas de iOS (`apple-mobile-web-app-capable`, obsoleta pero aún usada por iOS, más `mobile-web-app-capable`, `apple-touch-icon`, `theme-color`) y `sw.js`.
   - El service worker usa una constante `CACHE_VERSION` que se incrementa en cada despliegue.
   - El service worker **no se registra en `localhost`**, para evitar versiones viejas durante el desarrollo.
-- [ ] Repositorio git, primer push y GitHub Pages activado (rama `main`, raíz). Si `gh` no está disponible, Claude Code da al usuario los pasos exactos para hacerlo desde la web de GitHub.
-- [ ] Instrucciones al usuario para abrir la URL en Safari y añadirla a la pantalla de inicio.
+- [x] Repositorio git, primer push y GitHub Pages activado (rama `main`, raíz). Si `gh` no está disponible, Claude Code da al usuario los pasos exactos para hacerlo desde la web de GitHub.
+  - Repositorio: https://github.com/Asier-Merino/MyGuitarApp · App: https://asier-merino.github.io/MyGuitarApp/
+- [x] Instrucciones al usuario para abrir la URL en Safari y añadirla a la pantalla de inicio.
 
 **Hecho cuando**: los tests pasan, la app se abre en el iPhone desde la pantalla de inicio a pantalla completa, el selector ES | EN cambia las notas en toda la interfaz y los ajustes se conservan al cerrar y abrir.
 
