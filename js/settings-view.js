@@ -1,11 +1,16 @@
-// Pantalla de ajustes (BUILD_PLAN 6.5). Las opciones de mástil, sonido y voz
-// se añadirán en las fases que las usan.
+// Pantalla de ajustes (BUILD_PLAN 6.5): lista agrupada, cada opción con su control.
+// Todo se guarda al momento.
 
-import { h, render, segmented, settingRow } from './ui/components.js';
+import { h, button, segmented, settingRow, toggle, group } from './ui/components.js';
 import { NoteLabel } from './ui/note-label.js';
+import { renderScreen } from './screens/screen.js';
+import { tuningRow, openTuningPicker } from './ui/tuning-picker.js';
+import { confirmSheet } from './ui/help-sheet.js';
 import { settings, store } from './state.js';
-import { APP_VERSION } from './version.js';
+import { APP_NAME, APP_VERSION } from './version.js';
 import { applyUpdate, checkForUpdate } from './pwa.js';
+import { TUNINGS, getTuning } from './data/tunings.js';
+import { UI_TEXTS } from './data/concepts.js';
 
 const isStandalone = () =>
   window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -13,17 +18,16 @@ const isStandalone = () =>
 function exportFileName() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, '0');
-  return `myguitarapp-progreso-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
+  return `guitarseo-copia-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
 }
 
 async function exportProgress(setStatus) {
   const name = exportFileName();
-  const json = store.exportJSON();
-  const file = new File([json], name, { type: 'application/json' });
+  const file = new File([store.exportJSON()], name, { type: 'application/json' });
   try {
     // En el iPhone, el menú Compartir permite "Guardar en Archivos".
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Progreso de MyGuitarApp' });
+      await navigator.share({ files: [file], title: `Copia de ${APP_NAME}` });
       setStatus('Copia exportada.');
       return;
     }
@@ -42,7 +46,7 @@ async function exportProgress(setStatus) {
 // Mensaje pendiente de mostrar tras volver a pintar la pantalla (p. ej. al importar).
 let pendingStatus = null;
 
-export function renderSettings(container) {
+export function renderSettings(view, params, nav) {
   const s = settings.all();
   const status = h('p', { class: 'status', role: 'status', 'aria-live': 'polite' });
   const setStatus = (text, isError = false) => {
@@ -64,10 +68,15 @@ export function renderSettings(container) {
       const file = fileInput.files?.[0];
       fileInput.value = '';
       if (!file) return;
-      if (!confirm('Importar sustituirá tu progreso y tus ajustes actuales. ¿Continuar?')) return;
+      const ok = await confirmSheet({
+        title: 'Importar copia',
+        text: UI_TEXTS.importConfirm,
+        confirmLabel: 'Importar',
+      });
+      if (!ok) return;
       const result = store.importJSON(await file.text());
       if (result.ok) {
-        pendingStatus = 'Progreso importado.';
+        pendingStatus = 'Copia importada.';
         settings.reload(); // vuelve a pintar la pantalla
       } else {
         setStatus(result.error, true);
@@ -75,9 +84,8 @@ export function renderSettings(container) {
     },
   });
 
-  const updateBtn = h('button', {
-    type: 'button',
-    class: 'btn',
+  const updateBtn = button({
+    label: 'Buscar actualización',
     onClick: async () => {
       updateBtn.disabled = true;
       setStatus('Buscando…');
@@ -96,35 +104,35 @@ export function renderSettings(container) {
         setStatus(messages[result], result === 'error');
       }
     },
-  }, 'Buscar actualización');
+  });
 
-  const preview = h('span', { class: 'setting__hint' }, 'Ejemplo: ', NoteLabel(6), ' · ', NoteLabel(10));
+  const set = (key) => (value) => settings.set(key, value);
 
-  render(container, 
-    h('h1', {}, 'Ajustes'),
+  renderScreen(view, {
+    title: 'Ajustes',
+    nav,
+    help: 'settings',
+    className: 'settings',
+    content: [
+      !store.persistent && h('p', { class: 'notice' }, UI_TEXTS.noStorage),
 
-    !store.persistent && h('p', { class: 'notice' },
-      'Este navegador no permite guardar datos: los ajustes y el progreso se perderán al cerrar la app.'),
-
-    h('section', { class: 'settings-group', 'aria-labelledby': 'g-notation' },
-      h('h2', { id: 'g-notation' }, 'Notación'),
-      h('div', { class: 'card' },
+      group('Notación y aspecto',
         settingRow({
           label: 'Notación principal',
-          hint: 'La otra se muestra en pequeño al lado.',
+          hint: h('span', {}, `${UI_TEXTS.hints.notation} `, NoteLabel(6), ' · ', NoteLabel(10)),
           control: segmented({
             label: 'Notación principal',
             value: s.notation,
             options: [
-              { value: 'es', label: 'ES', ariaLabel: 'Español (Do, Re, Mi)' },
-              { value: 'en', label: 'EN', ariaLabel: 'Inglés (C, D, E)' },
+              { value: 'es', label: 'ES', ariaLabel: 'Español' },
+              { value: 'en', label: 'EN', ariaLabel: 'Inglés' },
             ],
-            onChange: (v) => settings.set('notation', v),
+            onChange: set('notation'),
           }),
         }),
         settingRow({
           label: 'Alteraciones',
-          hint: 'Para notas sin tonalidad, como en el mástil.',
+          hint: UI_TEXTS.hints.accidentals,
           control: segmented({
             label: 'Alteraciones',
             value: s.accidentals,
@@ -132,57 +140,126 @@ export function renderSettings(container) {
               { value: 'sharp', label: '♯', ariaLabel: 'Sostenidos' },
               { value: 'flat', label: '♭', ariaLabel: 'Bemoles' },
             ],
-            onChange: (v) => settings.set('accidentals', v),
+            onChange: set('accidentals'),
           }),
         }),
-        h('div', { class: 'setting' }, preview),
-      ),
-    ),
-
-    h('section', { class: 'settings-group', 'aria-labelledby': 'g-look' },
-      h('h2', { id: 'g-look' }, 'Apariencia'),
-      h('div', { class: 'card' },
         settingRow({
           label: 'Tema',
-          hint: 'El oscuro es cómodo para practicar con poca luz.',
+          hint: UI_TEXTS.hints.theme,
           control: segmented({
             label: 'Tema',
             value: s.theme,
             options: [
-              { value: 'system', label: 'Sistema' },
-              { value: 'light', label: 'Claro' },
               { value: 'dark', label: 'Oscuro' },
+              { value: 'light', label: 'Claro' },
+              { value: 'system', label: 'Auto', ariaLabel: 'Automático' },
             ],
-            onChange: (v) => settings.set('theme', v),
+            onChange: set('theme'),
           }),
         }),
       ),
-    ),
 
-    h('section', { class: 'settings-group', 'aria-labelledby': 'g-progress' },
-      h('h2', { id: 'g-progress' }, 'Progreso'),
-      h('div', { class: 'card' },
-        h('p', { class: 'setting__hint' },
-          'Tu progreso se guarda solo en este dispositivo. Haz una copia de vez en cuando.'),
+      group('Mástil',
+        settingRow({
+          label: 'Orientación',
+          hint: UI_TEXTS.hints.orientation,
+          control: segmented({
+            label: 'Orientación del mástil',
+            value: s.fretboardOrientation,
+            options: [
+              { value: 'auto', label: 'Auto', ariaLabel: 'Automática' },
+              { value: 'vertical', label: 'Vertical' },
+              { value: 'horizontal', label: 'Horiz.', ariaLabel: 'Horizontal' },
+            ],
+            onChange: set('fretboardOrientation'),
+          }),
+        }),
+        settingRow({
+          label: 'Mostrar en los puntos',
+          control: segmented({
+            label: 'Mostrar en los puntos',
+            value: s.fretboardLabels,
+            options: [
+              { value: 'notes', label: 'Notas' },
+              { value: 'intervals', label: 'Intervalos' },
+            ],
+            onChange: set('fretboardLabels'),
+          }),
+        }),
+      ),
+
+      group('Sonido y voz',
+        settingRow({ label: 'Sonido', control: toggle({ label: 'Sonido', checked: s.sound, onChange: set('sound') }) }),
+        settingRow({
+          label: 'Volumen',
+          stacked: true,
+          control: h('input', {
+            type: 'range',
+            class: 'slider',
+            min: '0',
+            max: '1',
+            step: '0.05',
+            value: String(s.volume),
+            'aria-label': 'Volumen',
+            disabled: !s.sound,
+            // Se guarda al soltar, para no volver a pintar la pantalla mientras se arrastra.
+            onChange: (e) => settings.set('volume', Number(e.target.value)),
+          }),
+        }),
+        settingRow({
+          label: 'Voz en Práctica',
+          hint: UI_TEXTS.hints.voice,
+          control: toggle({ label: 'Voz en Práctica', checked: s.voice, onChange: set('voice') }),
+        }),
+      ),
+
+      group('Afinación',
+        settingRow({
+          label: 'Afinación por defecto',
+          hint: UI_TEXTS.hints.defaultTuning,
+          stacked: true,
+          control: h('div', { class: 'list list--inset' }, tuningRow({
+            tuning: getTuning(s.defaultTuning),
+            label: 'Afinación por defecto',
+            onClick: () => openTuningPicker({
+              title: 'Afinación por defecto',
+              allowed: TUNINGS,
+              value: s.defaultTuning,
+              onSelect: set('defaultTuning'),
+            }),
+          })),
+        }),
+        settingRow({
+          label: 'Preguntar antes de cada ejercicio',
+          control: toggle({ label: 'Preguntar la afinación antes de cada ejercicio', checked: s.askTuning, onChange: set('askTuning') }),
+        }),
+      ),
+
+      group('Tus datos',
+        h('p', { class: 'setting__hint data-note' }, UI_TEXTS.storageNote),
         h('div', { class: 'btn-row' },
-          h('button', { type: 'button', class: 'btn', onClick: () => exportProgress(setStatus) }, 'Exportar'),
-          h('button', { type: 'button', class: 'btn', onClick: () => fileInput.click() }, 'Importar'),
-          h('button', {
-            type: 'button',
-            class: 'btn btn--danger',
-            onClick: () => {
-              if (!confirm('¿Borrar todo el progreso? Los ajustes se conservan. No se puede deshacer.')) return;
-              setStatus(store.clearProgress() ? 'Progreso borrado.' : 'No se pudo borrar.', false);
+          button({ label: 'Exportar copia', onClick: () => exportProgress(setStatus) }),
+          button({ label: 'Importar copia', onClick: () => fileInput.click() }),
+        ),
+        h('div', { class: 'btn-row' },
+          button({
+            label: 'Borrar todo el progreso',
+            variant: 'danger',
+            onClick: async () => {
+              const ok = await confirmSheet({
+                title: 'Borrar todo el progreso',
+                text: UI_TEXTS.clearConfirm,
+                confirmLabel: 'Borrar',
+                danger: true,
+              });
+              if (ok) setStatus(store.clearProgress() ? 'Progreso borrado.' : 'No se pudo borrar.');
             },
-          }, 'Borrar progreso'),
+          }),
         ),
         fileInput,
       ),
-    ),
 
-    h('section', { class: 'settings-group', 'aria-labelledby': 'g-app' },
-      h('h2', { id: 'g-app' }, 'App'),
-      h('div', { class: 'card' },
+      group('App',
         settingRow({ label: 'Versión', control: h('strong', {}, `v${APP_VERSION}`) }),
         settingRow({
           label: 'Actualizaciones',
@@ -190,8 +267,8 @@ export function renderSettings(container) {
           control: updateBtn,
         }),
       ),
-    ),
 
-    status,
-  );
+      status,
+    ],
+  });
 }

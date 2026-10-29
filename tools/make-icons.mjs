@@ -1,6 +1,11 @@
-// Genera los iconos PNG de la app sin dependencias: `npm run icons`.
-// Diseño: un mástil en vertical (cejuela arriba, cuerda 6 a la izquierda) con el acorde
-// de Mi mayor coloreado por función: fundamental (coral), 3ª (ámbar) y 5ª (azul).
+// Genera el icono de GuitarSeo sin dependencias: `npm run icons` (BUILD_PLAN 6.10).
+// Diseño: cuadrado ámbar con esquinas redondeadas; dentro, 4 cuerdas verticales y 2 trastes
+// horizontales finos (algo más tenues) y un punto en el centro, como una nota marcada. Sin texto.
+// La misma geometría (coordenadas 0–100) se usa en js/ui/icons.js → logo().
+//
+// Salida: icons/icon.svg (fuente), icon-192.png e icon-512.png (esquinas redondeadas y
+// transparentes), apple-touch-icon-180.png (opaco y cuadrado: iOS redondea las esquinas)
+// e icon-maskable-512.png (fondo a sangre y dibujo dentro de la zona segura del 80 %).
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
@@ -9,69 +14,85 @@ import { fileURLToPath } from 'node:url';
 
 const OUT = fileURLToPath(new URL('../icons/', import.meta.url));
 
-const hex = (s) => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16));
-const lerp = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const AMBER = '#D4A24C';
+const INK = '#2A1E08';
+const FRET_OPACITY = 0.55;
+const RADIUS = 22;
 
-const BG_TOP = hex('#25343a');
-const BG_BOTTOM = hex('#131b1f');
-const WOOD = hex('#c48a52');
-const WOOD_DARK = hex('#a8713f');
-const NUT = hex('#f3ead8');
-const FRET = hex('#d7dadd');
-const STRING = hex('#f7f2e8');
-const ROOT = hex('#e5533d');
-const THIRD = hex('#f0a91b');
-const FIFTH = hex('#3b7be0');
-const RING = hex('#ffffff');
+const STRINGS_X = [32, 44, 56, 68];
+const STRING = { y0: 20, y1: 80, w: 4 };
+const FRETS_Y = [38, 62];
+const FRET = { x0: 24, x1: 76, h: 3.5 };
+const DOT = { cx: 50, cy: 50, r: 8.5 };
 
-// Geometría en coordenadas 0–1.
-const NECK = { x0: 0.2, x1: 0.8, y0: 0.15 };
-const NUT_Y = [0.15, 0.205];
-const FRETS = [0.385, 0.565, 0.745, 0.925];
-const stringX = (s) => 0.26 + ((6 - s) * (0.48 / 5)); // s = 6 (izquierda) … 1 (derecha)
-const fretCenter = (f) => [(NUT_Y[1] + FRETS[0]) / 2, (FRETS[0] + FRETS[1]) / 2][f - 1];
-const DOTS = [
-  { s: 5, f: 2, color: FIFTH }, // Si: 5ª
-  { s: 4, f: 2, color: ROOT }, // Mi: fundamental
-  { s: 3, f: 1, color: THIRD }, // Sol#: 3ª
-];
-const DOT_R = 0.037;
+/* ----- SVG ----- */
 
-function colorAt(x, y) {
-  let c = lerp(BG_TOP, BG_BOTTOM, y);
-  if (x >= NECK.x0 && x <= NECK.x1 && y >= NECK.y0) {
-    c = lerp(WOOD, WOOD_DARK, (y - NECK.y0) / (1 - NECK.y0));
-    if (y >= NUT_Y[0] && y <= NUT_Y[1]) c = NUT;
-    if (FRETS.some((fy) => Math.abs(y - fy) <= 0.008)) c = FRET;
-  }
-  for (let s = 1; s <= 6; s++) {
-    const w = 0.0045 + (s - 1) * 0.0011;
-    if (y >= NUT_Y[0] && Math.abs(x - stringX(s)) <= w) c = STRING;
-  }
-  for (const d of DOTS) {
-    const dist = Math.hypot(x - stringX(d.s), y - fretCenter(d.f));
-    if (dist <= DOT_R + 0.009) c = RING;
-    if (dist <= DOT_R) c = d.color;
-  }
-  return c;
+function svg() {
+  const rect = (x, y, w, h, rx, extra = '') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}"${extra}/>`;
+  return [
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">',
+    `  ${rect(0, 0, 100, 100, RADIUS, ` fill="${AMBER}"`)}`,
+    `  <g fill="${INK}" opacity="${FRET_OPACITY}">`,
+    ...FRETS_Y.map((y) => `    ${rect(FRET.x0, y - FRET.h / 2, FRET.x1 - FRET.x0, FRET.h, FRET.h / 2)}`),
+    '  </g>',
+    `  <g fill="${INK}">`,
+    ...STRINGS_X.map((x) => `    ${rect(x - STRING.w / 2, STRING.y0, STRING.w, STRING.y1 - STRING.y0, STRING.w / 2)}`),
+    `    <circle cx="${DOT.cx}" cy="${DOT.cy}" r="${DOT.r}"/>`,
+    '  </g>',
+    '</svg>',
+    '',
+  ].join('\n');
 }
 
-function render(size, ss = 4) {
+/* ----- PNG ----- */
+
+const hex = (s) => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16));
+const AMBER_RGB = hex(AMBER);
+const INK_RGB = hex(INK);
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+
+function inRoundRect(x, y, x0, y0, x1, y1, r) {
+  if (x < x0 || x > x1 || y < y0 || y > y1) return false;
+  const cx = Math.min(Math.max(x, x0 + r), x1 - r);
+  const cy = Math.min(Math.max(y, y0 + r), y1 - r);
+  return Math.hypot(x - cx, y - cy) <= r;
+}
+
+/** Color y opacidad en (x, y) del dibujo (0–100). rounded: esquinas transparentes. */
+function sample(x, y, { rounded }) {
+  if (rounded && !inRoundRect(x, y, 0, 0, 100, 100, RADIUS)) return [0, 0, 0, 0];
+  let c = AMBER_RGB;
+  if (FRETS_Y.some((fy) => inRoundRect(x, y, FRET.x0, fy - FRET.h / 2, FRET.x1, fy + FRET.h / 2, FRET.h / 2))) {
+    c = mix(c, INK_RGB, FRET_OPACITY);
+  }
+  if (STRINGS_X.some((sx) => inRoundRect(x, y, sx - STRING.w / 2, STRING.y0, sx + STRING.w / 2, STRING.y1, STRING.w / 2))
+    || Math.hypot(x - DOT.cx, y - DOT.cy) <= DOT.r) {
+    c = INK_RGB;
+  }
+  return [...c, 1];
+}
+
+/** scale < 1 encoge el dibujo (no el fondo) hacia el centro: versión maskable. */
+function renderPng(size, { rounded = true, scale = 1, ss = 4 } = {}) {
   const rgba = Buffer.alloc(size * size * 4);
   for (let py = 0; py < size; py++) {
     for (let px = 0; px < size; px++) {
-      let acc = [0, 0, 0];
+      let acc = [0, 0, 0, 0];
       for (let sy = 0; sy < ss; sy++) {
         for (let sx = 0; sx < ss; sx++) {
-          const c = colorAt((px + (sx + 0.5) / ss) / size, (py + (sy + 0.5) / ss) / size);
-          acc = acc.map((v, i) => v + c[i]);
+          const x = ((px + (sx + 0.5) / ss) / size) * 100;
+          const y = ((py + (sy + 0.5) / ss) / size) * 100;
+          const inner = sample(50 + (x - 50) / scale, 50 + (y - 50) / scale, { rounded: false });
+          const [r, g, b, a] = scale === 1 ? sample(x, y, { rounded }) : inner;
+          acc = [acc[0] + r * a, acc[1] + g * a, acc[2] + b * a, acc[3] + a];
         }
       }
       const o = (py * size + px) * 4;
-      rgba[o] = Math.round(acc[0] / (ss * ss));
-      rgba[o + 1] = Math.round(acc[1] / (ss * ss));
-      rgba[o + 2] = Math.round(acc[2] / (ss * ss));
-      rgba[o + 3] = 255; // opaco: iOS redondea las esquinas
+      const alpha = acc[3] / (ss * ss);
+      rgba[o] = acc[3] ? Math.round(acc[0] / acc[3]) : 0;
+      rgba[o + 1] = acc[3] ? Math.round(acc[1] / acc[3]) : 0;
+      rgba[o + 2] = acc[3] ? Math.round(acc[2] / acc[3]) : 0;
+      rgba[o + 3] = Math.round(alpha * 255);
     }
   }
   return rgba;
@@ -115,7 +136,15 @@ function encodePng(size, rgba) {
 }
 
 mkdirSync(OUT, { recursive: true });
-for (const [name, size] of [['icon-192.png', 192], ['icon-512.png', 512], ['apple-touch-icon-180.png', 180]]) {
-  writeFileSync(join(OUT, name), encodePng(size, render(size)));
+writeFileSync(join(OUT, 'icon.svg'), svg());
+console.log('icons/icon.svg');
+const outputs = [
+  ['icon-192.png', 192, { rounded: true }],
+  ['icon-512.png', 512, { rounded: true }],
+  ['apple-touch-icon-180.png', 180, { rounded: false }],
+  ['icon-maskable-512.png', 512, { scale: 0.8 }],
+];
+for (const [name, size, opts] of outputs) {
+  writeFileSync(join(OUT, name), encodePng(size, renderPng(size, opts)));
   console.log(`icons/${name} (${size}×${size})`);
 }

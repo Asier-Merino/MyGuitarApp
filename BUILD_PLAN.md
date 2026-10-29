@@ -88,8 +88,9 @@
 ├── css/
 │   └── styles.css             # tokens de color (tema oscuro y claro), botón físico, layout
 ├── js/
-│   ├── main.js                # arranque, router, cabecera
-│   ├── router.js
+│   ├── main.js                # arranque: rutas → pantallas, tema
+│   ├── router.js              # hash router con historial propio para la flecha ←
+│   ├── routes.js              # mapa de pantallas y su pantalla madre (sin DOM, con test)
 │   ├── storage.js             # localStorage versionado + export/import
 │   ├── settings.js            # notación, alteraciones, tema, orientación, sonido, voz, afinación
 │   ├── settings-view.js       # pantalla de ajustes
@@ -101,8 +102,11 @@
 │   │   ├── notation.js        # nombres ES/EN, sostenidos/bemoles, deletreo por letra
 │   │   ├── fretboard-model.js # afinación, nota de (cuerda, traste), posiciones de una nota
 │   │   ├── random.js          # RNG con semilla opcional, shuffle, elección ponderada
+│   │   ├── glossary.js        # buscador del glosario y lector del marcado [[id|…]] {{F#}}
+│   │   ├── history.js         # días practicados y tiempo total del registro de sesiones
 │   │   └── stats.js           # cálculo de pesos para repetición espaciada
 │   ├── data/
+│   │   ├── modules.js         # secciones, módulos, niveles y ejercicios previstos
 │   │   ├── tunings.js         # las 7 afinaciones (4.2)
 │   │   ├── chords.js          # acordes abiertos y de séptima (dedos incluidos)
 │   │   ├── caged.js           # plantillas de las 5 formas
@@ -117,14 +121,18 @@
 │   │   ├── note-label.js      # componente de doble notación
 │   │   ├── tab.js             # tablatura completa (6.7)
 │   │   ├── help-sheet.js      # panel de ayuda "?" y "¿Por qué?"
-│   │   ├── term.js            # palabras pulsables [[id|texto]] y su parser
+│   │   ├── term.js            # palabras pulsables [[id|texto]] y textos con marcado
+│   │   ├── icons.js           # iconos SVG y logo
+│   │   ├── tuning-picker.js   # fila y panel para elegir afinación
 │   │   └── components.js      # botón físico, cabecera, listas, selector de nivel, resumen de ronda
 │   ├── audio/
 │   │   ├── context.js         # AudioContext, desbloqueo iOS, audio session
+│   │   ├── pluck.js           # muestras Karplus-Strong afinadas (sin Web Audio, con test)
 │   │   ├── synth.js           # Karplus-Strong, notas, rasgueos, arpegios
 │   │   ├── scheduler.js       # reloj con lookahead
 │   │   ├── metronome.js       # incluye la subida automática de tempo
 │   │   └── backing.js         # base de blues (bajo, acordes, percusión)
+│   ├── screens/               # Inicio, Sección, Módulo, Preparación, Próximamente
 │   ├── engine/
 │   │   ├── exercise-registry.js
 │   │   ├── quiz-runner.js     # motor de ejercicios de Teoría
@@ -153,6 +161,8 @@
     ├── strum-patterns.test.js
     ├── concepts.test.js
     ├── random.test.js
+    ├── pluck.test.js          # la cuerda sintetizada suena afinada (< 2 cents)
+    ├── history.test.js
     ├── storage.test.js        # almacén versionado y ajustes (con un localStorage simulado)
     └── sw-assets.test.js      # el service worker guarda todos los archivos de la app
 ```
@@ -204,7 +214,7 @@ Cuerdas numeradas como en la guitarra: **1 = Mi aguda, 6 = Mi grave**.
 `midi(cuerda, traste) = openMidi[cuerda] + traste`, `pc = midi % 12`.
 Rango normal: trastes 0–12. Para CAGED y pentatónicas el mástil se amplía a **0–15**.
 
-**Las 7 afinaciones de la app** (`data/tunings.js`), agrupadas como en la pantalla Afinaciones (6.6.16). *Valores MIDI pendientes de validar por el usuario antes de la Fase 1A.*
+**Las 7 afinaciones de la app** (`data/tunings.js`), agrupadas como en la pantalla Afinaciones (6.6.16). *Valores MIDI validados por el usuario (Fase 1A).*
 
 | Grupo | Afinación | MIDI al aire (6→1) | Notas (6→1) | Cambios respecto a la estándar |
 |---|---|---|---|---|
@@ -284,7 +294,9 @@ Rango normal: trastes 0–12. Para CAGED y pentatónicas el mástil se amplía a
 | Trastes | `#6B645C` | `#B5AEA4` |
 | Cejuela | `#EDE6DA` | `#262421` |
 
-- Los colores de función (R, 3, 5, 7, *blue note*), correcto e incorrecto se eligen en la misma gama apagada, con versión para cada tema.
+- Los colores de función (R, 3, 5, 7, *blue note*), correcto e incorrecto se eligen en la misma gama apagada, con versión para cada tema (valores en `css/styles.css`, Fase 1A).
+- **Ajustes de contraste (Fase 1A)**: en el tema claro, el ámbar de iconos `#A87B2E` no llega a 4,5:1 como texto (3,4:1), así que el texto en ámbar usa un token aparte, `--amber-text` = `#85601F` (5,1:1); en el oscuro sigue siendo `#D4A24C`. El rojo de peligro es `#EE8B7F` (oscuro) y `#B23A2B` (claro).
+- **Barra de estado del iPhone**: con `black-translucent` su texto es siempre blanco, así que detrás va una franja `#262421` también en el tema claro.
 
 ---
 
@@ -786,7 +798,7 @@ La tablatura está en 6.7.
 ```
 (En el esquema, 🔍 representa el icono SVG de la lupa.)
 - **Buscador**: busca en títulos y `aliases`, en español y en inglés (por ejemplo, "root" encuentra "Fundamental"), sin importar tildes ni mayúsculas. Los resultados aparecen mientras se escribe.
-- **Bloques** en lista con el número de conceptos (calculado de `concepts.js`; los números del esquema son orientativos). Al tocar un bloque se ve su lista de conceptos; al tocar un concepto, su ficha.
+- **Bloques** en lista con el número de conceptos (calculado de `concepts.js`; los números del esquema son orientativos). Solo se muestran los bloques que ya tienen conceptos. Al tocar un bloque se ve su lista de conceptos; al tocar un concepto, su ficha.
 - **Ficha de concepto** (pantalla completa; la misma en versión corta dentro del panel del "?"):
   - título, y debajo el bloque y los otros nombres del concepto;
   - esquema con los colores de la app (mástil, diagrama o tablatura);
@@ -987,17 +999,17 @@ Objetivo: el esqueleto de la app funcionando en el iPhone a través de GitHub Pa
 ### Fase 1A — Navegación, estilo, Afinaciones, Glosario y Ajustes
 Objetivo: adaptar lo de la Fase 0 a la navegación por pantallas y al estilo GuitarSeo, y dejar listas las secciones que no dependen del mástil ni del audio.
 
-- [ ] Estilo (6.1): tokens de color de los dos temas (4.5), tema oscuro por defecto con Oscuro / Claro / Auto, botón físico (gris y ámbar), filas de lista con icono y chevron, iconos SVG.
-- [ ] Navegación por pantallas (6.4): quitar las pestañas y la rejilla de la Fase 0; cabecera ← título ? en todas las pantallas interiores; historial del router para la flecha ← y el botón atrás.
-- [ ] Pantallas **Inicio** (6.6.1), **Sección** (6.6.2), **Módulo** (6.6.3) y **Preparación** (6.6.6), con las listas aún vacías o "Próximamente". "Continuar" no aparece todavía (no hay historial).
-- [ ] `data/tunings.js` con las 7 afinaciones (4.2), su test, y `core/fretboard-model.js` preparado para recibir una afinación.
-- [ ] Pantalla **Afinaciones** (6.6.16). Las notas suenan al tocarlas y "Tocar todas" funciona (con el sonido mínimo necesario; el sintetizador completo llega en la 1B).
-- [ ] `data/concepts.js` con los conceptos básicos de los bloques Notas y Afinaciones, `ui/term.js` (palabras pulsables) y `tests/concepts.test.js`.
-- [ ] **Glosario** (6.6.17): buscador, bloques, lista de conceptos y ficha.
-- [ ] **Ajustes** (6.5) con la tabla de grupos, incluida la afinación por defecto. El selector ES | EN sale de la cabecera.
-- [ ] **Perfil** provisional (6.6.13) con días practicados y tiempo total (muestra "—" hasta que la Fase 1B empiece a registrar sesiones) y "Acerca de".
-- [ ] Almacenamiento (6.9): guardado automático, `navigator.storage.persist()`, nota de Ajustes y exportación con todos los datos.
-- [ ] Nombre **GuitarSeo** e icono nuevo (6.10) en `<title>`, manifest, metas de iOS, Inicio y "Acerca de"; enseñar el icono al usuario.
+- [x] Estilo (6.1): tokens de color de los dos temas (4.5), tema oscuro por defecto con Oscuro / Claro / Auto, botón físico (gris y ámbar), filas de lista con icono y chevron, iconos SVG.
+- [x] Navegación por pantallas (6.4): quitar las pestañas y la rejilla de la Fase 0; cabecera ← título ? en todas las pantallas interiores; historial del router para la flecha ← y el botón atrás.
+- [x] Pantallas **Inicio** (6.6.1), **Sección** (6.6.2), **Módulo** (6.6.3) y **Preparación** (6.6.6), con las listas aún vacías o "Próximamente". "Continuar" no aparece todavía (no hay historial).
+- [x] `data/tunings.js` con las 7 afinaciones (4.2), su test, y `core/fretboard-model.js` preparado para recibir una afinación.
+- [x] Pantalla **Afinaciones** (6.6.16). Las notas suenan al tocarlas y "Tocar todas" funciona (con el sonido mínimo necesario; el sintetizador completo llega en la 1B).
+- [x] `data/concepts.js` con los conceptos básicos de los bloques Notas y Afinaciones, `ui/term.js` (palabras pulsables) y `tests/concepts.test.js`.
+- [x] **Glosario** (6.6.17): buscador, bloques, lista de conceptos y ficha.
+- [x] **Ajustes** (6.5) con la tabla de grupos, incluida la afinación por defecto. El selector ES | EN sale de la cabecera.
+- [x] **Perfil** provisional (6.6.13) con días practicados y tiempo total (muestra "—" hasta que la Fase 1B empiece a registrar sesiones) y "Acerca de".
+- [x] Almacenamiento (6.9): guardado automático, `navigator.storage.persist()`, nota de Ajustes y exportación con todos los datos.
+- [x] Nombre **GuitarSeo** e icono nuevo (6.10) en `<title>`, manifest, metas de iOS, Inicio y "Acerca de"; enseñar el icono al usuario.
 
 **Hecho cuando**: en el iPhone se navega por todas las pantallas con la flecha ← sin quedarse atascado, los dos temas se ven bien, Afinaciones suena al tocar las notas, el Glosario encuentra conceptos en español y en inglés, los ajustes se conservan al cerrar y abrir, y el icono y el nombre GuitarSeo aparecen en la pantalla de inicio.
 
@@ -1337,3 +1349,4 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 |---|---|---|---|
 | 2026-10-27 | 0 | Cimientos: lógica de teoría, notación, mástil y azar con tests; almacén versionado con exportar/importar; ajustes (notación, alteraciones, tema); router, cabecera, pestañas y módulos «Próximamente»; `NoteLabel`; tema claro/oscuro; PWA (manifest, iconos, service worker); despliegue en GitHub Pages. Cambios al plan: script de tests `node --test`, repositorio público, aviso de que iOS separa los datos de Safari y de la app instalada, metas de iOS actualizadas. | |
 | 2026-10-29 | Plan | Integrado `CAMBIOS.md`: nombre GuitarSeo y estilo inspirado en Chess.com (ámbar mate, botón físico, tema oscuro por defecto); navegación por pantallas en lugar de pestañas; esquemas de cada pantalla (6.6); nueva paleta (4.5); 7 afinaciones (4.2) y su uso en ejercicios (7.6); ayuda "?", "¿Por qué?", glosario y `concepts.js` (6.8); tablatura completa (6.7); Perfil en lugar del módulo Progreso; Práctica sin autoevaluación; registro de sesiones; almacenamiento (6.9). Fase 1 dividida en 1A y 1B. Nuevos ejercicios: Unísonos y Rellena el mástil (Fase 2), Rasgueo, progresiones y Calentamiento (Fase 3). Módulos renombrados: Escala y tonalidad, Blues y slide. Fase 8 renombrada a "Perfil completo y sesión mezclada". Nueva sección 12 (Propuestas). | Valores MIDI de las afinaciones (4.2), descripción de P2–P7 y contenido del slide pendientes de confirmar. |
+| 2026-10-30 | 1A | Navegación por pantallas con flecha ← (historial propio; sin historial vuelve a la pantalla madre); estilo GuitarSeo con tokens de los dos temas, botón físico, listas e iconos SVG; Inicio, Sección, Módulo, Preparación (nivel y afinación recordados por ejercicio; Empezar desactivado hasta la Fase 2) y pantallas «Próximamente»; `data/tunings.js` con las 7 afinaciones y cambios calculados; pantalla Afinaciones con sonido Karplus-Strong afinado y «Tocar todas»; `concepts.js` (15 conceptos de Notas y Afinaciones, ayudas «?» de cada pantalla), palabras pulsables y panel inferior; Glosario con buscador ES/EN; Ajustes completos (afinación por defecto, sonido, volumen, voz, mástil); Perfil provisional y Acerca de; esquema de datos v2 (récords, lecciones, progresiones, preparación) y `storage.persist()`; nombre e icono GuitarSeo. Cambios al plan: token `--amber-text` (4.5), franja de la barra de estado, bloques vacíos ocultos en el Glosario, estructura de carpetas (3). | Afinaciones de 4.2 validadas. |

@@ -85,8 +85,8 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Cimientos: estructura, ajustes, notación ES/EN, temas, PWA y publicación | ✅ Hecha (v0.0.0) |
-| 1A | Navegación por pantallas, estilo GuitarSeo, Afinaciones, Glosario, Ajustes y nombre e icono nuevos | ⏳ Siguiente |
-| 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?» y registro de sesiones | Pendiente |
+| 1A | Navegación por pantallas, estilo GuitarSeo, Afinaciones, Glosario, Ajustes y nombre e icono nuevos | ✅ Hecha (v0.1.0) |
+| 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?» y registro de sesiones | ⏳ Siguiente |
 | 2 | Notas del mástil | Pendiente |
 | 3 | Acordes abiertos y Calentamiento | Pendiente |
 | 4 | Oído | Pendiente |
@@ -95,7 +95,17 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | 7 | CAGED | Pendiente |
 | 8 | Perfil completo y sesión mezclada | Pendiente |
 
-Hasta la Fase 1A, la app publicada conserva el aspecto de la Fase 0 (pestañas TEORÍA | PRÁCTICA y el nombre antiguo).
+### Qué funciona ya (v0.1.0)
+
+- **Inicio** con Teoría, Práctica, Afinaciones y Glosario, y los iconos de Perfil y Ajustes.
+- **Navegación** por pantallas con la flecha **←** (también si abres la app directamente en una pantalla interior) y el botón **?** de ayuda en cada una.
+- **Afinaciones**: las 7 afinaciones agrupadas; cada nota suena al tocarla y **Tocar todas** recorre las cuerdas despacio para afinar de oído. Las cuerdas que cambian respecto a la estándar se marcan en ámbar con su flecha.
+- **Glosario**: 15 conceptos de Notas y Afinaciones, con buscador en español y en inglés (sin importar tildes) y fichas con **Escuchar**. Las palabras subrayadas con puntos abren su ficha en un panel.
+- **Ajustes** completos: notación, alteraciones, tema (oscuro por defecto, claro o automático), mástil, sonido, volumen, voz, afinación por defecto y copia de tus datos.
+- **Perfil** provisional (días y tiempo aparecerán cuando lleguen los ejercicios) y **Acerca de**.
+- Los módulos y sus ejercicios aparecen como **Próximamente**. En Notas del mástil ya se puede abrir la preparación de cada ejercicio (nivel y afinación se recuerdan), pero **Empezar** se activa en la Fase 2.
+
+Capturas de cada fase en [`docs/capturas/`](docs/capturas/).
 
 El detalle de cada fase, con sus casillas y su registro de cambios, está en **[BUILD_PLAN.md](BUILD_PLAN.md)**.
 
@@ -121,13 +131,13 @@ Después abre la dirección que aparece (normalmente http://localhost:3000). Si 
 npm test
 ```
 
-Comprueban toda la lógica musical (nombres de nota, escalas, afinación, octavas…), el guardado de datos y que la app tenga todos sus archivos para funcionar sin conexión.
+Comprueban toda la lógica musical (nombres de nota, escalas, afinaciones, octavas…), que los textos del glosario digan cosas ciertas y enlacen a conceptos que existen, que el sonido esté afinado, el guardado de datos y que la app tenga todos sus archivos para funcionar sin conexión.
 
 ### Otros comandos
 
 | Comando | Para qué |
 |---|---|
-| `npm run icons` | Volver a generar los iconos de `icons/` |
+| `npm run icons` | Volver a generar el icono (`icons/icon.svg` y los PNG) |
 
 ### Publicar una versión nueva
 
@@ -150,8 +160,10 @@ Cada `push` a la rama `main` actualiza la app publicada en 1–2 minutos. Antes 
 ├── css/styles.css           Estilos, colores y temas oscuro/claro
 ├── icons/                   Iconos de la app
 ├── js/
-│   ├── main.js              Arranque y pantallas principales
+│   ├── main.js              Arranque: qué pantalla se pinta en cada dirección
+│   ├── routes.js            Mapa de pantallas y adónde vuelve la flecha ←
 │   ├── settings-view.js     Pantalla de ajustes
+│   ├── screens/             Inicio, Teoría/Práctica, módulo y preparación
 │   ├── core/                Lógica musical (notas, escalas, mástil…), sin interfaz
 │   ├── data/                Datos: afinaciones, acordes, CAGED, cajas, licks, rasgueos y conceptos del glosario
 │   ├── ui/                  Piezas de interfaz (doble notación, mástil, tablatura, ayuda «?»…)
@@ -163,7 +175,7 @@ Cada `push` a la rama `main` actualiza la app publicada en 1–2 minutos. Antes 
 └── tools/                   Utilidades (generador de iconos)
 ```
 
-Algunas carpetas (`audio/`, `engine/`, `modules/` y parte de `data/` y `ui/`) se crean en las próximas fases. Toda la teoría musical vive en `js/core/` y `js/data/`, separada de la interfaz, para poder comprobarla con tests.
+La carpeta `engine/` y parte de `data/`, `ui/`, `audio/` y `modules/` se crean en las próximas fases. Toda la teoría musical vive en `js/core/` y `js/data/`, separada de la interfaz, para poder comprobarla con tests.
 
 ---
 

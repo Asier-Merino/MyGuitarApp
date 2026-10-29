@@ -1,6 +1,6 @@
 // Service worker: guarda la app para usarla sin conexión.
 // Incrementa CACHE_VERSION en cada despliegue que cambie archivos de la app.
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 const CACHE_PREFIX = 'myguitarapp-';
 const CACHE_NAME = `${CACHE_PREFIX}v${CACHE_VERSION}`;
 
@@ -10,23 +10,47 @@ const ASSETS = [
   './index.html',
   './manifest.webmanifest',
   './css/styles.css',
+  './icons/apple-touch-icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/apple-touch-icon-180.png',
+  './icons/icon-maskable-512.png',
+  './icons/icon.svg',
   './js/main.js',
+  './js/pwa.js',
   './js/router.js',
+  './js/routes.js',
+  './js/settings-view.js',
+  './js/settings.js',
   './js/state.js',
   './js/storage.js',
-  './js/settings.js',
-  './js/settings-view.js',
-  './js/pwa.js',
   './js/version.js',
-  './js/core/theory.js',
-  './js/core/notation.js',
+  './js/audio/context.js',
+  './js/audio/pluck.js',
+  './js/audio/synth.js',
   './js/core/fretboard-model.js',
+  './js/core/glossary.js',
+  './js/core/history.js',
+  './js/core/notation.js',
   './js/core/random.js',
+  './js/core/theory.js',
+  './js/data/concepts.js',
+  './js/data/modules.js',
+  './js/data/tunings.js',
+  './js/screens/home.js',
+  './js/screens/module.js',
+  './js/screens/screen.js',
+  './js/screens/section.js',
+  './js/screens/setup.js',
+  './js/screens/soon.js',
   './js/ui/components.js',
+  './js/ui/help-sheet.js',
+  './js/ui/icons.js',
   './js/ui/note-label.js',
+  './js/ui/term.js',
+  './js/ui/tuning-picker.js',
+  './js/modules/glossary/glossary-view.js',
+  './js/modules/profile/profile-view.js',
+  './js/modules/tunings/tunings-view.js',
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,6 +1,8 @@
-// Router por hash: '#/teoria', '#/practica/blues', '#/ajustes'…
+// Router por hash ('#/teoria', '#/glosario/concepto/octave'…) con historial propio
+// para la flecha ← (BUILD_PLAN 6.4): cada entrada guarda su profundidad en history.state,
+// así se sabe si "atrás" sigue dentro de la app o hay que ir a la pantalla madre.
 
-function compile(pattern) {
+export function compileRoute(pattern) {
   const keys = [];
   const source = pattern
     .split('/')
@@ -20,44 +22,55 @@ export function matchRoute(compiledRoutes, path) {
   for (const route of compiledRoutes) {
     const m = path.match(route.regex);
     if (m) {
-      const params = Object.fromEntries(route.keys.map((k, i) => [k, decodeURIComponent(m[i + 1])]));
+      let params;
+      try {
+        params = Object.fromEntries(route.keys.map((k, i) => [k, decodeURIComponent(m[i + 1])]));
+      } catch {
+        continue; // %XX mal formado
+      }
       return { route, params };
     }
   }
   return null;
 }
 
-/**
- * routes: [{ path: '/teoria/:module', view: (params, path) => void }]
- * notFound: (path) => void
- */
-export function createRouter({ routes, notFound, defaultPath }) {
-  const compiled = routes.map((r) => ({ ...r, ...compile(r.path) }));
-  const listeners = new Set();
-
-  const currentPath = () => location.hash.replace(/^#/, '') || '';
+/** onRoute(path) pinta la pantalla de `path` ('/teoria'…). */
+export function createRouter({ onRoute }) {
+  let lastDepth = 0; // profundidad de la última pantalla pintada
+  const currentPath = () => location.hash.replace(/^#/, '') || '/';
+  const depth = () => (Number.isInteger(history.state?.depth) ? history.state.depth : 0);
 
   function resolve() {
     const path = currentPath();
-    if (!path || path === '/') {
-      location.replace(`#${defaultPath}`);
-      return;
+    onRoute(path);
+  }
+
+  // Un enlace normal (<a href="#/x">) crea una entrada sin profundidad: se la ponemos.
+  function onHashChange() {
+    if (!Number.isInteger(history.state?.depth)) {
+      history.replaceState({ depth: lastDepth + 1 }, '', location.href);
     }
-    const match = matchRoute(compiled, path);
-    if (match) match.route.view(match.params, path);
-    else notFound(path);
-    listeners.forEach((fn) => fn(path));
+    lastDepth = depth();
+    resolve();
   }
 
   return {
     start() {
-      window.addEventListener('hashchange', resolve);
+      if (!Number.isInteger(history.state?.depth)) history.replaceState({ depth: 0 }, '', location.href);
+      lastDepth = depth();
+      window.addEventListener('hashchange', onHashChange);
       resolve();
     },
-    /** Vuelve a pintar la vista actual (p. ej. al cambiar la notación). */
+    /** Vuelve a pintar la pantalla actual (p. ej. al cambiar la notación). */
     refresh: resolve,
-    navigate(path) { location.hash = path; },
-    get path() { return currentPath(); },
-    onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+    replace(path) {
+      history.replaceState({ depth: depth() }, '', `#${path}`);
+      resolve();
+    },
+    /** Flecha ←: atrás en el historial si la pantalla anterior es de la app; si no, a `fallback`. */
+    back(fallback = '/') {
+      if (depth() > 0) history.back();
+      else this.replace(fallback);
+    },
   };
 }

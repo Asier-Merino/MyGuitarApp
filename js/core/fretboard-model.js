@@ -51,6 +51,45 @@ export function positionsOf(pc, {
   return result;
 }
 
+/** Una afinación es un objeto { 1..6: MIDI al aire }. Comprueba que tiene las 6 cuerdas. */
+export function isValidTuning(tuning) {
+  return Boolean(tuning) && STRINGS.every((s) => Number.isInteger(tuning[s]) && tuning[s] >= 0 && tuning[s] <= 127);
+}
+
+/** Cuerdas que cambian respecto a la afinación de referencia: [{ string, semitones }], de la 6 a la 1. */
+export function tuningChanges(tuning, reference = STANDARD_TUNING) {
+  return [...STRINGS].reverse()
+    .map((string) => ({ string, semitones: tuning[string] - reference[string] }))
+    .filter((c) => c.semitones !== 0);
+}
+
+const AMOUNT_TEXT = { 1: '½ tono', 2: '1 tono', 3: '1½ tonos', 4: '2 tonos' };
+
+function joinSpanish(items) {
+  if (items.length <= 1) return items.join('');
+  return `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`;
+}
+
+/**
+ * Texto de los cambios respecto a la estándar, calculado (BUILD_PLAN 4.2):
+ * '6ª ↓ 1 tono', '6ª, 2ª y 1ª ↓ 1 tono; 3ª ↓ ½ tono', 'todas ↓ ½ tono' o '—'.
+ * Agrupa las cuerdas que cambian lo mismo, en el orden en que aparecen de la 6ª a la 1ª.
+ */
+export function formatTuningChanges(tuning, reference = STANDARD_TUNING) {
+  const changes = tuningChanges(tuning, reference);
+  if (!changes.length) return '—';
+  const groups = new Map();
+  for (const c of changes) {
+    if (!groups.has(c.semitones)) groups.set(c.semitones, []);
+    groups.get(c.semitones).push(c.string);
+  }
+  return [...groups].map(([semitones, strings]) => {
+    const who = strings.length === STRINGS.length ? 'todas' : joinSpanish(strings.map((s) => `${s}ª`));
+    const amount = AMOUNT_TEXT[Math.abs(semitones)] ?? `${Math.abs(semitones)} semitonos`;
+    return `${who} ${semitones < 0 ? '↓' : '↑'} ${amount}`;
+  }).join('; ');
+}
+
 /**
  * Formas de octava (BUILD_PLAN 4.3), hacia agudos:
  *  6→4 y 5→3: +2 trastes · 4→2 y 3→1: +3 trastes (por la cuerda Si) · 6→1: mismo traste (2 octavas).

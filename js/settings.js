@@ -1,15 +1,19 @@
 // Ajustes persistentes (BUILD_PLAN 6.5). Sin DOM: se guardan a través del almacén.
 
+import { TUNING_IDS, DEFAULT_TUNING_ID } from './data/tunings.js';
+
 export const SETTINGS_SCHEMA = Object.freeze({
   notation: { default: 'es', values: ['es', 'en'] },
   accidentals: { default: 'sharp', values: ['sharp', 'flat'] },
-  theme: { default: 'system', values: ['system', 'light', 'dark'] },
-  // Opciones que se usarán en fases posteriores; el esquema ya las conoce.
+  // 'system' = Automático (sigue al sistema). Oscuro por defecto (BUILD_PLAN 6.1).
+  theme: { default: 'dark', values: ['dark', 'light', 'system'] },
   fretboardOrientation: { default: 'auto', values: ['auto', 'vertical', 'horizontal'] },
   fretboardLabels: { default: 'notes', values: ['notes', 'intervals'] },
   sound: { default: true, type: 'boolean' },
   volume: { default: 0.8, type: 'number', min: 0, max: 1 },
   voice: { default: true, type: 'boolean' },
+  defaultTuning: { default: DEFAULT_TUNING_ID, values: TUNING_IDS },
+  askTuning: { default: false, type: 'boolean' },
 });
 
 export function isValidSetting(key, value) {

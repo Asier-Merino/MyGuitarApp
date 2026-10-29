@@ -21,7 +21,10 @@ function throwingBackend() {
 test('almacén nuevo con datos por defecto', () => {
   const store = createStore({ backend: fakeBackend() });
   assert.equal(store.persistent, true);
-  assert.deepEqual(store.data, { schemaVersion: SCHEMA_VERSION, settings: {}, stats: {}, history: [] });
+  assert.deepEqual(store.data, {
+    schemaVersion: SCHEMA_VERSION, settings: {}, stats: {}, history: [],
+    records: {}, lessons: {}, progressions: [], setups: {},
+  });
 });
 
 test('guarda y vuelve a leer (se conserva al cerrar y abrir)', () => {
@@ -88,26 +91,57 @@ test('importar archivos no válidos no toca los datos', () => {
   assert.equal(store.data.stats.keep, true);
 });
 
-test('borrar progreso conserva los ajustes', () => {
+test('borrar progreso conserva los ajustes, las progresiones y la preparación', () => {
   const store = createStore({ backend: fakeBackend() });
-  store.update((d) => { d.settings.notation = 'en'; d.stats.a = 1; d.history.push(1); });
+  store.update((d) => {
+    d.settings.notation = 'en'; d.stats.a = 1; d.history.push(1);
+    d.records.r = 5; d.lessons.notas = true; d.progressions.push({ name: 'Blues' }); d.setups.x = { level: 'avanzado' };
+  });
   store.clearProgress();
   assert.deepEqual(store.data.stats, {});
   assert.deepEqual(store.data.history, []);
+  assert.deepEqual(store.data.records, {});
+  assert.deepEqual(store.data.lessons, {});
   assert.equal(store.data.settings.notation, 'en');
+  assert.equal(store.data.progressions.length, 1);
+  assert.equal(store.data.setups.x.level, 'avanzado');
+});
+
+test('migración 1 → 2 conserva los datos de la Fase 0', () => {
+  const v1 = { schemaVersion: 1, settings: { theme: 'system', notation: 'en' }, stats: { k: 1 }, history: [{ t: 1 }] };
+  const m = migrate(v1);
+  assert.equal(m.schemaVersion, 2);
+  assert.deepEqual(m.settings, v1.settings);
+  assert.deepEqual(m.stats, v1.stats);
+  assert.deepEqual(m.history, v1.history);
+  assert.deepEqual(m.progressions, []);
+  assert.deepEqual(m.setups, {});
+  // Quien eligió "Sistema" en la Fase 0 lo conserva (ahora se llama Automático).
+  assert.equal(normalizeSettings(m.settings).theme, 'system');
+});
+
+test('la exportación incluye todos los datos', () => {
+  const a = createStore({ backend: fakeBackend() });
+  a.update((d) => { d.records.r = 1; d.lessons.notas = true; d.progressions.push({ name: 'P' }); d.setups.s = {}; });
+  const parsed = JSON.parse(a.exportJSON());
+  for (const k of ['settings', 'stats', 'history', 'records', 'lessons', 'progressions', 'setups']) assert.ok(k in parsed, k);
 });
 
 test('ajustes: valores por defecto y validación', () => {
   const d = defaultSettings();
   assert.equal(d.notation, 'es');
   assert.equal(d.accidentals, 'sharp');
-  assert.equal(d.theme, 'system');
+  assert.equal(d.theme, 'dark');
+  assert.equal(d.defaultTuning, 'standard');
+  assert.equal(d.askTuning, false);
+  assert.equal(isValidSetting('defaultTuning', 'open-g'), true);
+  assert.equal(isValidSetting('defaultTuning', 'open-c'), false);
   assert.equal(isValidSetting('notation', 'fr'), false);
   assert.equal(isValidSetting('volume', 1.5), false);
   assert.equal(isValidSetting('sound', false), true);
   const n = normalizeSettings({ notation: 'en', theme: 'pink', unknown: 1 });
   assert.equal(n.notation, 'en');
-  assert.equal(n.theme, 'system');
+  assert.equal(n.theme, 'dark');
   assert.ok(!('unknown' in n));
 });
 

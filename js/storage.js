@@ -1,12 +1,27 @@
 // Persistencia en localStorage con esquema versionado. Todos los accesos van en try/catch:
 // si localStorage no está disponible, se usa memoria (los datos no se conservan).
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const STORAGE_KEY = 'myguitarapp';
 const EXPORT_APP_ID = 'myguitarapp';
 
+/**
+ * Todo lo que guarda la app (BUILD_PLAN 6.9). La exportación lo incluye todo.
+ * settings: ajustes · stats: estadísticas por clave · history: registro de sesiones
+ * records: récords · lessons: lecciones completadas · progressions: "Mis progresiones"
+ * setups: último nivel y afinación de cada ejercicio
+ */
 export function defaultData() {
-  return { schemaVersion: SCHEMA_VERSION, settings: {}, stats: {}, history: [] };
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    settings: {},
+    stats: {},
+    history: [],
+    records: {},
+    lessons: {},
+    progressions: [],
+    setups: {},
+  };
 }
 
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -14,7 +29,9 @@ const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArr
 /** Migraciones: MIGRATIONS[n] convierte datos de la versión n a la n+1. */
 const MIGRATIONS = {
   // 0 → 1: datos sin versión; se conservan los campos conocidos.
-  0: (d) => ({ ...defaultData(), ...d, schemaVersion: 1 }),
+  0: (d) => ({ settings: {}, stats: {}, history: [], ...d, schemaVersion: 1 }),
+  // 1 → 2 (Fase 1A): récords, lecciones, progresiones y preparación de ejercicios.
+  1: (d) => ({ records: {}, lessons: {}, progressions: [], setups: {}, ...d, schemaVersion: 2 }),
 };
 
 function normalize(d) {
@@ -23,6 +40,10 @@ function normalize(d) {
     settings: isPlainObject(d.settings) ? d.settings : {},
     stats: isPlainObject(d.stats) ? d.stats : {},
     history: Array.isArray(d.history) ? d.history : [],
+    records: isPlainObject(d.records) ? d.records : {},
+    lessons: isPlainObject(d.lessons) ? d.lessons : {},
+    progressions: Array.isArray(d.progressions) ? d.progressions : [],
+    setups: isPlainObject(d.setups) ? d.setups : {},
   };
 }
 
@@ -135,10 +156,15 @@ export function createStore({ backend, key = STORAGE_KEY } = {}) {
       return save() ? { ok: true } : { ok: false, error: 'No se pudieron guardar los datos importados.' };
     },
 
-    /** Borra estadísticas e historial; conserva los ajustes. */
+    /**
+     * Borra el progreso: estadísticas, historial, récords y lecciones completadas.
+     * Conserva los ajustes, las progresiones guardadas y el último nivel de cada ejercicio.
+     */
     clearProgress() {
       data.stats = {};
       data.history = [];
+      data.records = {};
+      data.lessons = {};
       return save();
     },
   };
