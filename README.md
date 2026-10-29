@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="icons/icon-192.png" alt="Icono de MyGuitarApp" width="96" height="96">
+  <img src="icons/icon-192.png" alt="Icono de GuitarSeo" width="96" height="96">
 </p>
 
-<h1 align="center">MyGuitarApp</h1>
+<h1 align="center">GuitarSeo</h1>
 
 <p align="center">
   App personal para practicar <strong>teoría musical aplicada a la guitarra</strong>.<br>
@@ -21,20 +21,31 @@
 
 ## ¿Qué es?
 
-Una app para aprender y practicar teoría **con la guitarra en mente**. Está dividida en dos secciones según dónde estés:
+Una app para aprender y practicar teoría **con la guitarra en mente**. Funciona como el menú de un juego: cada pantalla tiene un solo propósito y desde el **Inicio** se llega a todo.
 
-| | **TEORÍA** | **PRÁCTICA** |
-|---|---|---|
-| **Cuándo** | Sin guitarra (en el sofá, en el metro…) | Con la guitarra en las manos |
-| **Cómo** | Explicaciones cortas, diagramas y ejercicios tipo quiz | Texto grande, avance automático, voz que dice la nota o el acorde, metrónomo y bases |
-| **Al final** | Aciertos y fallos de cada ronda | Te autoevalúas: Bien / Regular / Mal |
+| | **TEORÍA** | **PRÁCTICA** | **AFINACIONES** | **GLOSARIO** |
+|---|---|---|---|---|
+| **Cuándo** | Sin guitarra (en el sofá, en el metro…) | Con la guitarra en las manos | Antes de tocar | Cuando tengas una duda |
+| **Qué hay** | Lecciones cortas por tarjetas, consulta y ejercicios tipo quiz | Texto grande, avance automático, voz, metrónomo y bases | Las 7 afinaciones de la app, que suenan al tocarlas | Todos los conceptos, con buscador en español y en inglés |
+
+Además, desde el Inicio:
+
+- **Perfil**: racha, días practicados, tiempo total, dominio por tema, mapa del mástil, puntos débiles y récords.
+- **Ajustes**: notación, tema, mástil, sonido y voz, afinación por defecto y copia de tus datos.
 
 Algunas ideas clave:
 
-- **Navegación libre**: todos los módulos están siempre disponibles, sin un orden obligatorio.
+- **Navegación libre**: todo está siempre disponible, sin un orden obligatorio. Cada pantalla tiene una flecha **←** para volver.
 - **Ejercicios generados al azar**, con **3 niveles** (Básico, Intermedio y Avanzado). La app repite más lo que más fallas.
-- **Doble notación**: la principal en grande y la otra en pequeño, por ejemplo **Fa** <sub>F</sub> o **F** <sub>Fa</sub>. Se cambia con el botón **ES | EN**.
-- **Colores con significado**: la fundamental, la 3ª, la 5ª, la 7ª y la *blue note* tienen siempre el mismo color en toda la app.
+- **Ayuda en todos los ejercicios**: el botón **?** recuerda cómo se juega y la teoría que hay detrás, y al fallar, **¿Por qué?** explica el error concreto.
+- **Sin sonido automático**: al responder aparece un botón de altavoz para escuchar la respuesta correcta cuando quieras.
+- **Práctica sin autoevaluación**: al terminar ves qué has hecho y tus récords; tú ya sabes cómo te ha ido.
+- **Doble notación**: la principal en grande y la otra en pequeño, por ejemplo **Fa** <sub>F</sub> o **F** <sub>Fa</sub>. Se elige en **Ajustes**.
+- **Colores con significado**: la fundamental, la 3ª, la 5ª, la 7ª y la *blue note* tienen siempre el mismo color, y cada punto lleva además su etiqueta.
+- **Tema oscuro por defecto**, con tema claro o automático en Ajustes.
+- **Todo se guarda solo**, en tu dispositivo.
+
+> Esta es la descripción de la app terminada. Se construye por fases: lo que ya funciona está en [Estado del proyecto](#estado-del-proyecto).
 
 ---
 
@@ -45,7 +56,7 @@ Algunas ideas clave:
 3. Elige **«Añadir a pantalla de inicio»** y pulsa **Añadir**.
 4. Ábrela siempre desde el icono: se verá a pantalla completa y funcionará sin conexión.
 
-> **Importante:** el iPhone guarda los datos de la app instalada **aparte** de los de Safari. Usa siempre el icono, y de vez en cuando haz una copia de tu progreso desde **Ajustes → Exportar**.
+> **Importante:** tus datos se guardan **solo en ese dispositivo**, y el iPhone guarda los de la app instalada **aparte** de los de Safari. Usa siempre el icono y, de vez en cuando, haz una copia desde **Ajustes → Exportar copia**. Con esa copia también puedes pasar tus datos a otro dispositivo (**Importar copia**).
 
 **Actualizaciones:** cuando hay una versión nueva, aparece un aviso con el botón **Actualizar**. También puedes ir a **Ajustes → Buscar actualización**. La versión que tienes cargada se ve en **Ajustes**.
 
@@ -55,13 +66,15 @@ Algunas ideas clave:
 
 | # | Módulo | Teoría (sin guitarra) | Práctica (con guitarra) |
 |---|---|---|---|
-| 1 | **Notas del mástil** | «¿Qué nota es?», encuéntrala, octavas | La app dice una nota y la tocas en todas las cuerdas a contrarreloj |
-| 2 | **Acordes abiertos** | Diagramas, notas que los forman, quiz | Cambios de acordes con metrónomo |
+| 1 | **Notas del mástil** | «¿Qué nota es?», encuéntrala, octavas, unísonos, rellena el mástil | La app dice una nota y la tocas en todas las cuerdas a contrarreloj |
+| 2 | **Acordes abiertos** | Diagramas, notas que los forman, quiz | Cambios de acordes con metrónomo, tus propias progresiones y rasgueo |
 | 3 | **Oído** | ¿Mayor o menor?, intervalos | Suena una nota y la buscas en la guitarra |
-| 4 | **Intervalos, escala mayor y tonalidad** | Construcción, grados, quiz | Escala con metrónomo y progresiones |
-| 5 | **Pentatónica y blues** | 12 compases, *blue note*, quiz | Base shuffle, notas objetivo, licks pregunta-respuesta |
+| 4 | **Escala y tonalidad** | Intervalos, escala mayor, grados, quiz | Escala con metrónomo y progresiones |
+| 5 | **Blues y slide** | 12 compases, *blue note*, quiz | Base shuffle, notas objetivo, licks pregunta-respuesta |
 | 6 | **CAGED** | Explorador de las 5 formas, quiz | Un acorde en una forma, recorrer las 5 formas |
-| 7 | **Progreso** | Estadísticas, mapa de calor del mástil, puntos débiles y sesión mezclada | |
+| 7 | **Calentamiento** | — | Un dedo por traste con tablatura y subida automática de tempo |
+
+En las pantallas de Teoría y de Práctica hay también una **sesión mezclada** que combina ejercicios de varios módulos.
 
 ---
 
@@ -72,14 +85,17 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Cimientos: estructura, ajustes, notación ES/EN, temas, PWA y publicación | ✅ Hecha (v0.0.0) |
-| 1 | Mástil, sonido, voz, metrónomo y motores de ejercicios | ⏳ Siguiente |
+| 1A | Navegación por pantallas, estilo GuitarSeo, Afinaciones, Glosario, Ajustes y nombre e icono nuevos | ⏳ Siguiente |
+| 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?» y registro de sesiones | Pendiente |
 | 2 | Notas del mástil | Pendiente |
-| 3 | Acordes abiertos | Pendiente |
+| 3 | Acordes abiertos y Calentamiento | Pendiente |
 | 4 | Oído | Pendiente |
-| 5 | Intervalos, escala mayor y tonalidad | Pendiente |
-| 6 | Pentatónica y blues | Pendiente |
+| 5 | Escala y tonalidad | Pendiente |
+| 6 | Blues y slide | Pendiente |
 | 7 | CAGED | Pendiente |
-| 8 | Progreso y sesión mezclada | Pendiente |
+| 8 | Perfil completo y sesión mezclada | Pendiente |
+
+Hasta la Fase 1A, la app publicada conserva el aspecto de la Fase 0 (pestañas TEORÍA | PRÁCTICA y el nombre antiguo).
 
 El detalle de cada fase, con sus casillas y su registro de cambios, está en **[BUILD_PLAN.md](BUILD_PLAN.md)**.
 
@@ -121,6 +137,8 @@ Cada `push` a la rama `main` actualiza la app publicada en 1–2 minutos. Antes 
 2. Subir `CACHE_VERSION` en [`sw.js`](sw.js), para que los iPhone descarguen la versión nueva.
 3. Subir `APP_VERSION` en [`js/version.js`](js/version.js) (`0.N.x` = fase N).
 
+> El repositorio se sigue llamando `MyGuitarApp` a propósito: cambiarle el nombre cambiaría la dirección de la app y habría que volver a instalarla.
+
 ---
 
 ## Cómo está organizado
@@ -129,24 +147,27 @@ Cada `push` a la rama `main` actualiza la app publicada en 1–2 minutos. Antes 
 ├── index.html               Página principal
 ├── manifest.webmanifest     Datos para instalarla como app
 ├── sw.js                    Funcionamiento sin conexión
-├── css/styles.css           Estilos, colores y temas claro/oscuro
+├── css/styles.css           Estilos, colores y temas oscuro/claro
 ├── icons/                   Iconos de la app
 ├── js/
-│   ├── main.js              Arranque, cabecera y pantallas de inicio
+│   ├── main.js              Arranque y pantallas principales
 │   ├── settings-view.js     Pantalla de ajustes
 │   ├── core/                Lógica musical (notas, escalas, mástil…), sin interfaz
-│   ├── data/                Datos musicales: acordes, CAGED, cajas, licks (próximas fases)
-│   ├── ui/                  Piezas de interfaz (doble notación, botones…)
+│   ├── data/                Datos: afinaciones, acordes, CAGED, cajas, licks, rasgueos y conceptos del glosario
+│   ├── ui/                  Piezas de interfaz (doble notación, mástil, tablatura, ayuda «?»…)
+│   ├── audio/               Sonido, metrónomo y bases
+│   ├── engine/              Motores de los ejercicios de Teoría y Práctica
+│   ├── modules/             Cada módulo, más Afinaciones, Glosario y Perfil
 │   └── …                    Router, guardado de datos y ajustes
-├── tests/                   Tests de la lógica musical y del guardado
+├── tests/                   Tests de la lógica musical, los datos y el guardado
 └── tools/                   Utilidades (generador de iconos)
 ```
 
-Toda la teoría musical vive en `js/core/` y `js/data/`, separada de la interfaz, para poder comprobarla con tests.
+Algunas carpetas (`audio/`, `engine/`, `modules/` y parte de `data/` y `ui/`) se crean en las próximas fases. Toda la teoría musical vive en `js/core/` y `js/data/`, separada de la interfaz, para poder comprobarla con tests.
 
 ---
 
 ## Documentos del proyecto
 
-- **[BUILD_PLAN.md](BUILD_PLAN.md)**: el plan completo, con las fases, los datos musicales de referencia (acordes, CAGED, cajas pentatónicas, licks), el diseño y el registro de cambios.
+- **[BUILD_PLAN.md](BUILD_PLAN.md)**: el plan completo, con las fases, los datos musicales de referencia (afinaciones, acordes, CAGED, cajas pentatónicas, licks, rasgueos), el diseño de cada pantalla, las propuestas y el registro de cambios.
 - **[CLAUDE.md](CLAUDE.md)**: las instrucciones y convenciones para Claude Code, que construye la app fase a fase.
