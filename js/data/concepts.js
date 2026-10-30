@@ -40,6 +40,7 @@ export const CONCEPTS = Object.freeze([
       + 'Las siete [[natural-notes|notas naturales]] son {{C}}, {{D}}, {{E}}, {{F}}, {{G}}, {{A}} y {{B}}. '
       + 'Es la misma nota con dos nombres distintos. '
       + 'La app muestra siempre los dos: el que elijas en Ajustes, en grande, y el otro en pequeño.',
+    noDiagramReason: 'Es una equivalencia de nombres, no un lugar del mástil; el esquema está en Notas naturales.',
     lesson: NOTES_LESSON,
     related: ['natural-notes', 'sharp-flat'],
   }),

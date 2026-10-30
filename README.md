@@ -86,7 +86,7 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 |---|---|---|
 | 0 | Cimientos: estructura, ajustes, notación ES/EN, temas, PWA y publicación | ✅ Hecha (v0.0.0) |
 | 1A | Navegación por pantallas, estilo GuitarSeo, Afinaciones, Glosario, Ajustes y nombre e icono nuevos | ✅ Hecha (v0.1.0) |
-| 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?» y registro de sesiones | ⏳ Siguiente |
+| 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?», esquemas del glosario y registro de sesiones | ⏳ Siguiente |
 | 2 | Notas del mástil | Pendiente |
 | 3 | Acordes abiertos y Calentamiento | Pendiente |
 | 4 | Oído | Pendiente |
@@ -104,6 +104,8 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 - **Ajustes** completos: notación, alteraciones, tema (oscuro por defecto, claro o automático), mástil, sonido, volumen, voz, afinación por defecto y copia de tus datos.
 - **Perfil** provisional (días y tiempo aparecerán cuando lleguen los ejercicios) y **Acerca de**.
 - Los módulos y sus ejercicios aparecen como **Próximamente**. En Notas del mástil ya se puede abrir la preparación de cada ejercicio (nivel y afinación se recuerdan), pero **Empezar** se activa en la Fase 2.
+
+**Próximo cambio en el Glosario (Fase 1B):** cada ficha tendrá un **esquema visual** de lo que explica (un trozo de mástil, un diagrama de acorde o tablatura) que **suena al tocar sus puntos**. Por ejemplo, «Notas naturales» mostrará las 7 notas naturales en el mástil. Lo mismo vale para las tarjetas de las lecciones. Solo se queda sin esquema algún concepto en el que no tiene sentido, como «Nombres de las notas» (es una equivalencia de nombres, no un lugar del mástil).
 
 Capturas de cada fase en [`docs/capturas/`](docs/capturas/).
 
