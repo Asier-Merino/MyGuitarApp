@@ -22,6 +22,7 @@
 - Zonas táctiles de al menos 44×44 px. Mobile-first.
 - Envolver todos los accesos a `localStorage` en try/catch.
 - Todo texto explicativo (conceptos, ayudas y "¿por qué?") va en `js/data/concepts.js` o se genera a partir de reglas. **Nunca se escriben explicaciones sueltas dentro de los módulos.**
+- Todo concepto del glosario y toda tarjeta de lección lleva un esquema visual de lo que explica (campo `diagram`; si no tiene sentido, `noDiagramReason` con el motivo).
 - Todo ejercicio nuevo declara `howTo` y `concepts`, y su `check()` devuelve `why`.
 - Toda ronda de ejercicio se registra en el historial de sesiones.
 

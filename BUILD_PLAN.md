@@ -583,7 +583,7 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 
 #### 6.6.4 Aprender (lección por tarjetas)
 - **Pantalla completa**: **X** para cerrar a la izquierda, título del módulo y "?".
-- La lección se divide en **tarjetas cortas** (de 3 a 6), con **una idea por tarjeta**: un título, de 2 a 4 líneas de texto y un trozo de mástil o diagrama **interactivo que suena al tocarlo**.
+- La lección se divide en **tarjetas cortas** (de 3 a 6), con **una idea por tarjeta**: un título, de 2 a 4 líneas de texto y **siempre un esquema visual** de lo que explica (un trozo de mástil, un diagrama de acorde o un trozo de tablatura), **interactivo: tocar un punto lo hace sonar**.
 - Barra de avance segmentada arriba (una raya por tarjeta).
 - Botones **Anterior** y **Siguiente** (Siguiente en ámbar), y también se puede deslizar con el dedo.
 - La última tarjeta muestra **"Ir a los ejercicios"**, y la lección queda marcada como completada (se guarda).
@@ -801,7 +801,7 @@ La tablatura está en 6.7.
 - **Bloques** en lista con el número de conceptos (calculado de `concepts.js`; los números del esquema son orientativos). Solo se muestran los bloques que ya tienen conceptos. Al tocar un bloque se ve su lista de conceptos; al tocar un concepto, su ficha.
 - **Ficha de concepto** (pantalla completa; la misma en versión corta dentro del panel del "?"):
   - título, y debajo el bloque y los otros nombres del concepto;
-  - esquema con los colores de la app (mástil, diagrama o tablatura);
+  - esquema visual de lo que explica, con los colores de la app (mástil, diagrama de acorde o tablatura), **interactivo: tocar un punto lo hace sonar**. Por ejemplo: "Notas naturales" con el mástil mostrando las notas naturales; "Acorde abierto" con el diagrama de un acorde de ejemplo; un símbolo de tablatura con su trozo de tablatura; un intervalo con las dos notas en el mástil;
   - explicación corta (3–5 líneas);
   - botón **Escuchar** (si el concepto tiene sonido);
   - **Relacionados**: conceptos pulsables;
@@ -859,7 +859,7 @@ Tablatura estándar, como la de cualquier web de tablaturas, generada en SVG:
 Un recordatorio rápido, en contexto, de la teoría que trabaja cada ejercicio. Complementa a Aprender (lección larga) sin sustituirla.
 
 - **Un único icono "?"**, igual en toda la app.
-- **Formato**: panel que sube desde abajo, con un esquemita opcional, de 3 a 5 líneas de texto y el enlace "Ver la lección completa". **Al abrirlo, el ejercicio se pausa**; al cerrarlo, sigue donde estaba.
+- **Formato**: panel que sube desde abajo, con el esquema del concepto (el mismo de la ficha, en pequeño), de 3 a 5 líneas de texto y el enlace "Ver la lección completa". **Al abrirlo, el ejercicio se pausa**; al cerrarlo, sigue donde estaba.
 
 **Dónde aparece**
 1. **En todos los ejercicios** (Teoría y Práctica), en la preparación y en la cabecera del ejercicio. El panel tiene dos partes:
@@ -879,16 +879,18 @@ Un recordatorio rápido, en contexto, de la teoría que trabaja cada ejercicio. 
     title: 'Formas de octava',
     aliases: ['octava', 'octave'],   // buscador y palabras pulsables (ES y EN)
     summary: '3–5 líneas…',
-    diagram: { type: 'fretboard', fromFret: 0, toFret: 7, markers: [...] },  // opcional
+    diagram: { type: 'fretboard', fromFret: 0, toFret: 7, markers: [...] },  // obligatorio (ver abajo)
+    // noDiagramReason: '…',   // solo si un esquema no tiene sentido: explica por qué
     sound: { ... },            // opcional: qué suena con "Escuchar"
     lesson: '#/teoria/notas/aprender#octavas',
     related: ['octave', 'unison'],
   }
   ```
+- **Esquema obligatorio**: todo concepto lleva `diagram` (`type`: `fretboard`, `chord` o `tab`). Solo si un esquema no tiene sentido se omite, y entonces el concepto lleva `noDiagramReason` con el motivo. Los puntos del esquema se calculan con `js/core/` (nunca se escriben a mano notas ni trastes que se puedan calcular) y suenan al tocarlos.
 - **Marcado de palabras pulsables**: `[[id-del-concepto|texto visible]]`, por ejemplo `la [[blue-note|blue note]]`.
 - **Campos nuevos en cada ejercicio** (7.1): `howTo` (cómo se juega), `concepts` (ids, al menos uno) y `check()` devuelve también `why` (explicación del error concreto).
 - **Componentes**: `ui/help-sheet.js` (panel) y `ui/term.js` (palabra pulsable y parser).
-- **Tests** (`tests/concepts.test.js`): no hay ids repetidos; todo id usado en `concepts`, `related` o `[[id|…]]` existe; todo ejercicio tiene `howTo` y al menos un concepto; todo `lesson` apunta a una ruta existente.
+- **Tests** (`tests/concepts.test.js`): no hay ids repetidos; todo id usado en `concepts`, `related` o `[[id|…]]` existe; todo ejercicio tiene `howTo` y al menos un concepto; todo `lesson` apunta a una ruta existente; todo concepto tiene `diagram` o `noDiagramReason` (desde la Fase 1B).
 
 ### 6.9 Almacenamiento de datos
 - Todo se guarda **automáticamente y al momento** en el almacenamiento local del dispositivo (`localStorage`). No hay botones de "Guardar".
@@ -1027,6 +1029,7 @@ Objetivo: las piezas reutilizables que usan todos los módulos.
 - [ ] `engine/exercise-registry.js` (con `howTo`, `concepts`, `tunings` y `why`, 7.1), `quiz-runner.js` y `practice-runner.js` (7.2, 7.3).
 - [ ] Selector de afinación en la preparación (6.6.6, 7.6).
 - [ ] Pantallas de ejercicio de Teoría (6.6.7) y de Práctica (6.6.8), con el **botón de altavoz** tras responder.
+- [ ] **Esquemas del glosario**: conectar las fichas con el mástil, los diagramas de acordes y (cuando exista) la tablatura; añadir un esquema a todos los conceptos escritos en la Fase 1A; el esquema es interactivo (tocar un punto lo hace sonar). Añadir a `tests/concepts.test.js` que todo concepto tenga `diagram` o `noDiagramReason`.
 - [ ] `ui/help-sheet.js` y el "?" en los ejercicios (6.8), con "Cómo se juega", "La teoría detrás" y "¿Por qué?".
 - [ ] Resumen de ronda de Teoría y de Práctica, sin autoevaluación, y confeti (6.6.10).
 - [ ] **Registro de sesiones** (6.6.13) y récords; "Continuar" en Inicio; el Perfil provisional ya muestra días y tiempo reales.
@@ -1350,3 +1353,4 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 | 2026-10-27 | 0 | Cimientos: lógica de teoría, notación, mástil y azar con tests; almacén versionado con exportar/importar; ajustes (notación, alteraciones, tema); router, cabecera, pestañas y módulos «Próximamente»; `NoteLabel`; tema claro/oscuro; PWA (manifest, iconos, service worker); despliegue en GitHub Pages. Cambios al plan: script de tests `node --test`, repositorio público, aviso de que iOS separa los datos de Safari y de la app instalada, metas de iOS actualizadas. | |
 | 2026-10-29 | Plan | Integrado `CAMBIOS.md`: nombre GuitarSeo y estilo inspirado en Chess.com (ámbar mate, botón físico, tema oscuro por defecto); navegación por pantallas en lugar de pestañas; esquemas de cada pantalla (6.6); nueva paleta (4.5); 7 afinaciones (4.2) y su uso en ejercicios (7.6); ayuda "?", "¿Por qué?", glosario y `concepts.js` (6.8); tablatura completa (6.7); Perfil en lugar del módulo Progreso; Práctica sin autoevaluación; registro de sesiones; almacenamiento (6.9). Fase 1 dividida en 1A y 1B. Nuevos ejercicios: Unísonos y Rellena el mástil (Fase 2), Rasgueo, progresiones y Calentamiento (Fase 3). Módulos renombrados: Escala y tonalidad, Blues y slide. Fase 8 renombrada a "Perfil completo y sesión mezclada". Nueva sección 12 (Propuestas). | Valores MIDI de las afinaciones (4.2), descripción de P2–P7 y contenido del slide pendientes de confirmar. |
 | 2026-10-30 | 1A | Navegación por pantallas con flecha ← (historial propio; sin historial vuelve a la pantalla madre); estilo GuitarSeo con tokens de los dos temas, botón físico, listas e iconos SVG; Inicio, Sección, Módulo, Preparación (nivel y afinación recordados por ejercicio; Empezar desactivado hasta la Fase 2) y pantallas «Próximamente»; `data/tunings.js` con las 7 afinaciones y cambios calculados; pantalla Afinaciones con sonido Karplus-Strong afinado y «Tocar todas»; `concepts.js` (15 conceptos de Notas y Afinaciones, ayudas «?» de cada pantalla), palabras pulsables y panel inferior; Glosario con buscador ES/EN; Ajustes completos (afinación por defecto, sonido, volumen, voz, mástil); Perfil provisional y Acerca de; esquema de datos v2 (récords, lecciones, progresiones, preparación) y `storage.persist()`; nombre e icono GuitarSeo. Cambios al plan: token `--amber-text` (4.5), franja de la barra de estado, bloques vacíos ocultos en el Glosario, estructura de carpetas (3). | Afinaciones de 4.2 validadas. |
+| 2026-10-30 | Plan | Esquema visual obligatorio en las fichas del glosario y en las tarjetas de lección (`diagram`, o `noDiagramReason` si no tiene sentido), interactivo; tarea «Esquemas del glosario» y su test añadidos a la Fase 1B; convención añadida a CLAUDE.md. | Petición del usuario al cerrar la 1A. |
