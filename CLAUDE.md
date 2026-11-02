@@ -43,9 +43,9 @@
 1. Trabaja **una fase por sesión**, la que pida el usuario (la Fase 1 son dos sesiones: 1A y 1B).
 2. Antes de terminar: `npm test` en verde, comprobación visual en tamaño móvil y escritorio si hay navegador disponible, incrementar `CACHE_VERSION` en `sw.js` y la versión visible en ajustes.
 3. Marca las casillas de la fase en `BUILD_PLAN.md` y añade una fila al Registro de cambios.
-4. Commit con mensaje claro (`Fase N: ...`) y push a `main`.
+4. Commit con mensaje claro (`Fase N: ...`) y push a `main`. Al terminar cada fase, crea una etiqueta de git con su versión y súbela (ver BUILD_PLAN, sección 10).
 5. Explica al usuario, en pocas líneas, qué probar en el iPhone. **No empieces la fase siguiente sin su confirmación.**
-6. Si detectas un error o una mejora en el plan, propónla al usuario y actualiza `BUILD_PLAN.md` si la acepta.
+6. Si detectas un error o una mejora en el plan, propónla al usuario y actualiza `BUILD_PLAN.md` si la acepta. Antes de cada fase, pregunta por las propuestas pendientes de su fase (BUILD_PLAN, sección 12), pero no por lo que esté en `docs/FUTURAS_UPDATES.md` (cuando exista): esa lista no se ejecuta hasta que el usuario pase algo al plan.
 7. Los datos musicales de BUILD_PLAN (afinaciones, acordes, CAGED, cajas, licks, rasgueos, progresiones) son la referencia; si un test contradice esos datos, revisa ambos y avisa al usuario en vez de "arreglar" el test.
 
 ## Calidad y veracidad
@@ -72,7 +72,7 @@ Esta app enseña teoría musical a alguien que está aprendiendo: un dato falso 
 
 ### Verificación antes de cerrar una fase
 1. `npm test` en verde.
-2. Abre la app en un navegador (por ejemplo, con Playwright) a tamaño móvil (390×844) y escritorio, y comprueba que la consola no tiene errores.
+2. Abre la app en un navegador (por ejemplo, con Playwright) a tamaño móvil (390×844) y escritorio, y comprueba que la consola no tiene errores; y también con la emulación de un móvil Android de Playwright (por ejemplo, Pixel 7): diseño, botón o gesto de atrás del sistema y consola sin errores.
 3. Juega al menos una ronda de cada ejercicio nuevo en los 3 niveles, con notación ES y EN, y con una afinación no estándar si el ejercicio la admite.
 4. Revisa los casos límite: traste 0, último traste, enarmónicos (Fa♯/Sol♭), paso entre las cuerdas Sol y Si, afinaciones abiertas, tema oscuro y claro, y mástil vertical y horizontal.
 5. Haz una **autorrevisión del diff completo** como si fueras otra persona revisándolo: busca errores, incoherencias entre texto y datos, y textos mal escritos. Corrige lo que encuentres.

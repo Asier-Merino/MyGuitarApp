@@ -91,9 +91,12 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | 3 | Acordes abiertos y Calentamiento | Pendiente |
 | 4 | Oído | Pendiente |
 | 5 | Escala y tonalidad | Pendiente |
-| 6 | Blues y slide | Pendiente |
-| 7 | CAGED | Pendiente |
-| 8 | Perfil completo y sesión mezclada | Pendiente |
+| 6 | Blues y slide: el blues | Pendiente |
+| 7 | Blues y slide: el slide | Pendiente |
+| 8 | CAGED | Pendiente |
+| 9 | Perfil completo y sesión mezclada (primera versión completa, v1.0.0) | Pendiente |
+
+Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`…), para poder volver a ella si algo sale mal.
 
 ### Qué funciona ya (v0.1.0)
 
@@ -148,6 +151,7 @@ Cada `push` a la rama `main` actualiza la app publicada en 1–2 minutos. Antes 
 1. `npm test` en verde.
 2. Subir `CACHE_VERSION` en [`sw.js`](sw.js), para que los iPhone descarguen la versión nueva.
 3. Subir `APP_VERSION` en [`js/version.js`](js/version.js) (`0.N.x` = fase N).
+4. Al terminar una fase, crear su etiqueta con `v` delante de la versión, por ejemplo `git tag v0.2.0` y `git push origin v0.2.0`.
 
 > El repositorio se sigue llamando `MyGuitarApp` a propósito: cambiarle el nombre cambiaría la dirección de la app y habría que volver a instalarla.
 

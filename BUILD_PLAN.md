@@ -14,6 +14,7 @@
    - marca las casillas de la fase,
    - añade una entrada al **Registro de cambios** (sección 13),
    - hace commit y push (se despliega en GitHub Pages),
+   - crea la **etiqueta de versión** de la fase y la sube (10),
    - pide al usuario que la pruebe en el iPhone.
 4. **No empezar la fase siguiente sin la confirmación del usuario.** Si el usuario pide cambios, se hacen antes de avanzar.
 5. Si algo del plan resulta incorrecto o mejorable durante la construcción, se propone el cambio al usuario y se actualiza este documento.
@@ -49,6 +50,8 @@
 | 5 | Blues y slide | 12 compases, *blue note*, quiz | Base shuffle, notas objetivo, licks pregunta-respuesta |
 | 6 | CAGED | Explorador de formas, quiz | Tocar un acorde en una forma, recorrer las 5 formas |
 | 7 | Calentamiento | — | Un dedo por traste con tablatura y subida automática de tempo |
+
+- Blues y slide es un solo módulo, pero se construye en dos fases: el blues en la Fase 6 y el slide en la Fase 7 (sección 8).
 
 - Orden en la lista de cada sección: ver 6.6.2.
 - **Progreso y Glosario ya no son módulos**: el progreso está en **Perfil** (6.6.13) y el Glosario es una sección principal (6.6.17).
@@ -112,7 +115,7 @@
 │   │   ├── caged.js           # plantillas de las 5 formas
 │   │   ├── scales.js          # fórmulas y cajas pentatónicas
 │   │   ├── blues.js           # progresiones de 12 compases
-│   │   ├── licks.js           # licks en La, transportables
+│   │   ├── licks.js           # licks transportables, con técnica, estilo y nivel (5.5)
 │   │   ├── strum-patterns.js  # patrones de rasgueo
 │   │   └── concepts.js        # conceptos: glosario, ayudas "?" y palabras pulsables
 │   ├── ui/
@@ -136,7 +139,7 @@
 │   ├── engine/
 │   │   ├── exercise-registry.js
 │   │   ├── quiz-runner.js     # motor de ejercicios de Teoría
-│   │   ├── practice-runner.js # motor de ejercicios de Práctica (temporizador, voz, wake lock)
+│   │   ├── practice-runner.js # motor de ejercicios de Práctica (duración, temporizador, voz, wake lock)
 │   │   └── speech.js
 │   └── modules/
 │       ├── notes/
@@ -375,11 +378,23 @@ Con acordes de séptima de dominante (I7, IV7, V7):
 - **Test**: en La, compás 9 = Mi7, compás 5 = Re7, compás 12 (estándar) = Mi7.
 
 ### 5.5 Licks
-Licks **originales y sencillos** de 3 a 6 notas, definidos en La sobre la caja 1 y transportables.
+Licks **originales y sencillos** de 3 a 8 notas, definidos en La y transportables. **Nunca copiados de canciones.**
 Formato de cada nota: `{ string, fret, dur, tech? }`, con `dur` en corcheas (con swing al reproducirse) y `tech` opcional: la técnica de esa nota con los símbolos de la tablatura (6.7), por ejemplo `{ type: 'bend', amount: 1 }` o `{ type: 'hammer' }`.
-Cada lick indica `target`: el acorde (I, IV o V) sobre el que mejor resuelve, y su última nota es la fundamental de ese acorde.
+Cada lick indica además:
+- `target`: el acorde (I, IV o V) sobre el que mejor resuelve; su última nota es la fundamental de ese acorde.
+- `scale`: la escala a la que pertenecen todas sus notas.
+- `style`: **blues**, **rock** o **country** (al menos 3 licks de cada estilo):
+  - **Blues y rock**: escala blues o pentatónica menor, sobre la caja 1. El rock, con más estiramientos y notas repetidas.
+  - **Country**: **pentatónica mayor** (en La: La Si Do♯ Mi Fa♯), con ligados y deslizamientos. Se tocan sobre el acorde mayor. La caja de la pentatónica mayor que se use se propone al usuario antes de fijarla.
+- `level`, según las técnicas que usa:
+  - **Básico**: sin técnicas, o solo con deslizamiento.
+  - **Intermedio**: con ligados (ascendentes y descendentes) y estiramientos de ½ o 1 tono.
+  - **Avanzado**: con combinaciones (estirar y soltar, estiramiento previo).
+  - El vibrato no está asignado a ningún nivel: preguntar al usuario al empezar la Fase 6.
 
-Licks de partida (Claude Code puede añadir más hasta ~10, con el mismo criterio):
+**Técnicas** (las de la tablatura, 6.7): **estiramientos** de ½ y 1 tono (sobre todo en las cuerdas 2 y 3), **ligados ascendentes y descendentes**, **deslizamientos** y **vibrato** en la nota final. Los licks de slide (Fase 7) usan sobre todo deslizamientos y vibrato, que es lo propio de la técnica.
+
+Licks de partida (sin técnicas, nivel Básico, estilo blues). Claude Code añade más hasta **unos 12** con las técnicas y los estilos de arriba, y los enseña al usuario antes de fijarlos:
 | Lick | Notas (cuerda:traste) | Notas | Objetivo |
 |---|---|---|---|
 | L1 | 3:7 → 3:5 → 4:7 | Re Do La | I |
@@ -389,7 +404,14 @@ Licks de partida (Claude Code puede añadir más hasta ~10, con el mismo criteri
 | L5 | 1:8 → 1:5 → 2:8 → 2:5 | Do La Sol Mi | V |
 | L6 | 1:5 → 2:8 → 2:5 → 3:7 → 3:5 → 4:7 | La Sol Mi Re Do La | I (bajada) |
 
-**Test**: todas las notas de cada lick pertenecen a la escala blues de La, y la última nota es la fundamental de su objetivo. La tablatura de cada lick coincide nota a nota con sus datos (cuerda, traste y técnica).
+**Test**:
+- Todas las notas de cada lick, de salida y de llegada, pertenecen a la escala declarada en `scale`, y esa escala es la de su estilo (blues y rock: blues o pentatónica menor; country: pentatónica mayor).
+- La última nota es la fundamental de su objetivo, y cada lick tiene de 3 a 8 notas.
+- **Ligado ascendente**: misma cuerda y traste de destino mayor. **Descendente**: misma cuerda y traste de destino menor.
+- **Deslizamiento**: misma cuerda.
+- **Estiramiento**: la nota de llegada (traste + 1 para ½ tono, + 2 para 1 tono) pertenece a la escala del lick.
+- El `level` declarado coincide con las técnicas que usa el lick, y hay al menos 3 licks de cada estilo.
+- La tablatura de cada lick coincide nota a nota con sus datos (cuerda, traste y técnica).
 
 ### 5.6 Patrones de rasgueo (`data/strum-patterns.js`)
 El compás se divide en 8 casillas (corcheas: 1 y 2 y 3 y 4 y). Cada casilla vale `D` (**↓**, golpe abajo), `U` (**↑**, golpe arriba) o `-` (**·**, la mano se mueve sin golpear).
@@ -556,7 +578,7 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 | CAGED | Blues y slide |
 | | CAGED |
 
-- Hasta la Fase 8, "Sesión mezclada" abre una pantalla "Próximamente".
+- Hasta la Fase 9, "Sesión mezclada" abre una pantalla "Próximamente".
 
 #### 6.6.3 Módulo
 **En Teoría** (módulos con lección y consulta):
@@ -612,6 +634,11 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 - Una frase que explica el ejercicio. El "?" abre la ayuda completa (6.8).
 - **Nivel**: tres botones; queda seleccionado el último usado en ese ejercicio.
 - **Afinación**: una fila con la afinación actual. Al tocarla sube un panel con las afinaciones disponibles para ese ejercicio (7.6). Si el ejercicio no admite afinación, la fila no aparece.
+- **Duración** (solo en los ejercicios que van por tiempo): selector **30 s · 1 min · 2 min 30 · 5 min · 10 min**. Se recuerda la última elegida en cada ejercicio.
+  - Ejercicios que la llevan: bases de blues y de slide, improvisar sobre la base, notas objetivo, cambios de acordes, rasgueo, escala con metrónomo, progresión de la tonalidad, recorrer las formas CAGED y Calentamiento.
+  - Las **bases para improvisar** (blues y slide) añaden la opción **"Sin límite"**.
+  - **"Cambios en un minuto"** no la lleva: se queda en 60 s fijos, para que el récord sea comparable.
+  - Es un control común de la preparación, con soporte en `practice-runner` (7.3).
 - **Empezar**: botón grande en la parte baja, al alcance del pulgar.
 - Algunos ejercicios añaden opciones propias aquí (por ejemplo, la progresión de acordes, 6.6.11, o "Mostrar diagramas", 6.6.12).
 
@@ -651,6 +678,7 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 - **Al acabarse el tiempo**: aparece automáticamente un trozo de mástil con las posiciones correctas durante **3 segundos** y después pasa a la siguiente consigna.
 - **Pausa** y **Ver posiciones**: botones grandes abajo. En pausa se puede abrir el "?".
 - Si la afinación no es la estándar, se ve la etiqueta "Afinación: …" bajo la cabecera.
+- En los ejercicios con **Duración** (6.6.6), la cabecera muestra el **tiempo restante** de la ronda (qué se muestra con "Sin límite" se propone al usuario en la Fase 6). Al acabarse, va al resumen de ronda (6.6.10).
 
 #### 6.6.9 (reservado)
 El aspecto del mástil está en 6.3.
@@ -817,6 +845,9 @@ Tablatura estándar, como la de cualquier web de tablaturas, generada en SVG:
 - **Ritmo**: separación horizontal proporcional a la duración y, debajo, el conteo ("1 y 2 y…"). Barras verticales `|` como líneas de compás.
 - **Siempre en horizontal**, también con el móvil en vertical. Si no cabe, se parte en varias líneas como una partitura.
 - **Cursor de reproducción**: mientras suena, la nota que suena se resalta en ámbar. Tocar un número hace sonar esa nota.
+- **Velocidad**: el reproductor tiene un selector **50 % · 75 % · 100 %**. Cambia la velocidad sin cambiar la altura de las notas: la síntesis se programa con otro tempo (no se estira el audio).
+  - Aparece en: la consulta de licks, "Ver en el mástil", el Calentamiento (escuchar el patrón) y la escala con metrónomo.
+  - En "Pregunta-respuesta" no aparece: la velocidad la marca el tempo de la base.
 - Conmutador **"Ver en el mástil"**: muestra encima un trozo de mástil con las mismas notas numeradas en orden.
 - Se usa en: licks (blues y slide), pregunta-respuesta, licks por acorde, escala con metrónomo y calentamiento.
 - **Nomenclatura completa**, con los símbolos más extendidos. El componente debe saber dibujarlos todos, aunque los licks actuales solo usen algunos:
@@ -946,6 +977,7 @@ Así la **sesión mezclada** puede escoger ejercicios de cualquier módulo.
 
 ### 7.3 Motor de Práctica (`practice-runner.js`)
 - Pantalla de manos libres (6.6.8): consigna enorme, cuenta atrás visible, guía de ritmo y avance automático; al acabar el tiempo muestra las posiciones 3 s.
+- **Duración de la ronda** (6.6.6): en los ejercicios que van por tiempo, la ronda dura lo elegido en la preparación (o "Sin límite" en las bases para improvisar), muestra el tiempo restante en la cabecera y al acabar pasa al resumen.
 - **Voz**: dice la consigna ("Sol", "Do en forma de La"…). En ES usa nombres en español ("Fa sostenido", "Si bemol"); en EN, nombres en inglés ("F sharp").
 - **Metrónomo** opcional, con tempo ajustable.
 - **Wake Lock** activo mientras dura la ronda, y se vuelve a pedir en `visibilitychange`.
@@ -977,7 +1009,7 @@ Cada módulo concreta sus niveles en la sección 8. Se espera afinarlos con el u
 
 ## 8. Fases de construcción
 
-> **En todas las fases de la 2 a la 8**: escribir en `concepts.js` los conceptos del bloque, con `howTo`, `concepts` y `why` en todos sus ejercicios, y enlazar la lección con palabras pulsables.
+> **En todas las fases de módulo (de la 2 a la 8)**: escribir en `concepts.js` los conceptos del bloque, con `howTo`, `concepts` y `why` en todos sus ejercicios, y enlazar la lección con palabras pulsables.
 
 ### Fase 0 — Cimientos y despliegue
 Objetivo: el esqueleto de la app funcionando en el iPhone a través de GitHub Pages.
@@ -1028,13 +1060,15 @@ Objetivo: las piezas reutilizables que usan todos los módulos.
 - [ ] `engine/speech.js`: voces `es-ES`/`en-US`, nombres de nota hablados y una cola sencilla.
 - [ ] `engine/exercise-registry.js` (con `howTo`, `concepts`, `tunings` y `why`, 7.1), `quiz-runner.js` y `practice-runner.js` (7.2, 7.3).
 - [ ] Selector de afinación en la preparación (6.6.6, 7.6).
+- [ ] **Duración elegible** (6.6.6, 7.3): control común "Duración" en la preparación (30 s · 1 min · 2 min 30 · 5 min · 10 min, con "Sin límite" como opción que cada ejercicio puede activar), recordado por ejercicio, y soporte en `practice-runner` con el tiempo restante en la cabecera. Aún no hay ejercicios por tiempo: se prueba en la página `#/dev` y lo estrenan los de la Fase 3.
+- [ ] En `js/data/modules.js`, pasar CAGED a `phase: 8` (el slide pasa a ser la Fase 7).
 - [ ] Pantallas de ejercicio de Teoría (6.6.7) y de Práctica (6.6.8), con el **botón de altavoz** tras responder.
 - [ ] **Esquemas del glosario**: conectar las fichas con el mástil, los diagramas de acordes y (cuando exista) la tablatura; añadir un esquema a todos los conceptos escritos en la Fase 1A (salvo «Nombres de las notas», que ya lleva `noDiagramReason`: es una equivalencia de nombres y su esquema sería el de «Notas naturales»); el esquema es interactivo (tocar un punto lo hace sonar). Añadir a `tests/concepts.test.js` que todo concepto tenga `diagram` o `noDiagramReason`.
 - [ ] `ui/help-sheet.js` y el "?" en los ejercicios (6.8), con "Cómo se juega", "La teoría detrás" y "¿Por qué?".
 - [ ] Resumen de ronda de Teoría y de Práctica, sin autoevaluación, y confeti (6.6.10).
 - [ ] **Registro de sesiones** (6.6.13) y récords; "Continuar" en Inicio; el Perfil provisional ya muestra días y tiempo reales.
 - [ ] Wake Lock en Práctica.
-- [ ] Página de prueba interna (`#/dev`, enlazada solo desde ajustes) para ver el mástil, tocar notas y probar metrónomo y voz.
+- [ ] Página de prueba interna (`#/dev`, enlazada solo desde ajustes) para ver el mástil, tocar notas y probar metrónomo, voz y duración.
 
 **Hecho cuando**: en el iPhone se ve el mástil en vertical y en horizontal al girarlo, al tocar un punto suena la nota (también con el iPhone en modo silencio), el metrónomo va estable, la voz dice notas en español, una ronda de prueba se juega de principio a fin con el "?" y el "¿Por qué?", y la ronda aparece en Perfil.
 
@@ -1112,13 +1146,14 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 **Práctica**
 - [ ] Progresiones predefinidas (5.7) y **Mis progresiones** (6.6.11), con su test.
 - [ ] Pantalla de práctica de acordes con diagramas (6.6.12) y el conmutador "Mostrar diagramas".
-- [ ] "Cambios de acordes": la app muestra el acorde actual en grande y el siguiente en pequeño, y cambia cada N tiempos con metrónomo, con la progresión elegida.
-- [ ] "Cambios en un minuto": se elige una pareja de acordes, se cambia entre ellos durante 60 s, y al final se anota cuántos cambios has hecho (se guarda como récord por pareja).
+- [ ] "Cambios de acordes": la app muestra el acorde actual en grande y el siguiente en pequeño, y cambia cada N tiempos con metrónomo, con la progresión elegida, durante la **duración** elegida (6.6.6).
+- [ ] "Cambios en un minuto": se elige una pareja de acordes, se cambia entre ellos durante 60 s, y al final se anota cuántos cambios has hecho (se guarda como récord por pareja). Sin selector de duración: siempre 60 s, para que el récord sea comparable.
 - [ ] "Acorde cantado": la app dice un acorde al azar y tú lo tocas.
 - [ ] **"Rasgueo"**:
   - El compás se dibuja como 8 casillas con **↓**, **↑** o **·** (5.6). La casilla actual se ilumina.
   - La app puede tocar el patrón para escucharlo antes, y contar en voz alta "1 y 2 y…" si se activa.
   - Usa las progresiones de 6.6.11 y la pantalla de 6.6.12 (el patrón entre el diagrama y el siguiente acorde).
+  - Con selector de **duración** (6.6.6).
   - `data/strum-patterns.js` con los patrones de 5.6 y su test.
   - Concepto: "Rasgueo y regla del péndulo" (bloque Ritmo y técnica).
 
@@ -1130,11 +1165,12 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 | Tempo de rasgueo | 60–70 BPM | 70–90 BPM | 90–110 BPM |
 
 **Calentamiento** (nuevo módulo de Práctica)
-- [ ] Componente de **tablatura** completo (6.7), con el bloque Tablatura del glosario.
+- [ ] Componente de **tablatura** completo (6.7), con el selector de velocidad 50 % · 75 % · 100 % y el bloque Tablatura del glosario.
 - [ ] Un dedo por traste, de la 6ª cuerda a la 1ª y vuelta, en una posición elegida (traste 1 o 5), con la **tablatura** en pantalla y metrónomo.
 - [ ] Variantes: 1-2-3-4, 4-3-2-1, 1-3-2-4 y "araña" (dedos alternos en dos cuerdas).
-- [ ] **Subida automática de tempo**: +4 BPM cada 2 vueltas completas. "Bajar" resta 8 BPM y detiene la subida. Se guarda el tempo máximo por variante como récord. Se implementa como función reutilizable del metrónomo (la propuesta P5 sigue pendiente para aplicarla a otros ejercicios).
-- [ ] Duración elegible: 2, 3 o 5 minutos.
+- [ ] **Subida automática de tempo**: +4 BPM cada 2 vueltas completas. "Bajar" resta 8 BPM y detiene la subida. Se guarda el tempo máximo por variante como récord. Se implementa como función del metrónomo. Solo la usa el Calentamiento (la propuesta P5 de llevarla a otros ejercicios queda sustituida por la duración elegible, sección 12).
+- [ ] Duración elegible con el selector común (6.6.6): 30 s · 1 min · 2 min 30 · 5 min · 10 min. La subida automática de tempo se mantiene con cualquier duración.
+- [ ] Botón para escuchar el patrón en la tablatura, con el selector de velocidad (6.7).
 - [ ] Concepto: "Calentamiento cromático" (bloque Ritmo y técnica).
 
 | | Básico | Intermedio | Avanzado |
@@ -1185,8 +1221,8 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
   - "Completa la progresión": I–?–vi–IV en Sol.
 
 **Práctica**
-- [ ] "Escala con metrónomo": la escala mayor en una posición, subiendo y bajando, con tempo ajustable y la tablatura (6.7) en pantalla; tempo máximo como récord.
-- [ ] "Progresión de la tonalidad": la app muestra una progresión por grados en una tonalidad y la tocas con metrónomo.
+- [ ] "Escala con metrónomo": la escala mayor en una posición, subiendo y bajando, con tempo ajustable y la tablatura (6.7) en pantalla, con su selector de velocidad para escucharla; tempo máximo como récord. Con selector de **duración** (6.6.6).
+- [ ] "Progresión de la tonalidad": la app muestra una progresión por grados en una tonalidad y la tocas con metrónomo. Con selector de **duración** (6.6.6).
 
 **Niveles**
 | | Básico | Intermedio | Avanzado |
@@ -1199,7 +1235,9 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 
 **Hecho cuando**: los tests pasan y todos los ejercicios funcionan en los 3 niveles.
 
-### Fase 6 — Módulo Blues y slide
+### Fase 6 — Módulo Blues y slide: el blues
+El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide llega en la Fase 7.
+
 **Teoría**
 - [ ] Aprender:
   - Pentatónica menor: las 5 notas y la caja 1.
@@ -1222,14 +1260,15 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
   - Percusión sencilla: charles con ruido filtrado y bombo con una onda senoidal descendente.
   - Tempo de 60 a 120 BPM y tonalidad elegible.
   - La cuadrícula de 12 compases se ilumina en tiempo real.
-- [ ] "Improvisa sobre la base": la caja elegida en el mástil mientras suena la base.
-- [ ] "Notas objetivo": mientras suena la base, el mástil resalta dentro de la caja la fundamental del acorde actual (La, Re o Mi en La), y avisa un tiempo antes del cambio de acorde.
-- [ ] "Pregunta-respuesta": la app toca un lick (5.5) en un compás, con la tablatura (6.7) en pantalla, y tú lo repites en el siguiente.
+  - Con selector de **duración** (6.6.6), que aquí añade **"Sin límite"**.
+- [ ] "Improvisa sobre la base": la caja elegida en el mástil mientras suena la base. Con **duración**, incluido "Sin límite".
+- [ ] "Notas objetivo": mientras suena la base, el mástil resalta dentro de la caja la fundamental del acorde actual (La, Re o Mi en La), y avisa un tiempo antes del cambio de acorde. Con **duración** (6.6.6).
+- [ ] "Pregunta-respuesta": la app toca un lick (5.5) en un compás, con la tablatura (6.7) en pantalla, y tú lo repites en el siguiente. La velocidad la marca el tempo de la base.
 - [ ] "Licks por acorde": cada compás muestra un lick adecuado al acorde que suena (según `target`), con su tablatura.
+- [ ] En la preparación de "Pregunta-respuesta" y "Licks por acorde", filtro por **estilo**: Blues, Rock, Country o Todos (5.5).
+- [ ] **Licks** (5.5): ampliar hasta unos 12, con técnicas (estiramientos, ligados, deslizamientos y vibrato), `style`, `scale` y `level`, al menos 3 por estilo. Enseñarlos al usuario antes de fijarlos.
+- [ ] Consulta de licks con su tablatura (6.7), "Ver en el mástil" y el selector de velocidad.
 - [ ] Los licks usan la tablatura de 6.7 y su campo `tech` (5.5).
-
-**Slide**
-- [ ] Contenido por definir con el usuario antes de empezar la fase (usa las afinaciones abiertas de 4.2). Proponer ejercicios y licks y esperar su aprobación.
 
 **Niveles**
 | | Básico | Intermedio | Avanzado |
@@ -1239,12 +1278,22 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 | Tempo | 60–70 BPM | 70–90 BPM | 90–120 BPM |
 | Progresión | sin *turnaround* | estándar | estándar y *quick change* |
 
-- [ ] Tests de 5.3, 5.4 y 5.5.
-- [ ] Conceptos del bloque Blues y slide en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
+- [ ] Tests de 5.3, 5.4 y 5.5 (incluidas las reglas de técnicas, estilos y niveles).
+- [ ] Conceptos del bloque Blues y slide en `concepts.js`, entre ellos "Pentatónica mayor" (si no existe ya) y "Estilos: blues, rock y country", con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
 
-**Hecho cuando**: la base suena con un swing estable al menos 5 minutos seguidos en el iPhone, los 12 compases se iluminan sincronizados y las notas objetivo cambian a tiempo.
+**Hecho cuando**: la base suena con un swing estable al menos 5 minutos seguidos en el iPhone, los 12 compases se iluminan sincronizados, las notas objetivo cambian a tiempo y los licks de los tres estilos pasan sus tests.
 
-### Fase 7 — Módulo CAGED
+### Fase 7 — Módulo Blues y slide: el slide
+- [ ] **Contenido por definir con el usuario antes de empezar la fase** (usa las afinaciones abiertas de 4.2). Proponer lección, ejercicios, niveles y licks, y esperar su aprobación.
+- [ ] Ya decidido:
+  - **Base de slide** con selector de **duración** (6.6.6), incluido **"Sin límite"**.
+  - **Licks de slide** con las reglas de 5.5 (con su `style`, `scale` y `level`), que usan sobre todo **deslizamientos** y **vibrato**.
+- [ ] Tests de los licks y de cualquier otro dato musical nuevo del slide, contra las reglas de la teoría.
+- [ ] Conceptos del slide en el bloque Blues y slide de `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
+
+**Hecho cuando**: se concreta al aprobar el contenido con el usuario; como mínimo, la base de slide suena estable en el iPhone en una afinación abierta y los licks de slide pasan sus tests.
+
+### Fase 8 — Módulo CAGED
 **Teoría**
 - [ ] Aprender:
   - Idea clave: las formas de Do, La, Sol, Mi y Re son los acordes abiertos que ya conoces, desplazados por el mástil.
@@ -1260,7 +1309,7 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 
 **Práctica**
 - [ ] "Acorde en forma X": la app dice, por ejemplo, "Do en forma de La", y lo tocas. Al pulsar "Ver" se muestra.
-- [ ] "Recorre las 5 formas": un acorde por las 5 formas seguidas, subiendo por el mástil, con metrónomo.
+- [ ] "Recorre las 5 formas": un acorde por las 5 formas seguidas, subiendo por el mástil, con metrónomo. Con selector de **duración** (6.6.6).
 - [ ] "Misma zona, distintos acordes": se fija una zona del mástil (por ejemplo, trastes 5–8) y la app pide acordes que debes encontrar en esa zona con la forma que toque.
 
 **Niveles**
@@ -1274,7 +1323,7 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 
 **Hecho cuando**: el explorador muestra las 5 formas correctas para cualquier acorde mayor y los tests pasan.
 
-### Fase 8 — Perfil completo y sesión mezclada
+### Fase 9 — Perfil completo y sesión mezclada
 - [ ] **Perfil completo** (6.6.13):
   - Racha, días practicados y tiempo total.
   - Calendario de las últimas 13 semanas.
@@ -1285,6 +1334,7 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 - [ ] **Sesión mezclada** (en Teoría y en Práctica): se elige la duración (5, 10 o 20 min) y la app encadena ejercicios de varios módulos, ponderando por puntos débiles (7.4) y por lo que hace tiempo que no se hace. Solo incluye los módulos y niveles que el usuario ha usado al menos una vez, más uno nuevo de vez en cuando.
 - [ ] Revisión final: accesibilidad (contraste, tamaño de toque), rendimiento en el iPhone y textos.
 - [ ] Actualizar la sección 11 con las ideas que hayan surgido.
+- [ ] Versión visible **1.0.0** y etiqueta de git **`v1.0.0`** (10): primera versión completa.
 
 **Hecho cuando**: el Perfil refleja lo practicado y la sesión mezclada propone una combinación sensata.
 
@@ -1311,8 +1361,19 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 - **Servidor local**: `npx serve .` o `python3 -m http.server 8000`. Los módulos ES no funcionan abriendo el archivo con `file://`.
 - **Tests**: `npm test` (con `node --test`). Todo lo de `core/` y `data/` tiene tests; la interfaz se comprueba manualmente.
 - **Comprobación visual**: si hay un navegador disponible en la sesión, abrir la app en tamaño móvil (390×844) y en escritorio y revisar los dos temas y ambas orientaciones del mástil antes de dar una fase por terminada. Guardar capturas en `docs/capturas/fase-N/` (fuera de la caché del service worker).
+- **Simulación de Android**: en la verificación de cada fase, abrir también la app con la emulación de un móvil Android de Playwright (por ejemplo, Pixel 7) y comprobar:
+  - que el diseño se ve bien en esa pantalla (otras proporciones y la fuente del sistema de Android);
+  - que el **botón o gesto de atrás** del sistema vuelve a la pantalla anterior (historial del hash router);
+  - que la consola no tiene errores.
+  - La prueba en un Android real se hará más adelante, cuando la app se comparta.
 - **Despliegue**: cada push a `main` actualiza GitHub Pages. Incrementar `CACHE_VERSION` en `sw.js` en cada push que cambie archivos de la app.
-- **Versión visible** en Ajustes y en Perfil → Acerca de (por ejemplo, `v0.3.0` = fase 3), para comprobar en el iPhone qué versión está cargada.
+- **Versión visible** en Ajustes y en Perfil → Acerca de, para comprobar en el iPhone qué versión está cargada: `0.N.x` = fase N. La Fase 1A es `0.1.0` y la 1B `0.1.1`; desde la Fase 2, cada fase empieza en `0.N.0`. Al terminar la Fase 9: **`1.0.0`**.
+- **Etiquetas de versión**: al terminar **cada fase**, Claude Code crea una etiqueta de git con la versión de esa fase (`v` + la versión visible, por ejemplo `v0.2.0`) sobre el commit final de la fase y la sube (`git push origin <etiqueta>`). Así se puede volver a cualquier fase anterior si algo sale mal.
+
+| Etiqueta | Fase | Commit |
+|---|---|---|
+| `v0.0.0` | 0 | `02807df` (Fase 0: marcar despliegue en BUILD_PLAN) |
+| `v0.1.0` | 1A | `0625545` (Fase 1A: navegación, estilo GuitarSeo, Afinaciones, Glosario y Ajustes) |
 
 ---
 
@@ -1333,13 +1394,15 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 
 Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase.
 
+> **Pendiente de cuando el usuario añada `docs/FUTURAS_UPDATES.md`** (la lista de mejoras para después de la v1.0, que no se integra en el plan): copiar en su apartado "Ideas sin decidir" las ideas de la sección 11 que no estén ya allí y dejar la sección 11 como un enlace a ese archivo; mover allí P2, P3, P4, P6 y P7, para que esta sección quede sin propuestas pendientes. Lo que esté en ese archivo no se pregunta en cada fase.
+
 | Id | Propuesta | Estado |
 |---|---|---|
 | P1 | ~~Sonido automático al acertar o fallar~~ | **Sustituida** por el botón de altavoz tras responder (6.6.7) |
 | P2 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
 | P3 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
 | P4 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
-| P5 | Subida automática de tempo en otros ejercicios (ya se usa en el Calentamiento, Fase 3) | Pendiente |
+| P5 | ~~Subida automática de tempo en otros ejercicios~~ | **Sustituida** por la duración elegible (6.6.6). El Calentamiento conserva su subida automática (Fase 3) |
 | P6 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
 | P7 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
 | P8 | ~~Logros~~ | **Rechazada** |
@@ -1354,3 +1417,4 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 | 2026-10-29 | Plan | Integrado `CAMBIOS.md`: nombre GuitarSeo y estilo inspirado en Chess.com (ámbar mate, botón físico, tema oscuro por defecto); navegación por pantallas en lugar de pestañas; esquemas de cada pantalla (6.6); nueva paleta (4.5); 7 afinaciones (4.2) y su uso en ejercicios (7.6); ayuda "?", "¿Por qué?", glosario y `concepts.js` (6.8); tablatura completa (6.7); Perfil en lugar del módulo Progreso; Práctica sin autoevaluación; registro de sesiones; almacenamiento (6.9). Fase 1 dividida en 1A y 1B. Nuevos ejercicios: Unísonos y Rellena el mástil (Fase 2), Rasgueo, progresiones y Calentamiento (Fase 3). Módulos renombrados: Escala y tonalidad, Blues y slide. Fase 8 renombrada a "Perfil completo y sesión mezclada". Nueva sección 12 (Propuestas). | Valores MIDI de las afinaciones (4.2), descripción de P2–P7 y contenido del slide pendientes de confirmar. |
 | 2026-10-30 | 1A | Navegación por pantallas con flecha ← (historial propio; sin historial vuelve a la pantalla madre); estilo GuitarSeo con tokens de los dos temas, botón físico, listas e iconos SVG; Inicio, Sección, Módulo, Preparación (nivel y afinación recordados por ejercicio; Empezar desactivado hasta la Fase 2) y pantallas «Próximamente»; `data/tunings.js` con las 7 afinaciones y cambios calculados; pantalla Afinaciones con sonido Karplus-Strong afinado y «Tocar todas»; `concepts.js` (15 conceptos de Notas y Afinaciones, ayudas «?» de cada pantalla), palabras pulsables y panel inferior; Glosario con buscador ES/EN; Ajustes completos (afinación por defecto, sonido, volumen, voz, mástil); Perfil provisional y Acerca de; esquema de datos v2 (récords, lecciones, progresiones, preparación) y `storage.persist()`; nombre e icono GuitarSeo. Cambios al plan: token `--amber-text` (4.5), franja de la barra de estado, bloques vacíos ocultos en el Glosario, estructura de carpetas (3). | Afinaciones de 4.2 validadas. |
 | 2026-10-30 | Plan | Esquema visual obligatorio en las fichas del glosario y en las tarjetas de lección (`diagram`, o `noDiagramReason` si no tiene sentido), interactivo; tarea «Esquemas del glosario» y su test añadidos a la Fase 1B; convención añadida a CLAUDE.md. «Nombres de las notas» queda sin esquema (`noDiagramReason`). | Petición del usuario al cerrar la 1A; aceptada la propuesta para «Nombres de las notas». |
+| 2026-11-02 | Plan | Integrado `CAMBIOS.md` (ampliaciones de la v1): **duración elegible** en los ejercicios por tiempo (6.6.6, 6.6.8, 7.3; control común en la Fase 1B, estrenado en la Fase 3), que sustituye a P5; el Calentamiento conserva la subida de tempo y "Cambios en un minuto" sigue en 60 s; **licks** ampliados a unos 12, de 3 a 8 notas, con técnicas, estilo (blues, rock, country), escala y nivel, y sus reglas de test (5.5); filtro por estilo en "Pregunta-respuesta" y "Licks por acorde"; **velocidad 50/75/100 %** en el reproductor de la tablatura (6.7); **etiquetas de versión** por fase (10), creadas ya `v0.0.0` y `v0.1.0`; **simulación de Android** en la verificación (10). **El slide pasa a su propia fase**: Fase 6 blues, Fase 7 slide, Fase 8 CAGED y Fase 9 Perfil y sesión mezclada (`v1.0.0`). | Separar el slide: el usuario lo sugirió y pidió opinión; se adopta. Pendiente: `docs/FUTURAS_UPDATES.md` y la reorganización de las secciones 11 y 12 (nota en la 12); en qué nivel cuenta el vibrato (Fase 6). |
