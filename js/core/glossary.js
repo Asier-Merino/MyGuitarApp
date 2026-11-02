@@ -3,6 +3,8 @@
 // Marcado de los textos de concepts.js:
 //   [[id|texto]]    palabra pulsable que abre la ficha del concepto `id` (BUILD_PLAN 6.8)
 //   {{F#}} {{Bb}}   nombre de nota (letra inglesa + # o b), que se muestra con NoteLabel
+//   {{pc:6}}        nota por su pitch class, escrita con la preferencia ♯/♭ del usuario
+//                   (la usan los textos que se generan con reglas, p. ej. el "¿Por qué?")
 //   {{tuning:id}}   las notas de las cuerdas al aire de una afinación, de la 6ª a la 1ª
 //   {{tname:id}}    el nombre de una afinación ("Sol abierto")
 //   *texto*         cursiva (términos en inglés)
@@ -49,7 +51,7 @@ const TOKEN_RE = /\[\[([a-z0-9-]+)\|([^\]]+)\]\]|\{\{([^}]+)\}\}|\*([^*]+)\*/g;
 
 /**
  * Convierte un texto con marcado en una lista de piezas:
- * { type: 'text', text } · { type: 'term', id, text } · { type: 'note', spelling, pc }
+ * { type: 'text', text } · { type: 'term', id, text } · { type: 'note', spelling, pc } (spelling null con {{pc:N}})
  * { type: 'tuning', id } · { type: 'tuningName', id } · { type: 'em', text }
  * Lanza un error si encuentra un {{…}} que no entiende, para detectarlo en los tests.
  */
@@ -64,6 +66,10 @@ export function parseRichText(text) {
     const inner = m[3].trim();
     const [kind, arg] = inner.includes(':') ? inner.split(':') : [null, inner];
     if (kind === 'tuning') parts.push({ type: 'tuning', id: arg });
+    else if (kind === 'pc') {
+      if (!/^(\d|1[01])$/.test(arg)) throw new Error(`Marcado desconocido: ${m[0]}`);
+      parts.push({ type: 'note', spelling: null, pc: Number(arg) });
+    }
     else if (kind === 'tname') parts.push({ type: 'tuningName', id: arg });
     else {
       const spelling = kind === null ? parseNoteToken(arg) : null;
@@ -76,7 +82,7 @@ export function parseRichText(text) {
 }
 
 /** Texto plano (sin marcado), para comprobar ortografía o longitud en los tests. */
-export function plainText(text, { noteName = (p) => p.spelling.letter, tuningName = (id) => id } = {}) {
+export function plainText(text, { noteName = (p) => (p.spelling ? p.spelling.letter : `pc${p.pc}`), tuningName = (id) => id } = {}) {
   return parseRichText(text).map((p) => {
     switch (p.type) {
       case 'note': return noteName(p);
@@ -85,6 +91,17 @@ export function plainText(text, { noteName = (p) => p.spelling.letter, tuningNam
       default: return p.text;
     }
   }).join('');
+}
+
+/**
+ * Rellena una plantilla de concepts.js: '%fret%' → vars.fret. Lanza un error si falta
+ * alguna variable, para que un texto incompleto no llegue nunca a la pantalla.
+ */
+export function fillTemplate(template, vars = {}) {
+  return String(template).replace(/%(\w+)%/g, (_, name) => {
+    if (vars[name] === undefined || vars[name] === null) throw new Error(`Falta %${name}% en la plantilla`);
+    return String(vars[name]);
+  });
 }
 
 // Alias con nombres de nota ("sol abierto", "e f", "eadgbe"): sirven para buscar, pero no se

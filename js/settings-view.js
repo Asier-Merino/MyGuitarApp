@@ -262,6 +262,11 @@ export function renderSettings(view, params, nav) {
       group('App',
         settingRow({ label: 'Versión', control: h('strong', {}, `v${APP_VERSION}`) }),
         settingRow({
+          label: 'Página de prueba',
+          hint: UI_TEXTS.hints.dev,
+          control: button({ label: 'Abrir', href: '#/dev' }),
+        }),
+        settingRow({
           label: 'Actualizaciones',
           hint: isStandalone() ? 'Instalada en la pantalla de inicio.' : 'Abierta en el navegador.',
           control: updateBtn,

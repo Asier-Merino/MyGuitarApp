@@ -1,39 +1,75 @@
-// Preparación del ejercicio (BUILD_PLAN 6.6.6 y 7.6): frase, nivel, afinación (si la admite)
-// y Empezar. Recuerda el último nivel y la última afinación de cada ejercicio.
-// En la Fase 1A los ejercicios aún no existen: Empezar está desactivado.
+// Preparación del ejercicio (BUILD_PLAN 6.6.6 y 7.6): frase, nivel, afinación (si la admite),
+// duración (si va por tiempo), opciones propias y Empezar. Recuerda lo último usado en cada
+// ejercicio. Con "Preguntar antes de cada ejercicio", Empezar abre antes el panel de afinaciones.
+// Los ejercicios que aún no están construidos muestran Empezar desactivado y su fase.
 
-import { h, button, segmented } from '../ui/components.js';
+import { h, button, segmented, toggle, settingRow, iconButton } from '../ui/components.js';
 import { renderScreen } from './screen.js';
 import { tuningRow, openTuningPicker } from '../ui/tuning-picker.js';
-import { getPlannedExercise, LEVELS, LEVEL_IDS } from '../data/modules.js';
-import { allowedTunings, getTuning, DEFAULT_TUNING_ID } from '../data/tunings.js';
-import { store, settings } from '../state.js';
+import { openExerciseHelp } from '../ui/help-sheet.js';
+import { LEVELS } from '../data/modules.js';
+import { getTuning } from '../data/tunings.js';
+import { findExercise, isPlayable, exercisePath } from '../engine/exercise-registry.js';
+import { exerciseSetup, saveSetup, setPendingRound } from '../engine/rounds.js';
+import { primeSpeech } from '../engine/speech.js';
+import { durationOptions } from '../core/session.js';
+import { clampBpm } from '../core/rhythm.js';
+import { getAudio } from '../audio/context.js';
+import { settings } from '../state.js';
 
-/** Nivel y afinación con los que se prepara un ejercicio (último usado o valores iniciales). */
-export function exerciseSetup(exercise) {
-  const saved = store.data.setups[exercise.id] ?? {};
-  const allowed = allowedTunings(exercise.tunings);
-  const isAllowed = (id) => allowed.some((t) => t.id === id);
-  const level = LEVEL_IDS.includes(saved.level) ? saved.level : LEVEL_IDS[0];
-  let tuning = DEFAULT_TUNING_ID;
-  if (isAllowed(saved.tuning)) tuning = saved.tuning;
-  else if (isAllowed(settings.get('defaultTuning'))) tuning = settings.get('defaultTuning');
-  return { level, tuning, allowed };
-}
+const TEMPO_STEP = 5;
 
-function saveSetup(exercise, patch) {
-  store.update((d) => { d.setups[exercise.id] = { ...d.setups[exercise.id], ...patch }; });
+/** Fila "Metrónomo": interruptor y, si está activado, el tempo con − y +. */
+function metronomeOption(opt, value, onChange) {
+  return h('div', { class: 'card setup__option' },
+    settingRow({ label: opt.label, control: toggle({ label: opt.label, checked: value.on, onChange: (on) => onChange({ ...value, on }) }) }),
+    value.on && settingRow({
+      label: 'Tempo',
+      control: h('div', { class: 'stepper' },
+        iconButton({ iconName: 'minus', label: 'Bajar el tempo', onClick: () => onChange({ ...value, bpm: clampBpm(value.bpm - TEMPO_STEP) }) }),
+        h('span', { class: 'stepper__value' }, `${value.bpm} BPM`),
+        iconButton({ iconName: 'plus', label: 'Subir el tempo', onClick: () => onChange({ ...value, bpm: clampBpm(value.bpm + TEMPO_STEP) }) })),
+    }));
 }
 
 export function renderSetup(view, params, nav) {
-  const exercise = getPlannedExercise(params.section, params.module, params.exercise);
+  const exercise = findExercise(params);
+  const playable = isPlayable(exercise);
+
+  const start = (setup, tuningId = setup.tuning) => {
+    // Dentro del toque: desbloquea el audio y la voz (iOS).
+    primeSpeech();
+    if (settings.get('sound')) getAudio();
+    setPendingRound({
+      exerciseId: exercise.id,
+      level: setup.level,
+      tuning: tuningId,
+      duration: setup.duration,
+      options: setup.options,
+    });
+    nav.replace(`${exercisePath(exercise)}/jugar`);
+  };
 
   const draw = () => {
-    const { level, tuning, allowed } = exerciseSetup(exercise);
+    const setup = exerciseSetup(exercise);
+    const { level, tuning, allowed, duration, options } = setup;
+    const onStart = () => {
+      if (settings.get('askTuning') && allowed.length > 1) {
+        openTuningPicker({
+          allowed,
+          value: tuning,
+          always: true,
+          title: 'Afinación para esta ronda',
+          onSelect: (id) => { saveSetup(exercise, { tuning: id }); start(setup, id); },
+        });
+      } else {
+        start(setup);
+      }
+    };
     renderScreen(view, {
       title: exercise.title,
       nav,
-      help: 'setup',
+      help: playable ? () => openExerciseHelp(exercise) : 'setup',
       className: 'setup',
       content: [
         h('p', { class: 'lead' }, exercise.description),
@@ -56,9 +92,22 @@ export function renderSetup(view, params, nav) {
             }),
           })),
         ],
+        playable && exercise.duration && [
+          h('h2', { class: 'section-title' }, 'Duración'),
+          segmented({
+            label: 'Duración',
+            value: duration,
+            options: durationOptions({ unlimited: exercise.duration.unlimited }).map((o) => ({ value: o.value, label: o.label })),
+            onChange: (v) => { saveSetup(exercise, { duration: v }); draw(); },
+          }),
+        ],
+        playable && (exercise.options ?? []).map((opt) => opt.type === 'metronome' && metronomeOption(opt, options[opt.id], (v) => {
+          saveSetup(exercise, { options: { ...options, [opt.id]: v } });
+          draw();
+        })),
         h('div', { class: 'setup__start' },
-          button({ label: 'Empezar', variant: 'primary', block: true, disabled: true }),
-          h('p', { class: 'setup__note' }, `Este ejercicio llega en la Fase ${exercise.phase}.`),
+          button({ label: 'Empezar', variant: 'primary', block: true, disabled: !playable, onClick: playable ? onStart : undefined }),
+          !playable && h('p', { class: 'setup__note' }, `Este ejercicio llega en la Fase ${exercise.phase}.`),
         ),
       ],
     });

@@ -1,14 +1,26 @@
-// Panel que sube desde abajo (BUILD_PLAN 6.8): ayuda "?" de cada pantalla, ficha corta de
-// un concepto y confirmaciones. Solo hay un panel abierto a la vez.
-// La Fase 1B añade aquí "Cómo se juega", "La teoría detrás" y "¿Por qué?" de los ejercicios.
+// Panel que sube desde abajo (BUILD_PLAN 6.8): ayuda "?" de cada pantalla y de cada ejercicio
+// ("Cómo se juega" y "La teoría detrás"), "¿Por qué?" de un fallo, ficha corta de un
+// concepto y confirmaciones. Solo hay un panel abierto a la vez.
+// Los ejercicios se pausan mientras hay un panel abierto (onSheetChange).
 
 import { h, button, iconButton } from './components.js';
 import { richText, Term } from './term.js';
 import { getConcept, getBlock, SCREEN_HELP } from '../data/concepts.js';
+import { ConceptDiagram } from './concept-diagram.js';
 import { getTuning } from '../data/tunings.js';
 import { playSequence } from '../audio/synth.js';
 
 let current = null; // { close }
+const sheetListeners = new Set();
+
+/** fn(abierto) se llama cada vez que se abre o se cierra un panel. Devuelve cómo dejar de escuchar. */
+export function onSheetChange(fn) {
+  sheetListeners.add(fn);
+  return () => sheetListeners.delete(fn);
+}
+const notifySheet = (open) => sheetListeners.forEach((fn) => fn(open));
+
+export const isSheetOpen = () => Boolean(current);
 
 /**
  * Abre un panel. content: nodos del cuerpo. Devuelve la función que lo cierra.
@@ -42,6 +54,7 @@ export function openSheet({ title, content, onClose, labelledBy = 'sheet-title' 
     if (current?.close === close) current = null;
     if (restoreFocus && previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
     onClose?.();
+    if (!current) notifySheet(false);
   }
 
   document.body.append(backdrop);
@@ -51,6 +64,7 @@ export function openSheet({ title, content, onClose, labelledBy = 'sheet-title' 
   requestAnimationFrame(() => backdrop.classList.add('is-open'));
   titleEl.focus({ preventScroll: true });
   current = { close, setStop: (fn) => { stopSound = fn; } };
+  notifySheet(true);
   return close;
 }
 
@@ -94,6 +108,7 @@ export function openConceptSheet(id) {
     title: concept.title,
     content: [
       h('p', { class: 'concept-meta' }, getBlock(concept.block).title),
+      ConceptDiagram(concept, { compact: true }),
       richText(concept.summary, { className: 'concept-summary' }),
       concept.sound && h('div', { class: 'btn-row' }, listenButton(concept.sound)),
       relatedTerms(concept.related),
@@ -113,6 +128,49 @@ export function openScreenHelp(key) {
       help.concepts?.length && h('div', { class: 'related' },
         h('h3', { class: 'related__title' }, 'Conceptos'),
         h('div', { class: 'related__list' }, help.concepts.map((cid) => Term(cid, getConcept(cid).title))),
+      ),
+    ],
+  });
+}
+
+/** Tarjeta de un concepto dentro de la ayuda de un ejercicio: esquema, texto y enlace. */
+function conceptCard(id) {
+  const concept = getConcept(id);
+  return h('section', { class: 'concept-card' },
+    h('h4', { class: 'concept-card__title' }, concept.title),
+    ConceptDiagram(concept, { compact: true }),
+    richText(concept.summary, { className: 'concept-card__text' }),
+    h('p', { class: 'sheet__link' }, h('a', { href: `#/glosario/concepto/${concept.id}` }, 'Abrir en el glosario')),
+  );
+}
+
+/** Ayuda "?" de un ejercicio (6.8): "Cómo se juega" y "La teoría detrás". */
+export function openExerciseHelp(exercise) {
+  openSheet({
+    title: exercise.title,
+    content: [
+      h('h3', { class: 'sheet__section' }, 'Cómo se juega'),
+      richText(exercise.howTo),
+      h('h3', { class: 'sheet__section' }, 'La teoría detrás'),
+      exercise.concepts.map(conceptCard),
+    ],
+  });
+}
+
+/**
+ * "¿Por qué?" de un fallo (6.8): la corrección, la explicación generada por reglas,
+ * un esquema opcional (`figure`) y los conceptos del ejercicio.
+ */
+export function openWhySheet({ feedback, why, figure, concepts = [] }) {
+  openSheet({
+    title: '¿Por qué?',
+    content: [
+      feedback && richText(feedback, { className: 'why__feedback' }),
+      figure,
+      richText(why, { className: 'why__text' }),
+      concepts.length > 0 && h('div', { class: 'related' },
+        h('h3', { class: 'related__title' }, 'Conceptos'),
+        h('div', { class: 'related__list' }, concepts.map((id) => Term(id, getConcept(id).title))),
       ),
     ],
   });

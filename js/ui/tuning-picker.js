@@ -17,8 +17,11 @@ export function tuningRow({ tuning, onClick, label = 'Afinación' }) {
   );
 }
 
-/** Panel con las afinaciones de `allowed`, agrupadas. onSelect(id) al elegir una. */
-export function openTuningPicker({ allowed, value, onSelect, title = 'Afinación' }) {
+/**
+ * Panel con las afinaciones de `allowed`, agrupadas. onSelect(id) al elegir una.
+ * always: llamar a onSelect también si se elige la que ya estaba (p. ej. para empezar la ronda).
+ */
+export function openTuningPicker({ allowed, value, onSelect, title = 'Afinación', always = false }) {
   const groups = TUNING_GROUPS
     .map((g) => ({ group: g, items: allowed.filter((t) => t.group === g.id) }))
     .filter((g) => g.items.length);
@@ -32,7 +35,7 @@ export function openTuningPicker({ allowed, value, onSelect, title = 'Afinación
           type: 'button',
           class: ['row', 'row--option', selected && 'is-selected'].filter(Boolean).join(' '),
           'aria-pressed': String(selected),
-          onClick: () => { closeSheet(); if (!selected) onSelect(t.id); },
+          onClick: () => { closeSheet(); if (always || !selected) onSelect(t.id); },
         },
         h('span', { class: 'row__text' },
           h('span', { class: 'row__title' }, TuningName(t)),

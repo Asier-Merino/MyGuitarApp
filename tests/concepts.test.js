@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CONCEPTS, BLOCKS, SCREEN_HELP, getConcept, blockConcepts, nonEmptyBlocks,
+  CONCEPTS, BLOCKS, SCREEN_HELP, EXERCISE_TEXTS, UI_TEXTS, getConcept, blockConcepts, nonEmptyBlocks,
 } from '../js/data/concepts.js';
 import { getTuning, TUNINGS } from '../js/data/tunings.js';
 import { routeExists, resolvePath } from '../js/routes.js';
@@ -10,6 +10,9 @@ import { parseRichText, searchConcepts, normalizeText, plainText, parseNoteToken
 import { LETTER_PC, LETTERS, spellingPc } from '../js/core/notation.js';
 import { midiAt, pcAt, STRINGS } from '../js/core/fretboard-model.js';
 import { mod12 } from '../js/core/theory.js';
+import { fretboardDiagramPoints, naturalSemitonePcs, DIAGRAM_TYPES } from '../js/core/diagrams.js';
+import { secondsPerBeat } from '../js/core/rhythm.js';
+import { fillTemplate } from '../js/core/glossary.js';
 
 const TEXT_FIELDS = ['short', 'summary'];
 const allTexts = () => [
@@ -146,7 +149,8 @@ test('Drop D: "de Mi a Re", un tono, solo la 6ª', () => {
 test('bloques: conteo y bloques con conceptos', () => {
   assert.ok(blockConcepts('notes').length >= 8);
   assert.ok(blockConcepts('tunings').length >= 4);
-  assert.deepEqual(nonEmptyBlocks().map((b) => b.id), ['notes', 'tunings']);
+  assert.ok(blockConcepts('rhythm-technique').some((c) => c.id === 'metronome'));
+  assert.deepEqual(nonEmptyBlocks().map((b) => b.id), ['notes', 'tunings', 'rhythm-technique']);
 });
 
 /* ----- Buscador ----- */
@@ -211,6 +215,11 @@ test('rutas: existen las pantallas de la Fase 1A y su pantalla madre', () => {
     '/perfil': ['/'],
     '/perfil/acerca-de': ['/perfil'],
     '/ajustes': ['/'],
+    '/metronomo': ['/'],
+    '/dev': ['/ajustes'],
+    '/dev/que-nota': ['/dev'],
+    '/dev/que-nota/jugar': ['/dev/que-nota'],
+    '/dev/seis-cuerdas/jugar': ['/dev/seis-cuerdas'],
   };
   for (const [path, [parent]] of Object.entries(cases)) {
     const r = resolvePath(path);
@@ -219,7 +228,9 @@ test('rutas: existen las pantallas de la Fase 1A y su pantalla madre', () => {
     if (r.parent) assert.ok(routeExists(r.parent), `madre de ${path}`);
   }
   for (const bad of ['/teoria/calentamiento', '/teoria/oido/aprender', '/glosario/caged', '/glosario/concepto/nada',
-    '/otra', '/teoria/notas/nada', '/practica/notas/que-nota']) {
+    '/otra', '/teoria/notas/nada', '/practica/notas/que-nota', '/dev/nada', '/dev/nada/jugar',
+    // Ejercicios anunciados pero aún sin construir: se preparan, pero no se juegan.
+    '/teoria/notas/que-nota/jugar']) {
     assert.equal(resolvePath(bad), null, bad);
   }
 });
@@ -232,4 +243,102 @@ test('los alias que se muestran no llevan nombres de nota escritos a mano', () =
   assert.ok(!displayAliases(getConcept('lowered-tuning')).includes('mib'));
   assert.ok(!displayAliases(getConcept('standard-tuning')).includes('eadgbe'));
   assert.ok(!displayAliases(getConcept('octave')).includes('octava'));
+});
+
+/* ----- Esquemas (BUILD_PLAN 6.8, Fase 1B) ----- */
+
+test('todo concepto tiene esquema (diagram) o el motivo de no tenerlo (noDiagramReason), no los dos', () => {
+  for (const c of CONCEPTS) {
+    assert.ok(Boolean(c.diagram) !== Boolean(c.noDiagramReason), `${c.id}: diagram o noDiagramReason`);
+    if (c.diagram) assert.ok(DIAGRAM_TYPES.includes(c.diagram.type), `${c.id}: tipo ${c.diagram.type}`);
+    if (c.noDiagramReason) assert.ok(c.noDiagramReason.length > 20, c.id);
+  }
+  assert.ok(getConcept('note-names').noDiagramReason);
+});
+
+test('los esquemas de mástil se calculan sin errores y sus puntos caen dentro del rango', () => {
+  for (const c of CONCEPTS.filter((x) => x.diagram?.type === 'fretboard')) {
+    const { points, tuning } = fretboardDiagramPoints(c);
+    assert.ok(points.length > 0, c.id);
+    for (const p of points) {
+      assert.ok(p.fret >= c.diagram.fromFret && p.fret <= c.diagram.toFret, `${c.id}: traste ${p.fret}`);
+      assert.equal(p.midi, tuning[p.string] + p.fret, c.id);
+    }
+    if (c.diagram.caption) {
+      const plain = plainText(c.diagram.caption);
+      assert.match(plain, /[.!?]$/, `${c.id}: leyenda sin punto final`);
+    }
+  }
+});
+
+test('lo que muestran los esquemas coincide con lo que dicen las fichas', () => {
+  const pts = (id) => fretboardDiagramPoints(getConcept(id)).points;
+  // Notas naturales: solo naturales, en las 6 cuerdas.
+  assert.ok(pts('natural-notes').every((p) => Object.values(LETTER_PC).includes(p.pc)));
+  assert.equal(new Set(pts('natural-notes').map((p) => p.string)).size, 6);
+  // Los esquemas que salen del sonido del concepto marcan exactamente esas notas.
+  for (const id of ['sharp-flat', 'semitone-tone', 'octave', 'enharmonic']) {
+    assert.deepEqual(pts(id).map((p) => p.midi), getConcept(id).sound.midi, id);
+  }
+  assert.deepEqual(pts('sharp-flat').map((p) => p.fret), [3, 4]);
+  assert.deepEqual(pts('octave').map((p) => p.fret), [0, 12]);
+  // Enarmónicos: el punto es Fa♯/Sol♭, como dice la leyenda.
+  assert.equal(pts('enharmonic')[0].pc, spellingPc(parseNoteToken('F#')));
+  assert.equal(pts('enharmonic')[0].pc, spellingPc(parseNoteToken('Gb')));
+  // Semitonos naturales: en la 5ª cuerda, Si–Do y Mi–Fa en trastes vecinos, resaltados.
+  const s5 = pts('natural-semitones');
+  const fretOf = (letter) => s5.find((p) => p.pc === LETTER_PC[letter]).fret;
+  assert.equal(fretOf('C') - fretOf('B'), 1);
+  assert.equal(fretOf('F') - fretOf('E'), 1);
+  assert.deepEqual(s5.filter((p) => p.color === 'amber').map((p) => p.pc).sort((a, b) => a - b), [0, 4, 5, 11]);
+  assert.deepEqual(naturalSemitonePcs(), [0, 4, 5, 11]);
+  // Drop D: solo la 6ª resaltada. Sol abierto: R, 3 y 5 de Sol.
+  assert.deepEqual(pts('drop-tuning').filter((p) => p.color === 'amber').map((p) => p.string), [6]);
+  const colors = new Set(pts('open-tuning').map((p) => p.color));
+  assert.deepEqual([...colors].sort(), ['fifth', 'root', 'third']);
+  // Afinación bajada: las cuerdas al aire de "Medio tono abajo".
+  assert.deepEqual(pts('lowered-tuning').map((p) => p.midi), [6, 5, 4, 3, 2, 1].map((s) => getTuning('half-down').midi[s]));
+});
+
+test('metrónomo: esquema de pulsos y lo que dice la ficha', () => {
+  const m = getConcept('metronome');
+  assert.equal(m.diagram.type, 'beats');
+  assert.ok(m.diagram.beatsPerBar >= 2 && m.diagram.beatsPerBar <= 7);
+  assert.match(m.summary, /a 60 BPM suena un clic por segundo, y a 120, dos/);
+  assert.equal(secondsPerBeat(60), 1);
+  assert.equal(secondsPerBeat(120), 0.5);
+});
+
+test('textos de los ejercicios: marcado válido y sin notas escritas a mano', () => {
+  const handWritten = /\b(Do|Re|Mi|Fa|Sol)\b|\b(La|Si)(♯|♭|#)|(?<![\wáéíóúñ%])[A-G](♯|♭|#)?(?![\wáéíóúñ%])/;
+  for (const [id, texts] of Object.entries(EXERCISE_TEXTS)) {
+    for (const [k, text] of Object.entries(texts)) {
+      const filled = text.replace(/%\w+%/g, '1');
+      const parts = parseRichText(filled);
+      for (const p of parts) if (p.type === 'term') assert.ok(getConcept(p.id), `${id}.${k}: [[${p.id}]]`);
+      const plain = parts.filter((p) => ['text', 'em', 'term'].includes(p.type)).map((p) => p.text).join(' ');
+      assert.ok(!handWritten.test(plain), `${id}.${k}: "${plain.match(handWritten)?.[0]}"`);
+    }
+  }
+});
+
+test('plantillas: {{pc:N}} y %variables%', () => {
+  assert.deepEqual(parseRichText('{{pc:6}}'), [{ type: 'note', spelling: null, pc: 6 }]);
+  assert.throws(() => parseRichText('{{pc:12}}'));
+  assert.equal(fillTemplate('traste %fret% de la %s%ª', { fret: 0, s: 5 }), 'traste 0 de la 5ª');
+  assert.throws(() => fillTemplate('%nada%', {}));
+});
+
+test('ningún esquema informa solo con color: lo resaltado lleva leyenda escrita', () => {
+  for (const c of CONCEPTS.filter((x) => x.diagram?.highlight)) assert.ok(c.diagram.caption, `${c.id}: falta la leyenda`);
+  // Los colores de función llevan la leyenda automática (FunctionLegend) con su nombre.
+  for (const c of CONCEPTS.filter((x) => x.diagram?.colorBy === 'function')) {
+    for (const p of fretboardDiagramPoints(c).points) assert.ok(UI_TEXTS.functionNames[p.color], `${c.id}: ${p.color}`);
+  }
+});
+
+test('cada ficha enlaza a su lección o pantalla con un texto adecuado', () => {
+  for (const c of CONCEPTS.filter((x) => x.lesson)) {
+    assert.ok(UI_TEXTS.lessonLinks[resolvePath(c.lesson).name], `${c.id}: ${c.lesson}`);
+  }
 });

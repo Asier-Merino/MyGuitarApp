@@ -4,6 +4,7 @@
 import { compileRoute, matchRoute } from './router.js';
 import { SECTION_IDS, SECTION_MODULES, getModule, getPlannedExercise } from './data/modules.js';
 import { getBlock, getConcept, blockConcepts } from './data/concepts.js';
+import { findExercise, isPlayable } from './engine/exercise-registry.js';
 
 const isSection = (s) => SECTION_IDS.includes(s);
 const inSection = (section, slug) => isSection(section) && SECTION_MODULES[section].includes(slug);
@@ -28,6 +29,23 @@ const ROUTES = [
   { name: 'profile', path: '/perfil', parent: () => '/' },
   { name: 'about', path: '/perfil/acerca-de', parent: () => '/perfil' },
   { name: 'settings', path: '/ajustes', parent: () => '/' },
+  { name: 'metronome', path: '/metronomo', parent: () => '/' },
+  // Página de prueba interna (solo se enlaza desde Ajustes) y sus ejercicios de prueba.
+  { name: 'dev', path: '/dev', parent: () => '/ajustes' },
+  {
+    name: 'setup',
+    path: '/dev/:exercise',
+    fixed: { module: 'dev' },
+    valid: (p) => Boolean(findExercise({ module: 'dev', exercise: p.exercise })),
+    parent: () => '/dev',
+  },
+  {
+    name: 'play',
+    path: '/dev/:exercise/jugar',
+    fixed: { module: 'dev' },
+    valid: (p) => isPlayable(findExercise({ module: 'dev', exercise: p.exercise })),
+    parent: (p) => `/dev/${p.exercise}`,
+  },
   { name: 'section', path: '/:section', valid: (p) => isSection(p.section), parent: () => '/' },
   { name: 'mixed', path: '/:section/mezclada', valid: (p) => isSection(p.section), parent: (p) => `/${p.section}` },
   {
@@ -54,6 +72,12 @@ const ROUTES = [
     valid: (p) => Boolean(getPlannedExercise(p.section, p.module, p.exercise)),
     parent: (p) => `/${p.section}/${p.module}`,
   },
+  {
+    name: 'play',
+    path: '/:section/:module/:exercise/jugar',
+    valid: (p) => isPlayable(findExercise(p)),
+    parent: (p) => `/${p.section}/${p.module}/${p.exercise}`,
+  },
 ].map((r) => ({ ...r, ...compileRoute(r.path) }));
 
 export const ROUTE_NAMES = Object.freeze(ROUTES.map((r) => r.name));
@@ -67,7 +91,7 @@ export function resolvePath(path) {
   for (const route of ROUTES) {
     const match = matchRoute([route], clean);
     if (!match) continue;
-    const { params } = match;
+    const params = { ...match.params, ...route.fixed };
     if (route.valid && !route.valid(params)) continue;
     return { name: route.name, params, parent: route.parent ? route.parent(params) : null };
   }

@@ -1,12 +1,13 @@
-// Perfil provisional (BUILD_PLAN 6.6.13): días practicados y tiempo total, calculados del
-// registro de sesiones (vacío hasta que la Fase 1B empiece a registrar rondas), y "Acerca de".
+// Perfil provisional (BUILD_PLAN 6.6.13): racha, días practicados y tiempo total, calculados
+// del registro de sesiones, y "Acerca de". El Perfil completo llega en la Fase 9.
 
 import { h, list, listRow, statTile } from '../../ui/components.js';
 import { logo } from '../../ui/icons.js';
 import { renderScreen } from '../../screens/screen.js';
 import { store } from '../../state.js';
 import { APP_NAME, APP_VERSION, APP_AUTHOR } from '../../version.js';
-import { practiceTotals, formatDuration } from '../../core/history.js';
+import { practiceTotals, formatDuration, currentStreak } from '../../core/history.js';
+import { streakText } from '../../engine/quiz-runner.js';
 
 export function renderProfile(view, params, nav) {
   const { days, seconds } = practiceTotals(store.data.history);
@@ -15,7 +16,8 @@ export function renderProfile(view, params, nav) {
     nav,
     help: 'profile',
     content: [
-      h('div', { class: 'stats' },
+      h('div', { class: 'stats stats--three' },
+        statTile('Racha', days ? streakText(currentStreak(store.data.history)) : '—'),
         statTile('Días practicados', days ? String(days) : '—'),
         statTile('Tiempo total', seconds ? formatDuration(seconds) : '—'),
       ),

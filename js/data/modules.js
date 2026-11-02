@@ -24,7 +24,7 @@ export const MODULES = Object.freeze([
   m('oido', { title: 'Oído', icon: 'ear', phase: 4 }),
   m('tonalidad', { title: 'Escala y tonalidad', icon: 'scale', phase: 5, lesson: true, reference: 'Escala y acordes de cada tonalidad' }),
   m('blues', { title: 'Blues y slide', icon: 'blues', phase: 6, lesson: true, reference: 'Cajas y 12 compases' }),
-  m('caged', { title: 'CAGED', icon: 'caged', phase: 7, lesson: true, reference: 'Explorador de las 5 formas' }),
+  m('caged', { title: 'CAGED', icon: 'caged', phase: 8, lesson: true, reference: 'Explorador de las 5 formas' }),
   m('calentamiento', { title: 'Calentamiento', icon: 'warmup', phase: 3 }),
 ]);
 
@@ -35,7 +35,7 @@ export const SECTION_MODULES = Object.freeze({
 });
 
 /** Fase en la que llega la sesión mezclada. */
-export const MIXED_SESSION_PHASE = 8;
+export const MIXED_SESSION_PHASE = 9;
 
 /**
  * Ejercicios previstos (BUILD_PLAN 8). Solo nombre y frase de la preparación: el ejercicio

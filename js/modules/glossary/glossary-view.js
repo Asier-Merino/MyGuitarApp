@@ -4,8 +4,9 @@ import { h, render, list, listRow } from '../../ui/components.js';
 import { icon } from '../../ui/icons.js';
 import { richText } from '../../ui/term.js';
 import { listenButton, relatedTerms } from '../../ui/help-sheet.js';
+import { ConceptDiagram } from '../../ui/concept-diagram.js';
 import { renderScreen } from '../../screens/screen.js';
-import { CONCEPTS, getConcept, getBlock, blockConcepts, nonEmptyBlocks } from '../../data/concepts.js';
+import { CONCEPTS, getConcept, getBlock, blockConcepts, nonEmptyBlocks, UI_TEXTS } from '../../data/concepts.js';
 import { searchConcepts, displayAliases } from '../../core/glossary.js';
 import { resolvePath } from '../../routes.js';
 
@@ -76,7 +77,7 @@ export function renderConcept(view, { id }, nav) {
   const c = getConcept(id);
   const lessonRoute = c.lesson ? resolvePath(c.lesson) : null;
   const aliases = displayAliases(c);
-  const lessonLabel = lessonRoute?.name === 'lesson' ? 'Ver la lección completa' : 'Ir a Afinaciones';
+  const lessonLabel = UI_TEXTS.lessonLinks[lessonRoute?.name] ?? UI_TEXTS.lessonLinks.lesson;
   renderScreen(view, {
     title: c.title,
     nav,
@@ -87,6 +88,7 @@ export function renderConcept(view, { id }, nav) {
         h('span', {}, getBlock(c.block).title),
         aliases.length > 0 && h('span', { class: 'concept-meta__aliases' }, ` · También: ${aliases.join(', ')}`),
       ),
+      ConceptDiagram(c),
       richText(c.summary, { className: 'concept-summary' }),
       c.sound && h('div', { class: 'btn-row' }, listenButton(c.sound)),
       relatedTerms(c.related),

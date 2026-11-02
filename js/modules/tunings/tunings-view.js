@@ -93,7 +93,7 @@ export function renderTunings(view, params, nav) {
       )),
     ],
   });
+  // Al salir de la pantalla, deja de sonar.
+  return stopAll;
 }
 
-/** Al salir de la pantalla, deja de sonar. */
-export const leaveTunings = stopAll;

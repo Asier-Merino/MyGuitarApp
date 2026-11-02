@@ -1,4 +1,4 @@
-// Arranque: router, pantallas, tema y service worker.
+// Arranque: router, pantallas, tema, desbloqueo del audio y service worker.
 
 import { createRouter } from './router.js';
 import { resolvePath } from './routes.js';
@@ -7,14 +7,19 @@ import { h, render } from './ui/components.js';
 import { closeSheet } from './ui/help-sheet.js';
 import { registerServiceWorker, applyUpdate } from './pwa.js';
 import { APP_NAME } from './version.js';
-import { SECTIONS, getModule, getPlannedExercise, moduleTitle, MIXED_SESSION_PHASE } from './data/modules.js';
+import { SECTIONS, getModule, moduleTitle, MIXED_SESSION_PHASE } from './data/modules.js';
+import { findExercise } from './engine/exercise-registry.js';
 import { getConcept, getBlock } from './data/concepts.js';
 import { renderHome } from './screens/home.js';
 import { renderSection } from './screens/section.js';
 import { renderModule } from './screens/module.js';
 import { renderSetup } from './screens/setup.js';
 import { renderSoon } from './screens/soon.js';
-import { renderTunings, leaveTunings } from './modules/tunings/tunings-view.js';
+import { renderTunings } from './modules/tunings/tunings-view.js';
+import { renderMetronome } from './modules/tools/metronome-view.js';
+import { renderDev } from './modules/dev/dev-view.js';
+import { renderPlay } from './screens/play.js';
+import { unlockAudio } from './audio/context.js';
 import { renderGlossary, renderGlossaryBlock, renderConcept } from './modules/glossary/glossary-view.js';
 import { renderProfile, renderAbout } from './modules/profile/profile-view.js';
 import { renderSettings } from './settings-view.js';
@@ -30,7 +35,9 @@ function pageTitle({ name, params }) {
     case 'module': return moduleTitle(getModule(params.module), params.section);
     case 'lesson': return `Aprender · ${getModule(params.module).title}`;
     case 'reference': return `Consulta · ${getModule(params.module).title}`;
-    case 'setup': return getPlannedExercise(params.section, params.module, params.exercise).title;
+    case 'setup':
+    case 'play': return findExercise(params).title;
+    case 'dev': return 'Página de prueba';
     case 'tunings': return 'Afinaciones';
     case 'glossary': return 'Glosario';
     case 'glossaryBlock': return getBlock(params.block).title;
@@ -38,6 +45,7 @@ function pageTitle({ name, params }) {
     case 'profile': return 'Perfil';
     case 'about': return 'Acerca de';
     case 'settings': return 'Ajustes';
+    case 'metronome': return 'Metrónomo';
     default: return null;
   }
 }
@@ -57,6 +65,9 @@ const VIEWS = {
   profile: (p, nav) => renderProfile(view, p, nav),
   about: (p, nav) => renderAbout(view, p, nav),
   settings: (p, nav) => renderSettings(view, p, nav),
+  metronome: (p, nav) => renderMetronome(view, p, nav),
+  dev: (p, nav) => renderDev(view, p, nav),
+  play: (p, nav) => renderPlay(view, p, nav),
 };
 
 function renderNotFound(nav) {
@@ -68,14 +79,19 @@ function renderNotFound(nav) {
 
 let lastPath = null;
 let lastName = null;
+// Una pantalla puede devolver una función que se llama al dejarla (parar el sonido, guardar…).
+let cleanup = null;
 
 const router = createRouter({
   onRoute(path) {
     const match = resolvePath(path);
-    if (lastName === 'tunings' && match?.name !== 'tunings') leaveTunings();
+    const leaving = cleanup;
+    cleanup = null;
+    leaving?.();
     const nav = {
       back: () => router.back(match?.parent ?? '/'),
       home: () => router.replace('/'),
+      replace: (to) => router.replace(to),
     };
     if (path !== lastPath) closeSheet();
     if (!match) {
@@ -84,7 +100,8 @@ const router = createRouter({
     } else {
       const title = pageTitle(match);
       document.title = title ? `${title} · ${APP_NAME}` : APP_NAME;
-      VIEWS[match.name](match.params, nav);
+      const result = VIEWS[match.name](match.params, nav);
+      cleanup = typeof result === 'function' ? result : null;
     }
     if (path !== lastPath) {
       window.scrollTo(0, 0);
@@ -108,6 +125,8 @@ window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change',
 
 settings.subscribe(() => {
   applyTheme();
+  // Durante un ejercicio no se vuelve a pintar (perdería la ronda): p. ej. al silenciar la voz.
+  if (lastName === 'play') return;
   // Volver a pintar conservando el scroll (p. ej. al cambiar la notación).
   const y = window.scrollY;
   router.refresh();
@@ -118,6 +137,11 @@ settings.subscribe(() => {
 
 applyTheme();
 router.start();
+
+// iOS solo deja sonar audio tras un gesto: el primer toque en un botón crea el contexto de audio.
+document.addEventListener('click', (e) => {
+  if (e.target.closest?.('button, a, [role="button"], input')) unlockAudio();
+}, { capture: true });
 
 // Pedir al navegador que no borre los datos (BUILD_PLAN 6.9). Si no se puede, no pasa nada.
 try {

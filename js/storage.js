@@ -1,7 +1,7 @@
 // Persistencia en localStorage con esquema versionado. Todos los accesos van en try/catch:
 // si localStorage no está disponible, se usa memoria (los datos no se conservan).
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const STORAGE_KEY = 'myguitarapp';
 const EXPORT_APP_ID = 'myguitarapp';
 
@@ -9,7 +9,8 @@ const EXPORT_APP_ID = 'myguitarapp';
  * Todo lo que guarda la app (BUILD_PLAN 6.9). La exportación lo incluye todo.
  * settings: ajustes · stats: estadísticas por clave · history: registro de sesiones
  * records: récords · lessons: lecciones completadas · progressions: "Mis progresiones"
- * setups: último nivel y afinación de cada ejercicio
+ * setups: último nivel, afinación, duración y opciones de cada ejercicio
+ * tools: ajustes de las herramientas (Metrónomo: tempo, compás y subdivisión)
  */
 export function defaultData() {
   return {
@@ -21,6 +22,7 @@ export function defaultData() {
     lessons: {},
     progressions: [],
     setups: {},
+    tools: {},
   };
 }
 
@@ -32,6 +34,8 @@ const MIGRATIONS = {
   0: (d) => ({ settings: {}, stats: {}, history: [], ...d, schemaVersion: 1 }),
   // 1 → 2 (Fase 1A): récords, lecciones, progresiones y preparación de ejercicios.
   1: (d) => ({ records: {}, lessons: {}, progressions: [], setups: {}, ...d, schemaVersion: 2 }),
+  // 2 → 3 (Fase 1B): ajustes de las herramientas (Metrónomo).
+  2: (d) => ({ tools: {}, ...d, schemaVersion: 3 }),
 };
 
 function normalize(d) {
@@ -44,6 +48,7 @@ function normalize(d) {
     lessons: isPlainObject(d.lessons) ? d.lessons : {},
     progressions: Array.isArray(d.progressions) ? d.progressions : [],
     setups: isPlainObject(d.setups) ? d.setups : {},
+    tools: isPlainObject(d.tools) ? d.tools : {},
   };
 }
 
@@ -158,7 +163,8 @@ export function createStore({ backend, key = STORAGE_KEY } = {}) {
 
     /**
      * Borra el progreso: estadísticas, historial, récords y lecciones completadas.
-     * Conserva los ajustes, las progresiones guardadas y el último nivel de cada ejercicio.
+     * Conserva los ajustes, las progresiones guardadas, la preparación de cada ejercicio
+     * y los ajustes de las herramientas.
      */
     clearProgress() {
       data.stats = {};

@@ -4,6 +4,7 @@
 import { spell, formatSpelling, spokenName } from '../core/notation.js';
 import { settings } from '../state.js';
 import { h } from './components.js';
+import { CHORD_SUFFIX, CHORD_SPOKEN } from '../data/chords.js';
 
 /**
  * Textos de una nota según los ajustes (o las opciones dadas).
@@ -18,6 +19,22 @@ export function noteNames(pc, { spelling, notation, accidentals } = {}) {
     secondary: formatSpelling(sp, other),
     spoken: spokenName(sp, main),
   };
+}
+
+/**
+ * Nombre de un acorde con doble notación: **Lam** Am. El sufijo (m, 7) se añade a las dos,
+ * y la variante (mini, cejilla) va detrás en pequeño. chord: { root, quality, variant? }
+ */
+export function ChordLabel(chord, opts = {}) {
+  const suffix = CHORD_SUFFIX[chord.quality] ?? '';
+  const { primary, secondary, spoken } = noteNames(chord.root, opts);
+  const lang = (opts.notation ?? settings.get('notation')) === 'en' ? 'en' : 'es';
+  return h('span', { class: ['note-label', 'chord-label', opts.className].filter(Boolean).join(' ') },
+    h('span', { class: 'nl-main', 'aria-hidden': 'true' }, primary + suffix),
+    h('span', { class: 'nl-alt', 'aria-hidden': 'true' }, secondary + suffix),
+    chord.variant && h('span', { class: 'chord-label__variant', 'aria-hidden': 'true' }, chord.variant),
+    h('span', { class: 'sr-only' }, `${spoken}${CHORD_SPOKEN[lang][chord.quality] ?? ''}${chord.variant ? ` ${chord.variant}` : ''}`),
+  );
 }
 
 /** Devuelve un <span class="note-label">. opts: { spelling, notation, accidentals, className } */

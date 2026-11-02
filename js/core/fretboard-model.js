@@ -35,6 +35,18 @@ export function pcAt(string, fret, tuning = STANDARD_TUNING) {
   return mod12(midiAt(string, fret, tuning));
 }
 
+/**
+ * MIDI de una forma de acorde: frets de la cuerda 6 a la 1 (null = no se toca).
+ * Devuelve las notas que suenan, de la más grave a la más aguda: [{ string, fret, midi }].
+ */
+export function shapeNotes(frets, tuning = STANDARD_TUNING) {
+  if (!Array.isArray(frets) || frets.length !== 6) throw new RangeError('Una forma tiene 6 cuerdas');
+  return frets
+    .map((fret, i) => ({ string: 6 - i, fret }))
+    .filter((n) => n.fret !== null && n.fret !== undefined)
+    .map((n) => ({ ...n, midi: midiAt(n.string, n.fret, tuning) }));
+}
+
 /** Todas las posiciones de un pitch class en el rango dado, de la cuerda 6 a la 1. */
 export function positionsOf(pc, {
   fromFret = FRET_RANGE.from,

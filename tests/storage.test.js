@@ -23,7 +23,7 @@ test('almacén nuevo con datos por defecto', () => {
   assert.equal(store.persistent, true);
   assert.deepEqual(store.data, {
     schemaVersion: SCHEMA_VERSION, settings: {}, stats: {}, history: [],
-    records: {}, lessons: {}, progressions: [], setups: {},
+    records: {}, lessons: {}, progressions: [], setups: {}, tools: {},
   });
 });
 
@@ -107,10 +107,23 @@ test('borrar progreso conserva los ajustes, las progresiones y la preparación',
   assert.equal(store.data.setups.x.level, 'avanzado');
 });
 
+test('migración 2 → 3 añade los ajustes de las herramientas y conserva el resto', () => {
+  const v2 = { schemaVersion: 2, settings: { notation: 'en' }, history: [{ t: 1 }], setups: { s: { level: 'avanzado' } } };
+  const m = migrate(v2);
+  assert.equal(m.schemaVersion, 3);
+  assert.deepEqual(m.tools, {});
+  assert.deepEqual(m.setups, v2.setups);
+  assert.deepEqual(m.history, v2.history);
+  // clearProgress conserva los ajustes de las herramientas.
+  const store = createStore({ backend: fakeBackend({ [STORAGE_KEY]: JSON.stringify({ ...v2, tools: { metronome: { bpm: 90 } } }) }) });
+  store.clearProgress();
+  assert.equal(store.data.tools.metronome.bpm, 90);
+});
+
 test('migración 1 → 2 conserva los datos de la Fase 0', () => {
   const v1 = { schemaVersion: 1, settings: { theme: 'system', notation: 'en' }, stats: { k: 1 }, history: [{ t: 1 }] };
   const m = migrate(v1);
-  assert.equal(m.schemaVersion, 2);
+  assert.equal(m.schemaVersion, SCHEMA_VERSION);
   assert.deepEqual(m.settings, v1.settings);
   assert.deepEqual(m.stats, v1.stats);
   assert.deepEqual(m.history, v1.history);
@@ -124,7 +137,7 @@ test('la exportación incluye todos los datos', () => {
   const a = createStore({ backend: fakeBackend() });
   a.update((d) => { d.records.r = 1; d.lessons.notas = true; d.progressions.push({ name: 'P' }); d.setups.s = {}; });
   const parsed = JSON.parse(a.exportJSON());
-  for (const k of ['settings', 'stats', 'history', 'records', 'lessons', 'progressions', 'setups']) assert.ok(k in parsed, k);
+  for (const k of ['settings', 'stats', 'history', 'records', 'lessons', 'progressions', 'setups', 'tools']) assert.ok(k in parsed, k);
 });
 
 test('ajustes: valores por defecto y validación', () => {

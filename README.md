@@ -87,8 +87,8 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 |---|---|---|
 | 0 | Cimientos: estructura, ajustes, notación ES/EN, temas, PWA y publicación | ✅ Hecha (v0.0.0) |
 | 1A | Navegación por pantallas, estilo GuitarSeo, Afinaciones, Glosario, Ajustes y nombre e icono nuevos | ✅ Hecha (v0.1.0) |
-| 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?», esquemas del glosario y registro de sesiones | ⏳ Siguiente |
-| 2 | Notas del mástil | Pendiente |
+| 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?», esquemas del glosario y registro de sesiones | ✅ Hecha (v0.1.1) |
+| 2 | Notas del mástil | ⏳ Siguiente |
 | 3 | Acordes abiertos y Calentamiento | Pendiente |
 | 4 | Oído | Pendiente |
 | 5 | Escala y tonalidad | Pendiente |
@@ -99,17 +99,17 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 
 Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`…), para poder volver a ella si algo sale mal.
 
-### Qué funciona ya (v0.1.0)
+### Qué funciona ya (v0.1.1)
 
-- **Inicio** con Teoría, Práctica, Afinaciones y Glosario, y los iconos de Perfil y Ajustes.
+- **Inicio** con Teoría, Práctica, Afinaciones y Glosario, los iconos de Perfil y Ajustes, la **racha** y **Continuar** (abre el último ejercicio hecho).
+- **Metrónomo** (fila Herramientas del Inicio): 30–240 BPM con − y + (mantén pulsado para ir rápido), deslizador, «Marcar el tempo tocando aquí», de 2 a 7 tiempos por compás con el primero acentuado, negras, corcheas o tresillos. Mantiene la pantalla encendida mientras suena y recuerda tus ajustes.
 - **Navegación** por pantallas con la flecha **←** (también si abres la app directamente en una pantalla interior) y el botón **?** de ayuda en cada una.
 - **Afinaciones**: las 7 afinaciones agrupadas; cada nota suena al tocarla y **Tocar todas** recorre las cuerdas despacio para afinar de oído. Las cuerdas que cambian respecto a la estándar se marcan en ámbar con su flecha.
-- **Glosario**: 15 conceptos de Notas y Afinaciones, con buscador en español y en inglés (sin importar tildes) y fichas con **Escuchar**. Las palabras subrayadas con puntos abren su ficha en un panel.
+- **Glosario**: 16 conceptos de Notas, Afinaciones y Ritmo, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil que suena al tocar sus puntos, o el pulso del metrónomo) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
 - **Ajustes** completos: notación, alteraciones, tema (oscuro por defecto, claro o automático), mástil, sonido, volumen, voz, afinación por defecto y copia de tus datos.
-- **Perfil** provisional (días y tiempo aparecerán cuando lleguen los ejercicios) y **Acerca de**.
-- Los módulos y sus ejercicios aparecen como **Próximamente**. En Notas del mástil ya se puede abrir la preparación de cada ejercicio (nivel y afinación se recuerdan), pero **Empezar** se activa en la Fase 2.
-
-**Próximo cambio en el Glosario (Fase 1B):** cada ficha tendrá un **esquema visual** de lo que explica (un trozo de mástil, un diagrama de acorde o tablatura) que **suena al tocar sus puntos**. Por ejemplo, «Notas naturales» mostrará las 7 notas naturales en el mástil. Lo mismo vale para las tarjetas de las lecciones. Solo se queda sin esquema algún concepto en el que no tiene sentido, como «Nombres de las notas» (es una equivalencia de nombres, no un lugar del mástil).
+- **Perfil** provisional con racha, días practicados y tiempo total, y **Acerca de**.
+- **Página de prueba** (Ajustes → App): mástil en vertical u horizontal, diagramas de los 14 acordes, rasgueo y arpegio, voz, pulso y dos **ejercicios de prueba** (uno de Teoría y otro de Práctica, con duración) que se juegan de principio a fin, con el «?», el «¿Por qué?» y el resumen. Sus rondas cuentan en el Perfil.
+- Los módulos y sus ejercicios aparecen como **Próximamente**: los primeros de verdad llegan en la Fase 2.
 
 Capturas de cada fase en [`docs/capturas/`](docs/capturas/).
 
