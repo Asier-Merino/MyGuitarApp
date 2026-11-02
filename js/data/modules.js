@@ -45,15 +45,15 @@ const x = (module, section, slug, title, description, { tunings = 'standard', ph
   Object.freeze({ id: `${module}.${section}.${slug}`, module, section, slug, title, description, tunings, phase });
 
 export const PLANNED_EXERCISES = Object.freeze([
-  x('notas', 'teoria', 'que-nota', '¿Qué nota es?', 'Se ilumina un traste y respondes qué nota es.', { phase: 2 }),
-  x('notas', 'teoria', 'encuentrala', 'Encuéntrala', 'Te piden una nota en una cuerda y la tocas en el mástil.', { phase: 2 }),
-  x('notas', 'teoria', 'todas-en-una-cuerda', 'Todas en una cuerda', 'Encuentras todas las posiciones de una nota en una cuerda, del traste 0 al 12.', { phase: 2 }),
+  x('notas', 'teoria', 'que-nota', '¿Qué nota es?', 'Se ilumina un traste y respondes qué nota es.', { tunings: 'any', phase: 2 }),
+  x('notas', 'teoria', 'encuentrala', 'Encuéntrala', 'Te piden una nota en una cuerda y la tocas en el mástil.', { tunings: 'any', phase: 2 }),
+  x('notas', 'teoria', 'todas-en-una-cuerda', 'Todas en una cuerda', 'Encuentras todas las posiciones de una nota en una cuerda, del traste 0 al 12.', { tunings: 'any', phase: 2 }),
   x('notas', 'teoria', 'octavas', 'Octavas', 'Ves una nota marcada en el mástil y tocas su octava con la forma correcta.', { phase: 2 }),
   x('notas', 'teoria', 'unisonos', 'Unísonos', 'Ves un punto marcado y tocas la misma nota exacta en la cuerda indicada.', { tunings: 'any', phase: 2 }),
-  x('notas', 'teoria', 'rellena', 'Rellena el mástil', 'Completas una cuerda vacía, del traste 0 al 12.', { phase: 2 }),
-  x('notas', 'teoria', 'contrarreloj', 'Contrarreloj', 'Todos los aciertos que puedas en 60 segundos.', { phase: 2 }),
-  x('notas', 'practica', 'todas-las-cuerdas', 'Nota por todas las cuerdas', 'La app dice una nota y la tocas en las 6 cuerdas antes de que acabe el tiempo.', { phase: 2 }),
-  x('notas', 'practica', 'cuerda-a-cuerda', 'Cuerda a cuerda', 'Eliges una cuerda y la app dice notas al azar para que las toques.', { phase: 2 }),
+  x('notas', 'teoria', 'rellena', 'Rellena el mástil', 'Completas una cuerda vacía, del traste 0 al 12.', { tunings: 'any', phase: 2 }),
+  x('notas', 'teoria', 'contrarreloj', 'Contrarreloj', 'Todos los aciertos que puedas en 60 segundos.', { tunings: 'any', phase: 2 }),
+  x('notas', 'practica', 'todas-las-cuerdas', 'Nota por todas las cuerdas', 'La app dice una nota y la tocas en las 6 cuerdas antes de que acabe el tiempo.', { tunings: 'any', phase: 2 }),
+  x('notas', 'practica', 'cuerda-a-cuerda', 'Cuerda a cuerda', 'Eliges una cuerda y la app dice notas al azar para que las toques.', { tunings: 'any', phase: 2 }),
   x('notas', 'practica', 'paseo-octavas', 'Paseo de octavas', 'La app dice una nota y la tocas; después, su octava.', { phase: 2 }),
   x('notas', 'practica', 'unisonos', 'Unísonos', 'La app dice un punto del mástil; lo tocas y después su unísono en la cuerda de al lado.', { tunings: 'any', phase: 2 }),
 ]);
@@ -79,6 +79,6 @@ export function getPlannedExercise(section, slug, exerciseSlug) {
 }
 
 /** Última fase construida: lo de fases posteriores se muestra como "Próximamente". */
-export const BUILT_THROUGH_PHASE = 1;
+export const BUILT_THROUGH_PHASE = 2;
 
 export const isAvailable = (item) => item.phase <= BUILT_THROUGH_PHASE;

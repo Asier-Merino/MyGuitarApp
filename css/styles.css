@@ -986,6 +986,55 @@ p { margin: 0 0 .75em; }
 .dev__minis { display: flex; align-items: flex-end; gap: 24px; }
 .dev__said { min-height: 1.5em; color: var(--text-muted); }
 
+/* ===== Fase 2: respuestas rápidas, consignas de Práctica ===== */
+.quiz__result--wrong { flex-wrap: wrap; text-align: center; }
+.quiz__result--wrong .quiz__verdict { color: var(--danger); }
+.quiz__fast-feedback { font-weight: 700; }
+.practice__big { margin: 0; font-size: clamp(2.2rem, 11vw, 3.4rem); font-weight: 800; line-height: 1.1; }
+.practice__legend { margin: 0 4px 8px; color: var(--text-muted); font-size: .95rem; text-align: center; }
+/* Con las posiciones a la vista, la consigna se encoge para que el mástil quepa en la pantalla. */
+.practice.is-revealing .practice__stage { min-height: 0; }
+.practice.is-revealing .note-label--huge { font-size: 3rem; }
+.practice.is-revealing .practice__big { font-size: 1.6rem; }
+.practice.is-revealing .practice__instruction { margin-top: 4px; font-size: 1rem; }
+.practice.is-revealing .practice__guide { display: none; }
+.practice__positions .fretboard { margin: 4px 0; }
+
+/* ===== Aprender: lección por tarjetas ===== */
+.lesson { display: flex; flex-direction: column; min-height: calc(100dvh - 56px - env(safe-area-inset-top)); }
+.lesson__bar { display: flex; gap: 6px; margin: 6px 0 12px; }
+.lesson__seg { flex: 1; height: 6px; border-radius: 999px; background: var(--surface); }
+.lesson__seg.is-done { background: var(--amber); }
+.lesson__card { flex: 1; }
+.lesson__title { margin: 4px 0 8px; font-size: 1.45rem; font-weight: 800; }
+.lesson__text { font-size: 1.1rem; line-height: 1.5; }
+.lesson__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; padding-bottom: 8px; }
+
+/* ===== Consulta de Notas ===== */
+.reference__filter { margin: 8px 0 4px; }
+.reference__filter .chip { min-width: var(--tap); }
+.reference__filter .chip[aria-pressed="true"]::before { content: "✓ "; color: var(--amber-text); }
+
+/* ===== Rellena el mástil ===== */
+.fill__clock { margin: 0; text-align: center; color: var(--text-muted); font-weight: 800; font-variant-numeric: tabular-nums; }
+.fill__status { max-width: 520px; margin: 0 auto; }
+.fill__status:not(:empty) { margin-bottom: 8px; }
+.fill__status .quiz__result { min-height: var(--tap); }
+.fill__panel { padding: 10px 12px; animation: none; }
+.fill__panel .quiz-panel__text { margin: 0; font-size: 1rem; }
+.fill__dock {
+  position: sticky;
+  bottom: 0;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  box-shadow: 0 -1px 0 var(--line);
+}
+.fill__keyboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 520px; margin: 0 auto; }
+.fill__key { min-height: 48px; padding: 0 4px; font-size: 1.05rem; }
+.fill__key .nl-alt { font-size: .72em; }
+.fill__key:disabled { opacity: .5; }
+
 /* ===== Confeti ===== */
 .confetti { position: fixed; inset: 0; z-index: 80; overflow: hidden; pointer-events: none; }
 .confetti__piece {

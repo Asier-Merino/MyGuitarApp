@@ -131,3 +131,26 @@ export function octavesOf(string, fret, { minFret = 0, maxFret = EXTENDED_FRET_R
   }
   return result.filter((p) => p.fret >= minFret && p.fret <= maxFret);
 }
+
+/**
+ * Unísonos de (cuerda, traste): las posiciones de las otras cuerdas con el mismo MIDI
+ * (la misma nota exacta, no solo el mismo nombre), dentro del rango, de la 6ª a la 1ª.
+ */
+export function unisonsOf(string, fret, {
+  fromFret = FRET_RANGE.from,
+  toFret = FRET_RANGE.to,
+  tuning = STANDARD_TUNING,
+} = {}) {
+  const midi = midiAt(string, fret, tuning);
+  return [6, 5, 4, 3, 2, 1]
+    .filter((s) => s !== string)
+    .map((s) => ({ string: s, fret: midi - tuning[s] }))
+    .filter((p) => p.fret >= fromFret && p.fret <= toFret);
+}
+
+/** Unísono de (cuerda, traste) en otra cuerda concreta, o null si no cae en el rango. */
+export function unisonOn(string, fret, toString, { fromFret = FRET_RANGE.from, toFret = FRET_RANGE.to, tuning = STANDARD_TUNING } = {}) {
+  checkString(toString);
+  const target = midiAt(string, fret, tuning) - tuning[toString];
+  return target >= fromFret && target <= toFret ? { string: toString, fret: target } : null;
+}

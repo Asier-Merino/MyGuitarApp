@@ -30,22 +30,8 @@ const ROUTES = [
   { name: 'about', path: '/perfil/acerca-de', parent: () => '/perfil' },
   { name: 'settings', path: '/ajustes', parent: () => '/' },
   { name: 'metronome', path: '/metronomo', parent: () => '/' },
-  // Página de prueba interna (solo se enlaza desde Ajustes) y sus ejercicios de prueba.
+  // Página de prueba interna (solo se enlaza desde Ajustes).
   { name: 'dev', path: '/dev', parent: () => '/ajustes' },
-  {
-    name: 'setup',
-    path: '/dev/:exercise',
-    fixed: { module: 'dev' },
-    valid: (p) => Boolean(findExercise({ module: 'dev', exercise: p.exercise })),
-    parent: () => '/dev',
-  },
-  {
-    name: 'play',
-    path: '/dev/:exercise/jugar',
-    fixed: { module: 'dev' },
-    valid: (p) => isPlayable(findExercise({ module: 'dev', exercise: p.exercise })),
-    parent: (p) => `/dev/${p.exercise}`,
-  },
   { name: 'section', path: '/:section', valid: (p) => isSection(p.section), parent: () => '/' },
   { name: 'mixed', path: '/:section/mezclada', valid: (p) => isSection(p.section), parent: (p) => `/${p.section}` },
   {
@@ -91,7 +77,7 @@ export function resolvePath(path) {
   for (const route of ROUTES) {
     const match = matchRoute([route], clean);
     if (!match) continue;
-    const params = { ...match.params, ...route.fixed };
+    const { params } = match;
     if (route.valid && !route.valid(params)) continue;
     return { name: route.name, params, parent: route.parent ? route.parent(params) : null };
   }

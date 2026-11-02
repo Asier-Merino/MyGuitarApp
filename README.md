@@ -88,8 +88,8 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | 0 | Cimientos: estructura, ajustes, notación ES/EN, temas, PWA y publicación | ✅ Hecha (v0.0.0) |
 | 1A | Navegación por pantallas, estilo GuitarSeo, Afinaciones, Glosario, Ajustes y nombre e icono nuevos | ✅ Hecha (v0.1.0) |
 | 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?», esquemas del glosario y registro de sesiones | ✅ Hecha (v0.1.1) |
-| 2 | Notas del mástil | ⏳ Siguiente |
-| 3 | Acordes abiertos y Calentamiento | Pendiente |
+| 2 | Notas del mástil | ✅ Hecha (v0.2.0) |
+| 3 | Acordes abiertos y Calentamiento | ⏳ Siguiente |
 | 4 | Oído | Pendiente |
 | 5 | Escala y tonalidad | Pendiente |
 | 6 | Blues y slide: el blues | Pendiente |
@@ -99,17 +99,23 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 
 Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`…), para poder volver a ella si algo sale mal.
 
-### Qué funciona ya (v0.1.1)
+### Qué funciona ya (v0.2.0)
 
 - **Inicio** con Teoría, Práctica, Afinaciones y Glosario, los iconos de Perfil y Ajustes, la **racha** y **Continuar** (abre el último ejercicio hecho).
 - **Metrónomo** (fila Herramientas del Inicio): 30–240 BPM con − y + (mantén pulsado para ir rápido), deslizador, «Marcar el tempo tocando aquí», de 2 a 7 tiempos por compás con el primero acentuado, negras, corcheas o tresillos. Mantiene la pantalla encendida mientras suena y recuerda tus ajustes.
 - **Navegación** por pantallas con la flecha **←** (también si abres la app directamente en una pantalla interior) y el botón **?** de ayuda en cada una.
 - **Afinaciones**: las 7 afinaciones agrupadas; cada nota suena al tocarla y **Tocar todas** recorre las cuerdas despacio para afinar de oído. Las cuerdas que cambian respecto a la estándar se marcan en ámbar con su flecha.
-- **Glosario**: 16 conceptos de Notas, Afinaciones y Ritmo, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil que suena al tocar sus puntos, o el pulso del metrónomo) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
+- **Notas del mástil**, el primer módulo completo:
+  - **Aprender**: lección en 6 tarjetas (cada traste, un semitono; las 7 naturales; las dos parejas a un traste; sostenidos y bemoles; el traste 12; formas de octava), cada una con su esquema que suena al tocarlo.
+  - **Consulta**: el mástil con todas las notas hasta el traste 12, con filtro por nota.
+  - **Teoría**: «¿Qué nota es?», «Encuéntrala», «Todas en una cuerda», «Octavas», «Unísonos», «Rellena el mástil» y «Contrarreloj» (60 s, con récord), en 3 niveles.
+  - **Práctica**: «Nota por todas las cuerdas», «Cuerda a cuerda», «Paseo de octavas» y «Unísonos», manos libres con voz.
+  - Casi todos admiten cualquiera de las 7 afinaciones (salvo los de octavas, que usan las formas de la estándar).
+- **Glosario**: 19 conceptos de Notas, Afinaciones y Ritmo, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil que suena al tocar sus puntos, o el pulso del metrónomo) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
 - **Ajustes** completos: notación, alteraciones, tema (oscuro por defecto, claro o automático), mástil, sonido, volumen, voz, afinación por defecto y copia de tus datos.
 - **Perfil** provisional con racha, días practicados y tiempo total, y **Acerca de**.
-- **Página de prueba** (Ajustes → App): mástil en vertical u horizontal, diagramas de los 14 acordes, rasgueo y arpegio, voz, pulso y dos **ejercicios de prueba** (uno de Teoría y otro de Práctica, con duración) que se juegan de principio a fin, con el «?», el «¿Por qué?» y el resumen. Sus rondas cuentan en el Perfil.
-- Los módulos y sus ejercicios aparecen como **Próximamente**: los primeros de verdad llegan en la Fase 2.
+- **Página de prueba** (Ajustes → App): mástil en vertical u horizontal, diagramas de los 14 acordes, rasgueo y arpegio, voz y pulso.
+- El resto de módulos aparece como **Próximamente**.
 
 Capturas de cada fase en [`docs/capturas/`](docs/capturas/).
 
@@ -170,7 +176,7 @@ Cada `push` a la rama `main` actualiza la app publicada en 1–2 minutos. Antes 
 │   ├── main.js              Arranque: qué pantalla se pinta en cada dirección
 │   ├── routes.js            Mapa de pantallas y adónde vuelve la flecha ←
 │   ├── settings-view.js     Pantalla de ajustes
-│   ├── screens/             Inicio, Teoría/Práctica, módulo y preparación
+│   ├── screens/             Inicio, Teoría/Práctica, módulo, lección (Aprender) y preparación
 │   ├── core/                Lógica musical (notas, escalas, mástil…), sin interfaz
 │   ├── data/                Datos: afinaciones, acordes, CAGED, cajas, licks, rasgueos y conceptos del glosario
 │   ├── ui/                  Piezas de interfaz (doble notación, mástil, tablatura, ayuda «?»…)
@@ -182,7 +188,7 @@ Cada `push` a la rama `main` actualiza la app publicada en 1–2 minutos. Antes 
 └── tools/                   Utilidades (generador de iconos)
 ```
 
-La carpeta `engine/` y parte de `data/`, `ui/`, `audio/` y `modules/` se crean en las próximas fases. Toda la teoría musical vive en `js/core/` y `js/data/`, separada de la interfaz, para poder comprobarla con tests.
+Parte de `data/`, `ui/`, `audio/` y `modules/` se crea en las próximas fases. Toda la teoría musical vive en `js/core/` y `js/data/`, separada de la interfaz, para poder comprobarla con tests.
 
 ---
 

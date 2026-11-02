@@ -1,6 +1,6 @@
 // Service worker: guarda la app para usarla sin conexión.
 // Incrementa CACHE_VERSION en cada despliegue que cambie archivos de la app.
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
 const CACHE_PREFIX = 'myguitarapp-';
 const CACHE_NAME = `${CACHE_PREFIX}v${CACHE_VERSION}`;
 
@@ -45,12 +45,14 @@ const ASSETS = [
   './js/data/tunings.js',
   './js/engine/countdown.js',
   './js/engine/exercise-registry.js',
+  './js/engine/fill-runner.js',
   './js/engine/practice-runner.js',
   './js/engine/quiz-runner.js',
   './js/engine/rounds.js',
   './js/engine/speech.js',
   './js/engine/wake-lock.js',
   './js/screens/home.js',
+  './js/screens/lesson.js',
   './js/screens/module.js',
   './js/screens/play.js',
   './js/screens/screen.js',
@@ -68,9 +70,12 @@ const ASSETS = [
   './js/ui/note-label.js',
   './js/ui/term.js',
   './js/ui/tuning-picker.js',
-  './js/modules/dev/dev-exercises.js',
   './js/modules/dev/dev-view.js',
   './js/modules/glossary/glossary-view.js',
+  './js/modules/notes/common.js',
+  './js/modules/notes/practice-exercises.js',
+  './js/modules/notes/reference-view.js',
+  './js/modules/notes/theory-exercises.js',
   './js/modules/profile/profile-view.js',
   './js/modules/tools/metronome-view.js',
   './js/modules/tunings/tunings-view.js',

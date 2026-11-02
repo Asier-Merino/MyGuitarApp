@@ -6,6 +6,7 @@ import { findExercise, exercisePath } from '../engine/exercise-registry.js';
 import { takePendingRound } from '../engine/rounds.js';
 import { runQuiz } from '../engine/quiz-runner.js';
 import { runPractice } from '../engine/practice-runner.js';
+import { runFill } from '../engine/fill-runner.js';
 import { primeSpeech } from '../engine/speech.js';
 
 export function renderPlay(view, params, nav) {
@@ -18,7 +19,8 @@ export function renderPlay(view, params, nav) {
   let cleanup = null;
   const start = () => {
     cleanup?.();
-    const run = exercise.section === 'teoria' ? runQuiz : runPractice;
+    let run = exercise.section === 'teoria' ? runQuiz : runPractice;
+    if (exercise.runner === 'fill') run = runFill;
     cleanup = run(view, {
       exercise,
       level: round.level,

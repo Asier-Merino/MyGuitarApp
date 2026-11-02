@@ -2,8 +2,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CONCEPTS, BLOCKS, SCREEN_HELP, EXERCISE_TEXTS, UI_TEXTS, getConcept, blockConcepts, nonEmptyBlocks,
+  CONCEPTS, BLOCKS, SCREEN_HELP, EXERCISE_TEXTS, UI_TEXTS, LESSONS, getConcept, blockConcepts, nonEmptyBlocks,
 } from '../js/data/concepts.js';
+import { MODULES } from '../js/data/modules.js';
 import { getTuning, TUNINGS } from '../js/data/tunings.js';
 import { routeExists, resolvePath } from '../js/routes.js';
 import { parseRichText, searchConcepts, normalizeText, plainText, parseNoteToken, displayAliases } from '../js/core/glossary.js';
@@ -15,9 +16,12 @@ import { secondsPerBeat } from '../js/core/rhythm.js';
 import { fillTemplate } from '../js/core/glossary.js';
 
 const TEXT_FIELDS = ['short', 'summary'];
+const lessonCards = () => Object.entries(LESSONS).flatMap(([mod, l]) => l.cards.map((card) => ({ ...card, id: `${mod}.${card.id}` })));
 const allTexts = () => [
   ...CONCEPTS.flatMap((c) => TEXT_FIELDS.map((f) => [`${c.id}.${f}`, c[f]])),
   ...Object.entries(SCREEN_HELP).map(([k, h]) => [`help.${k}`, h.text]),
+  ...lessonCards().flatMap((card) => [[`${card.id}.text`, card.text], [`${card.id}.title`, card.title]]),
+  ...[...CONCEPTS, ...lessonCards()].filter((c) => c.diagram?.caption).map((c) => [`${c.id}.caption`, c.diagram.caption]),
 ];
 
 test('ids únicos y bloques válidos', () => {
@@ -197,7 +201,7 @@ test('parseRichText', () => {
 
 /* ----- Rutas ----- */
 
-test('rutas: existen las pantallas de la Fase 1A y su pantalla madre', () => {
+test('rutas: existen las pantallas y su pantalla madre', () => {
   const cases = {
     '/': [null],
     '/teoria': ['/'],
@@ -217,9 +221,10 @@ test('rutas: existen las pantallas de la Fase 1A y su pantalla madre', () => {
     '/ajustes': ['/'],
     '/metronomo': ['/'],
     '/dev': ['/ajustes'],
-    '/dev/que-nota': ['/dev'],
-    '/dev/que-nota/jugar': ['/dev/que-nota'],
-    '/dev/seis-cuerdas/jugar': ['/dev/seis-cuerdas'],
+    // Fase 2: los ejercicios de Notas ya se juegan.
+    '/teoria/notas/que-nota/jugar': ['/teoria/notas/que-nota'],
+    '/teoria/notas/rellena/jugar': ['/teoria/notas/rellena'],
+    '/practica/notas/paseo-octavas/jugar': ['/practica/notas/paseo-octavas'],
   };
   for (const [path, [parent]] of Object.entries(cases)) {
     const r = resolvePath(path);
@@ -228,9 +233,8 @@ test('rutas: existen las pantallas de la Fase 1A y su pantalla madre', () => {
     if (r.parent) assert.ok(routeExists(r.parent), `madre de ${path}`);
   }
   for (const bad of ['/teoria/calentamiento', '/teoria/oido/aprender', '/glosario/caged', '/glosario/concepto/nada',
-    '/otra', '/teoria/notas/nada', '/practica/notas/que-nota', '/dev/nada', '/dev/nada/jugar',
-    // Ejercicios anunciados pero aún sin construir: se preparan, pero no se juegan.
-    '/teoria/notas/que-nota/jugar']) {
+    '/otra', '/teoria/notas/nada', '/practica/notas/que-nota', '/dev/nada', '/dev/que-nota', '/dev/que-nota/jugar',
+    '/teoria/notas/nada/jugar']) {
     assert.equal(resolvePath(bad), null, bad);
   }
 });
@@ -340,5 +344,94 @@ test('ningún esquema informa solo con color: lo resaltado lleva leyenda escrita
 test('cada ficha enlaza a su lección o pantalla con un texto adecuado', () => {
   for (const c of CONCEPTS.filter((x) => x.lesson)) {
     assert.ok(UI_TEXTS.lessonLinks[resolvePath(c.lesson).name], `${c.id}: ${c.lesson}`);
+  }
+});
+
+/* ----- Fase 2: Notas del mástil ----- */
+
+test('unísono: el punto y su unísono tienen el mismo MIDI, como dice la ficha', () => {
+  const pts = fretboardDiagramPoints(getConcept('unison')).points;
+  assert.deepEqual(pts.map((p) => `${p.string}/${p.fret}`), ['6/5', '5/0']);
+  assert.equal(pts[0].midi, pts[1].midi);
+  assert.deepEqual(pts.map((p) => p.midi), getConcept('unison').sound.midi);
+  assert.equal(pts[0].pc, LETTER_PC.A); // "la 6ª cuerda en el traste 5 suena La"
+  assert.deepEqual(pts.map((p) => p.color), ['amber', 'neutral']);
+});
+
+test('regla de los 5 trastes: 5 en todas las parejas menos la 3ª–2ª (4), cada pareja al unísono', () => {
+  const pts = fretboardDiagramPoints(getConcept('five-fret-rule')).points;
+  for (let i = 0; i < pts.length; i += 2) {
+    const [pressed, open] = [pts[i], pts[i + 1]];
+    assert.equal(pressed.midi, open.midi, `${pressed.string}ª y ${open.string}ª`);
+    assert.equal(open.fret, 0);
+    assert.equal(open.string, pressed.string - 1);
+    assert.equal(pressed.fret, pressed.string === 3 ? 4 : 5);
+    assert.equal(pressed.color, pressed.string === 3 ? 'amber' : 'neutral');
+  }
+  assert.equal(pts.length, 10);
+  // "de la 3ª (Sol) a la 2ª (Si) es el traste 4"
+  assert.equal(pcAt(3, 0), LETTER_PC.G);
+  assert.equal(pcAt(2, 0), LETTER_PC.B);
+  assert.deepEqual(getConcept('five-fret-rule').sound.midi, [midiAt(3, 4), midiAt(2, 0)]);
+});
+
+test('formas de octava: los puntos del esquema son la misma nota, a una o dos octavas', () => {
+  const pts = fretboardDiagramPoints(getConcept('octave-shapes')).points;
+  assert.deepEqual(pts.map((p) => `${p.string}/${p.fret}`).sort(), ['1/3', '2/8', '4/5', '6/3']);
+  assert.ok(pts.every((p) => p.pc === LETTER_PC.G));
+  assert.equal(pts.find((p) => p.color === 'amber').string, 6);
+  const midis = new Set(pts.map((p) => p.midi));
+  assert.deepEqual([...midis].sort((a, b) => a - b), getConcept('octave-shapes').sound.midi);
+  assert.deepEqual(getConcept('octave-shapes').sound.midi, [43, 55, 67]);
+});
+
+test('lecciones: de 3 a 6 tarjetas con título, texto de 2 a 4 frases y esquema dentro del rango', () => {
+  for (const [slug, lesson] of Object.entries(LESSONS)) {
+    assert.ok(MODULES.some((m) => m.slug === slug && m.lesson), slug);
+    assert.ok(lesson.cards.length >= 3 && lesson.cards.length <= 6, slug);
+    assert.equal(new Set(lesson.cards.map((c) => c.id)).size, lesson.cards.length);
+    for (const card of lesson.cards) {
+      assert.ok(card.title && card.diagram, card.id);
+      const sentences = plainText(card.text).split(/(?<=[.!?])\s+/).filter(Boolean);
+      assert.ok(sentences.length >= 2 && sentences.length <= 4, `${card.id}: ${sentences.length} frases`);
+      for (const part of parseRichText(card.text)) if (part.type === 'term') assert.ok(getConcept(part.id), `${card.id}: ${part.id}`);
+      if (card.diagram.highlight) assert.ok(card.diagram.caption, `${card.id}: falta la leyenda`);
+      const { points, tuning } = fretboardDiagramPoints(card);
+      assert.ok(points.length > 0, card.id);
+      for (const p of points) {
+        assert.ok(p.fret >= card.diagram.fromFret && p.fret <= card.diagram.toFret, card.id);
+        assert.equal(p.midi, tuning[p.string] + p.fret);
+      }
+    }
+  }
+});
+
+test('lección de Notas: lo que dice cada tarjeta coincide con su esquema', () => {
+  const card = (id) => LESSONS.notas.cards.find((c) => c.id === id);
+  const pts = (id) => fretboardDiagramPoints(card(id)).points;
+  // "al recorrer una cuerda desde el aire, pasas por las 12 notas"
+  assert.equal(new Set(pts('semitonos').map((p) => p.pc)).size, 12);
+  pts('semitonos').forEach((p, i) => assert.equal(p.fret, i));
+  // Las 7 naturales, en la 6ª y la 5ª.
+  assert.deepEqual(new Set(pts('naturales').map((p) => p.pc)), new Set(Object.values(LETTER_PC)));
+  assert.deepEqual([...new Set(pts('naturales').map((p) => p.string))], [6, 5]);
+  // Mi–Fa y Si–Do resaltadas.
+  assert.deepEqual(pts('mi-fa-si-do').filter((p) => p.color === 'amber').map((p) => p.pc).sort((a, b) => a - b), [0, 4, 5, 11]);
+  // Las notas de en medio: resaltadas exactamente las que no son naturales.
+  for (const p of pts('alteraciones')) assert.equal(p.color === 'amber', !Object.values(LETTER_PC).includes(p.pc));
+  // "el traste 12 da la misma nota que la cuerda al aire", una octava más aguda.
+  for (const s of STRINGS) {
+    const [open, twelve] = pts('traste-12').filter((p) => p.string === s);
+    assert.deepEqual([open.fret, twelve.fret], [0, 12]);
+    assert.equal(twelve.midi - open.midi, 12);
+  }
+  // Formas de octava: el mismo esquema que la ficha.
+  assert.deepEqual(pts('formas-de-octava'), fretboardDiagramPoints(getConcept('octave-shapes')).points);
+});
+
+test('la lección de Notas enlaza a los conceptos del bloque Notas que trabaja', () => {
+  const linked = new Set(LESSONS.notas.cards.flatMap((c) => parseRichText(c.text).filter((p) => p.type === 'term').map((p) => p.id)));
+  for (const id of ['fret', 'semitone-tone', 'natural-notes', 'sharp-flat', 'enharmonic', 'octave', 'open-string', 'octave-shapes', 'five-fret-rule']) {
+    assert.ok(linked.has(id), id);
   }
 });

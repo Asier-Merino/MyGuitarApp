@@ -182,6 +182,60 @@ export const CONCEPTS = Object.freeze([
     lesson: NOTES_LESSON,
     related: ['tuning', 'fret', 'string-numbers'],
   }),
+  c({
+    id: 'unison',
+    block: 'notes',
+    title: 'Unísono',
+    aliases: ['unísono', 'unísonos', 'misma nota', 'la misma nota exacta', 'unison'],
+    short: 'La misma nota exacta, a la misma altura, en dos sitios distintos.',
+    summary: 'Dos notas están al unísono cuando suenan exactamente igual: mismo nombre y misma altura. '
+      + 'En la guitarra, casi todas las notas se pueden tocar en más de una cuerda. '
+      + 'Por ejemplo, la 6ª cuerda en el traste 5 suena {{A}}, igual que la 5ª cuerda al aire. '
+      + 'No es lo mismo que una [[octave|octava]], que tiene el mismo nombre pero suena más aguda o más grave.',
+    sound: { midi: [45, 45] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 7, points: { select: 'unison', string: 6, fret: 5 }, highlight: 'start',
+      caption: 'El punto ámbar (6ª cuerda, traste 5) y el gris (5ª cuerda al aire) son la misma nota exacta.',
+    },
+    lesson: NOTES_LESSON,
+    related: ['five-fret-rule', 'octave', 'string-numbers'],
+  }),
+  c({
+    id: 'five-fret-rule',
+    block: 'notes',
+    title: 'Regla de los 5 trastes (4 entre la 3ª y la 2ª)',
+    aliases: ['regla de los 5 trastes', 'regla del quinto traste', 'traste 5', 'sol si', 'g b', 'afinar por el quinto traste', 'five fret rule'],
+    short: 'El traste 5 de una cuerda suena como la siguiente al aire; de la 3ª a la 2ª, el traste 4.',
+    summary: 'En la [[standard-tuning|afinación estándar]], el traste 5 de una cuerda suena igual que la siguiente cuerda más aguda al aire: es su [[unison|unísono]]. '
+      + 'Vale para todas las parejas menos una: de la 3ª ({{G}}) a la 2ª ({{B}}) es el traste 4, porque entre ellas hay 4 [[semitone-tone|semitonos]] y no 5. '
+      + 'Así, la misma nota en la cuerda grave de al lado está 5 trastes más allá (4 si pasas de la 2ª a la 3ª). '
+      + 'En otras [[tuning|afinaciones]] las distancias cambian.',
+    sound: { midi: [59, 59] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 5, points: { select: 'five-fret-rule' }, highlight: 'gap',
+      caption: 'Cada nota pisada suena igual que la cuerda de al lado al aire: llevan el mismo nombre. En ámbar, la pareja de la 3ª y la 2ª, en el traste 4.',
+    },
+    lesson: NOTES_LESSON,
+    related: ['unison', 'standard-tuning', 'octave-shapes'],
+  }),
+  c({
+    id: 'octave-shapes',
+    block: 'notes',
+    title: 'Formas de octava',
+    aliases: ['forma de octava', 'formas de octava', 'octavas en el mástil', 'octave shapes'],
+    short: 'Dibujos fijos para encontrar la octava de una nota en otra cuerda, sin contar trastes.',
+    summary: 'Para encontrar la [[octave|octava]] de una nota sin contar trastes se usan unas formas fijas. '
+      + 'Desde la 6ª cuerda, la octava está en la 4ª, dos trastes más allá; desde la 5ª, en la 3ª, también dos trastes más allá. '
+      + 'Desde la 4ª y la 3ª, en la 2ª y la 1ª, tres trastes más allá, porque la forma cruza la pareja de la 3ª y la 2ª ([[five-fret-rule|regla de los 5 trastes]]). '
+      + 'Y la 6ª y la 1ª cuerda dan la misma nota en el mismo traste, dos octavas más aguda.',
+    sound: { midi: [43, 55, 67] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 8, points: { select: 'octaves', string: 6, fret: 3 }, highlight: 'start',
+      caption: 'Desde el punto ámbar (6ª cuerda, traste 3), sus octavas con las formas: 4ª cuerda, traste 5; 2ª, traste 8; y 1ª, traste 3.',
+    },
+    lesson: NOTES_LESSON,
+    related: ['octave', 'five-fret-rule', 'string-numbers'],
+  }),
 
   // ----- Afinaciones -----
   c({
@@ -362,7 +416,21 @@ export const SCREEN_HELP = Object.freeze({
   dev: {
     title: 'Página de prueba',
     text: 'Sirve para comprobar que todo funciona: toca los puntos del mástil y los acordes para oírlos, '
-      + 'prueba la voz y el pulso, y juega los dos ejercicios de prueba. Las rondas de prueba cuentan en tu Perfil.',
+      + 'y prueba la voz y el pulso.',
+  },
+  lesson: {
+    title: 'Aprender',
+    text: 'La lección va en tarjetas cortas, con una idea en cada una. '
+      + 'Pasa de una a otra con «Siguiente» y «Anterior», o deslizando el dedo. '
+      + 'Toca los puntos del mástil para oírlos y las palabras subrayadas para ver su ficha. '
+      + 'Al llegar a la última tarjeta, la lección queda marcada como completada.',
+  },
+  referenceNotes: {
+    title: 'Consulta',
+    text: 'El mástil con todas las notas, de la [[open-string|cuerda al aire]] al traste 12. '
+      + 'Elige una nota arriba para ver solo esa (por ejemplo, todas las posiciones de una misma nota) o «Todas» para verlas todas. '
+      + 'Toca cualquier punto para oírlo.',
+    concepts: ['natural-notes', 'octave', 'unison'],
   },
   soon: {
     title: 'Próximamente',
@@ -370,33 +438,242 @@ export const SCREEN_HELP = Object.freeze({
   },
 });
 
+// Textos de "¿Qué nota es?": también los usan Contrarreloj y Rellena el mástil.
+const POSITION_NOTE = Object.freeze({
+  feedbackWrong: 'No es {{pc:%chosen%}}: es {{pc:%answer%}} (%string%ª cuerda, traste %fret%).',
+  feedbackTimeout: 'Se acabó el tiempo: es {{pc:%answer%}} (%string%ª cuerda, traste %fret%).',
+  whyOpen: 'Es la [[open-string|cuerda al aire]]: en esta afinación, la %string%ª cuerda al aire suena {{pc:%answer%}}.',
+  whyFretted: 'En esta afinación, la %string%ª cuerda al aire es {{pc:%open%}}. '
+    + 'Cada [[fret|traste]] sube un [[semitone-tone|semitono]], así que en el traste %fret% suena {{pc:%answer%}}.',
+  whyChosen: ' {{pc:%chosen%}} estaría en el traste %chosenFret% de esa cuerda.',
+  whyChosenOpen: ' {{pc:%chosen%}} es esa cuerda al aire (traste 0).',
+  missLabel: '%string%ª cuerda · traste %fret%',
+});
+
+// Textos de "esta nota en esta cuerda" (Encuéntrala y Todas en una cuerda).
+const NOTE_ON_STRING = Object.freeze({
+  missLabel: '{{pc:%note%}} en la %string%ª cuerda',
+  feedbackTimeout: 'Se acabó el tiempo: {{pc:%note%}} está en la %string%ª cuerda, %where%.',
+  feedbackWrongString: 'Has tocado la %chosenString%ª cuerda: se pedía {{pc:%note%}} en la %string%ª (%where%).',
+  feedbackWrong: 'En el traste %chosenFret% suena {{pc:%chosen%}}. {{pc:%note%}} está en la %string%ª cuerda, %where%.',
+  whyOpen: 'La %string%ª cuerda al aire ya es {{pc:%note%}}: traste 0.',
+  whyFretted: 'La %string%ª cuerda al aire es {{pc:%open%}}. Cada [[fret|traste]] sube un [[semitone-tone|semitono]]: '
+    + 'contando desde ahí, {{pc:%note%}} cae en el traste %fret%.',
+  whyOctave: ' Doce trastes más allá, en el traste %fret%, vuelve a sonar una [[octave|octava]] más aguda.',
+  whyString: ' Fíjate en el número de la [[string-numbers|cuerda]]: la 1ª es la más fina y aguda, y la 6ª, la más gruesa y grave.',
+});
+
 /**
  * Textos de cada ejercicio (BUILD_PLAN 6.8 y 7.1): howTo ("Cómo se juega") y las plantillas
- * con las que se genera la corrección y el "¿Por qué?" a partir de las reglas.
+ * con las que se genera la consigna, la corrección y el "¿Por qué?" a partir de las reglas.
  * Las plantillas usan %variable% (js/core/glossary.js, fillTemplate) y el marcado de siempre;
  * {{pc:%answer%}} escribe la nota con la preferencia ♯/♭ del usuario.
  */
 export const EXERCISE_TEXTS = Object.freeze({
-  'dev.teoria.que-nota': Object.freeze({
+  // ----- Notas del mástil: Teoría -----
+  'notas.teoria.que-nota': Object.freeze({
+    prompt: '¿Qué nota es?',
     howTo: 'Se marca un punto del mástil con un «?». Elige qué nota suena en ese [[fret|traste]]. '
-      + 'Si aciertas, pasa sola a la siguiente pregunta; si fallas, verás la corrección y el «¿Por qué?». '
-      + 'En Básico salen solo [[natural-notes|notas naturales]] y no hay tiempo; '
-      + 'en Intermedio tienes 10 segundos por pregunta y en Avanzado, 5.',
-    feedbackWrong: 'No es {{pc:%chosen%}}: es {{pc:%answer%}} (%string%ª cuerda, traste %fret%).',
-    feedbackTimeout: 'Se acabó el tiempo: es {{pc:%answer%}} (%string%ª cuerda, traste %fret%).',
-    whyOpen: 'Es la [[open-string|cuerda al aire]]: en esta afinación, la %string%ª cuerda al aire suena {{pc:%answer%}}.',
-    whyFretted: 'En esta afinación, la %string%ª cuerda al aire es {{pc:%open%}}. '
-      + 'Cada [[fret|traste]] sube un [[semitone-tone|semitono]], así que en el traste %fret% suena {{pc:%answer%}}.',
-    whyChosen: ' {{pc:%chosen%}} estaría en el traste %chosenFret% de esa cuerda.',
-    whyChosenOpen: ' {{pc:%chosen%}} es esa cuerda al aire (traste 0).',
-    missLabel: '%string%ª cuerda · traste %fret%',
+      + 'Si aciertas, pasa sola a la siguiente; si fallas, verás la corrección y el «¿Por qué?». '
+      + 'Básico: solo [[natural-notes|notas naturales]], del traste 0 al 5, en las cuerdas que elijas, y sin tiempo. '
+      + 'Intermedio: todas las cuerdas y notas, del traste 0 al 12, con 10 segundos por pregunta. Avanzado: 5 segundos.',
+    ...POSITION_NOTE,
   }),
-  'dev.practica.seis-cuerdas': Object.freeze({
+  'notas.teoria.contrarreloj': Object.freeze({
+    howTo: 'Tienes 60 segundos para responder todas las preguntas de «¿Qué nota es?» que puedas. '
+      + 'Al acertar pasa enseguida a la siguiente; al fallar ves la correcta un momento y sigue, porque el reloj no se para. '
+      + 'Los fallos los repasas en el resumen. Tu récord es el número de aciertos en cada nivel. '
+      + 'Los niveles cambian los trastes, las cuerdas y las notas, como en «¿Qué nota es?».',
+  }),
+  'notas.teoria.encuentrala': Object.freeze({
+    prompt: 'Toca {{pc:%note%}} en la %string%ª cuerda',
+    howTo: 'Te piden una nota en una [[string-numbers|cuerda]]. Tócala en el mástil, en esa cuerda. '
+      + 'Si la nota está dos veces (al aire y en el traste 12, que es su [[octave|octava]]), vale cualquiera de las dos. '
+      + 'Básico: [[natural-notes|naturales]], del traste 0 al 5, en las cuerdas que elijas, y sin tiempo. '
+      + 'Intermedio: todas las cuerdas y notas, del traste 0 al 12, con 10 segundos. Avanzado: 5 segundos.',
+    ...NOTE_ON_STRING,
+  }),
+  'notas.teoria.todas-en-una-cuerda': Object.freeze({
+    prompt: 'Toca todos los {{pc:%note%}} de la %string%ª cuerda',
+    howTo: 'Te piden una nota y una [[string-numbers|cuerda]]. Toca todas las veces que sale esa nota en la cuerda, del traste 0 al 12: '
+      + 'cada acierto se pone en verde. Una nota se repite cada 12 trastes (su [[octave|octava]]), así que la nota de la cuerda al aire sale dos veces. '
+      + 'Si tocas un traste equivocado, la pregunta cuenta como fallo y ves la solución. '
+      + 'Básico: [[natural-notes|naturales]] en las cuerdas que elijas, sin tiempo. '
+      + 'Intermedio: todas las cuerdas y notas, con 10 segundos por posición. Avanzado: 5 segundos.',
+    ...NOTE_ON_STRING,
+  }),
+  'notas.teoria.octavas': Object.freeze({
+    prompt: 'Toca una octava de esta nota',
+    howTo: 'Se marca una nota en el mástil. Toca una de sus [[octave|octavas]] con una [[octave-shapes|forma de octava]]: '
+      + 'desde la 6ª o la 5ª cuerda, dos cuerdas hacia la 1ª y dos trastes más allá; desde la 4ª o la 3ª, tres trastes más allá; '
+      + 'o al revés, hacia las cuerdas graves. La 6ª y la 1ª cuerda en el mismo traste también valen (dos octavas). '
+      + 'La misma nota en otro sitio que no sea una forma de octava no cuenta. '
+      + 'Básico: [[natural-notes|naturales]] del traste 0 al 5, en las cuerdas que elijas, y sin tiempo. '
+      + 'Intermedio: todas las cuerdas y notas, del traste 0 al 12, con 10 segundos. Avanzado: 5 segundos.',
+    missLabel: '{{pc:%note%}} · %string%ª cuerda, traste %fret%',
+    feedbackWrong: 'Esa no es una forma de octava. Desde la %string%ª cuerda, traste %fret%, valen: %targets%.',
+    feedbackTimeout: 'Se acabó el tiempo. Desde la %string%ª cuerda, traste %fret%, valen: %targets%.',
+    whyRule: 'Formas de octava: desde la 6ª y la 5ª cuerda, dos cuerdas hacia la 1ª y 2 trastes más; desde la 4ª y la 3ª, 3 trastes más, '
+      + 'porque la forma cruza la pareja de la 3ª y la 2ª ([[five-fret-rule|regla de los 5 trastes]]). Hacia las cuerdas graves, se restan.',
+    whySame: ' Has tocado la propia nota marcada.',
+    whyUnison: ' Has tocado su [[unison|unísono]]: la misma nota exacta, no su octava.',
+    whySameNote: ' Has tocado {{pc:%chosen%}}, la misma nota a otra altura, pero no con una forma de octava.',
+    whyOther: ' Has tocado {{pc:%chosen%}}, que es otra nota.',
+  }),
+  'notas.teoria.unisonos': Object.freeze({
+    prompt: 'Toca su unísono en la %target%ª cuerda',
+    promptAll: 'Toca todos sus unísonos',
+    howTo: 'Se marca un punto en el mástil. Busca su [[unison|unísono]]: la misma nota exacta, a la misma altura, en otra cuerda. '
+      + 'Básico: el punto está en la 5ª o la 4ª cuerda y el unísono, en la cuerda grave de al lado: '
+      + 'en [[standard-tuning|afinación estándar]], 5 trastes más allá ([[five-fret-rule|regla de los 5 trastes]]). '
+      + 'Intermedio: cualquier cuerda, hacia la de al lado en las dos direcciones, incluida la pareja de la 3ª y la 2ª, con 10 segundos. '
+      + 'Avanzado: todos los unísonos del punto entre los trastes 0 y 15, con 5 segundos por unísono. '
+      + 'Funciona en cualquier [[tuning|afinación]]: la app calcula las notas a partir de ella.',
+    missLabel: '{{pc:%note%}} · %string%ª cuerda, traste %fret%',
+    feedbackWrong: 'No es ese. El unísono está en la %answers%.',
+    feedbackTimeout: 'Se acabó el tiempo. El unísono está en la %answers%.',
+    feedbackWrongAll: 'No es ese. Sus unísonos están en: %answers%.',
+    feedbackTimeoutAll: 'Se acabó el tiempo. Sus unísonos están en: %answers%.',
+    whyPoint: 'El punto es {{pc:%note%}} (%string%ª cuerda, traste %fret%). ',
+    whyAll: 'Sus unísonos son todas las posiciones a la misma altura: %answers%. '
+      + 'Cuanto más grave es una cuerda al aire, más trastes hay que pisar para llegar a esa nota.',
+    whyLower: 'La %target%ª cuerda al aire suena %gap% [[semitone-tone|semitonos]] más grave que la %string%ª: '
+      + 'para llegar a la misma nota hay que pisar %gap% trastes más, en el traste %answerFret%.',
+    whyHigher: 'La %target%ª cuerda al aire suena %gap% [[semitone-tone|semitonos]] más aguda que la %string%ª: '
+      + 'hacen falta %gap% trastes menos, así que la misma nota está en el traste %answerFret%.',
+    whyChosenOctave: ' Lo que has tocado es {{pc:%chosen%}}, el mismo nombre pero a otra altura: es una [[octave|octava]], no un unísono.',
+    whyChosenOther: ' En lo que has tocado suena {{pc:%chosen%}}.',
+  }),
+  'notas.teoria.rellena': Object.freeze({
+    prompt: 'Rellena la %string%ª cuerda',
+    promptTwo: 'Rellena la %a%ª y la %b%ª cuerda',
+    howTo: 'Una cuerda vacía, del traste 0 al 12. Toca una casilla vacía y elige su nota en el teclado de abajo. '
+      + 'Acierto en verde ✓; fallo en rojo ✗, con la nota correcta, el altavoz y el «¿Por qué?». '
+      + 'Se cronometra y, si terminas sin fallos, se guarda tu mejor tiempo por cuerda y nivel. '
+      + 'Básico: la 6ª o la 5ª cuerda, solo las [[natural-notes|naturales]], con los trastes 0, 5, 7 y 12 ya puestos. '
+      + 'Intermedio: cualquier cuerda y todas las notas, con solo el traste 0 puesto (la [[open-string|cuerda al aire]]). '
+      + 'Avanzado: sin pistas, a veces con dos cuerdas a la vez, y contrarreloj: 60 segundos por cuerda (90 con dos).',
+    ...POSITION_NOTE,
+  }),
+
+  // ----- Notas del mástil: Práctica -----
+  'notas.practica.todas-las-cuerdas': Object.freeze({
     howTo: 'La app dice una nota en voz alta. Tócala en las seis cuerdas, de la 6ª a la 1ª, antes de que acabe la cuenta atrás; '
       + 'los círculos de abajo se iluminan para marcarte el ritmo. '
-      + 'Al acabarse el tiempo verás dónde estaba en cada cuerda, y la app pasa sola a la siguiente. '
-      + '«Ver posiciones» te las enseña antes, sin parar la cuenta. La ronda dura lo que elijas en Duración.',
+      + 'Al acabarse el tiempo verás dónde estaba en cada cuerda (del traste 0 al 12) y la app pasa sola a la siguiente. '
+      + '«Ver posiciones» te las enseña antes. Son 12 notas. '
+      + 'Básico: solo [[natural-notes|naturales]], con 20 segundos por nota. Intermedio: todas las notas, con 12 segundos. Avanzado: 7 segundos.',
     instruction: 'Tócala en las 6 cuerdas',
+  }),
+  'notas.practica.cuerda-a-cuerda': Object.freeze({
+    howTo: 'Eliges una [[string-numbers|cuerda]] en la preparación, o «Al azar». La app dice notas una a una y las tocas en esa cuerda '
+      + 'antes de que acabe la cuenta atrás. Al acabarse el tiempo ves dónde estaba y pasa sola a la siguiente. Son 12 notas. '
+      + 'Básico: [[natural-notes|naturales]] del traste 0 al 5, con 20 segundos. '
+      + 'Intermedio: todas las notas, del traste 0 al 12, con 12 segundos. Avanzado: 7 segundos.',
+    instruction: 'En la %string%ª cuerda',
+  }),
+  'notas.practica.paseo-octavas': Object.freeze({
+    howTo: 'La app dice una nota y una cuerda. Tócala en esa cuerda y después su [[octave|octava]], con una [[octave-shapes|forma de octava]]. '
+      + 'Al acabarse el tiempo verás la nota y sus octavas, marcadas con un 8, y pasa sola a la siguiente. Son 12 notas. '
+      + 'Básico: [[natural-notes|naturales]] del traste 0 al 5, en la 6ª y la 5ª cuerda (o las que elijas), con 20 segundos. '
+      + 'Intermedio: todas las cuerdas y notas, del traste 0 al 12, con 12 segundos. Avanzado: 7 segundos.',
+    instruction: 'En la %string%ª cuerda, y después su octava',
+    legend: 'En ámbar, la nota en esa cuerda; los puntos con un 8 son sus octavas.',
+    speechEs: '%note%, %string% cuerda, y su octava',
+    speechEn: '%note%, string %string%, and its octave',
+  }),
+  'notas.practica.unisonos': Object.freeze({
+    howTo: 'La app dice un punto del mástil, por ejemplo «6ª cuerda, traste 7». Tócalo y después su [[unison|unísono]]: '
+      + 'la misma nota exacta en otra cuerda. Al acabarse el tiempo verás los dos puntos y sonarán uno tras otro, para que oigas que son iguales. '
+      + 'Básico: el punto está en la 5ª o la 4ª cuerda y el unísono, en la cuerda grave de al lado, con 20 segundos. '
+      + 'Intermedio: cualquier cuerda, hacia la de al lado en las dos direcciones, con 12 segundos. '
+      + 'Avanzado: todos sus unísonos entre los trastes 0 y 15, con 7 segundos. Son 12 puntos. '
+      + 'Funciona en cualquier [[tuning|afinación]].',
+    point: '%string%ª cuerda · traste %fret%',
+    instruction: 'Tócalo y después su unísono en la %target%ª cuerda',
+    instructionAll: 'Tócalo y después todos sus unísonos',
+    legend: 'En ámbar, el punto de la consigna; en gris, la misma nota exacta en otra cuerda.',
+    speechEs: '%string% cuerda, traste %fret%',
+    speechEn: 'string %string%, fret %fret%',
+  }),
+});
+
+/** Piezas de texto de las posiciones y números de cuerda hablados (ejercicios de Notas). */
+export const NOTES_TEXTS = Object.freeze({
+  positions: Object.freeze({
+    position: '%string%ª cuerda, traste %fret%',
+    fretOne: 'traste %fret%',
+    fretMany: 'trastes %list% y %last%',
+    listOr: '%list%; o %last%',
+    listAnd: '%list%; y %last%',
+  }),
+  spokenOrdinals: Object.freeze({ 1: 'primera', 2: 'segunda', 3: 'tercera', 4: 'cuarta', 5: 'quinta', 6: 'sexta' }),
+});
+
+/**
+ * Lecciones de Aprender (BUILD_PLAN 6.6.4), por módulo: de 3 a 6 tarjetas con una idea cada
+ * una (título y texto con marcado) y su esquema (mismo formato que los de los conceptos).
+ */
+export const LESSONS = Object.freeze({
+  notas: Object.freeze({
+    cards: Object.freeze([
+      Object.freeze({
+        id: 'semitonos',
+        title: 'Cada traste, un semitono',
+        text: 'Las notas del mástil van siempre en el mismo orden. Cada [[fret|traste]] sube la nota un [[semitone-tone|semitono]]. '
+          + 'Si recorres una cuerda desde el aire, pasas por las 12 notas, una tras otra. Toca los puntos para oírlas.',
+        diagram: { type: 'fretboard', fromFret: 0, toFret: 11, points: { select: 'string', string: 5 } },
+      }),
+      Object.freeze({
+        id: 'naturales',
+        title: 'Las 7 notas naturales',
+        text: 'Siete de esas notas son las [[natural-notes|notas naturales]]: {{C}}, {{D}}, {{E}}, {{F}}, {{G}}, {{A}} y {{B}}. '
+          + 'Son las que no llevan [[sharp-flat|sostenido ni bemol]]. '
+          + 'Aquí las tienes en la 6ª y la 5ª cuerda, las que más se usan para buscar notas.',
+        diagram: { type: 'fretboard', fromFret: 0, toFret: 12, points: { select: 'naturals', strings: [6, 5] } },
+      }),
+      Object.freeze({
+        id: 'mi-fa-si-do',
+        title: 'Dos parejas a un solo traste',
+        text: 'Entre dos naturales seguidas suele haber un [[semitone-tone|tono]]: dos trastes. '
+          + 'Solo hay dos parejas a un semitono, un traste: {{E}}–{{F}} y {{B}}–{{C}}. '
+          + 'Por eso entre ellas no hay ninguna otra nota.',
+        diagram: {
+          type: 'fretboard', fromFret: 0, toFret: 12, points: { select: 'naturals', strings: [5] }, highlight: 'natural-semitones',
+          caption: 'En ámbar, {{B}}–{{C}} y {{E}}–{{F}}: en la 5ª cuerda, cada pareja en trastes vecinos.',
+        },
+      }),
+      Object.freeze({
+        id: 'alteraciones',
+        title: 'Las notas de en medio',
+        text: 'En los huecos de un tono queda una nota en medio. '
+          + 'Se nombra a partir de una natural vecina: con [[sharp-flat|sostenido]] (♯), que sube un semitono la de abajo, o con bemol (♭), que baja un semitono la de arriba. '
+          + 'Por ejemplo, {{F#}} y {{Gb}} son la misma nota con dos nombres: son [[enharmonic|enarmónicos]].',
+        diagram: {
+          type: 'fretboard', fromFret: 0, toFret: 12, points: { select: 'string', string: 5 }, highlight: 'accidentals',
+          caption: 'En ámbar, las notas con sostenido o bemol: cada una está entre dos naturales separadas por un tono.',
+        },
+      }),
+      Object.freeze({
+        id: 'traste-12',
+        title: 'El traste 12: vuelta a empezar',
+        text: 'Después de 12 semitonos la nota se repite, más aguda: es su [[octave|octava]]. '
+          + 'Por eso, en cada cuerda, el traste 12 da la misma nota que la [[open-string|cuerda al aire]], y a partir de ahí el mástil se repite. '
+          + 'La marca doble del traste 12 te lo recuerda.',
+        diagram: { type: 'fretboard', fromFret: 0, toFret: 12, points: { select: 'frets', frets: [0, 12] } },
+      }),
+      Object.freeze({
+        id: 'formas-de-octava',
+        title: 'Formas de octava',
+        text: 'Para encontrar una octava sin contar trastes, usa las [[octave-shapes|formas de octava]]. '
+          + 'Desde la 6ª o la 5ª cuerda: dos cuerdas hacia la 1ª y dos trastes más allá. '
+          + 'Desde la 4ª o la 3ª: tres trastes más allá, porque la forma cruza la pareja de la 3ª y la 2ª ([[five-fret-rule|regla de los 5 trastes]]).',
+        diagram: {
+          type: 'fretboard', fromFret: 0, toFret: 8, points: { select: 'octaves', string: 6, fret: 3 }, highlight: 'start',
+          caption: 'Desde el punto ámbar (6ª cuerda, traste 3): 4ª cuerda, traste 5; 2ª, traste 8; y 1ª, traste 3.',
+        },
+      }),
+    ]),
   }),
 });
 
@@ -415,10 +692,12 @@ export const UI_TEXTS = Object.freeze({
     finishTitle: '¿Terminar la ronda?',
     finishText: 'Verás el resumen de lo que has hecho.',
     missChosen: '%correct% (dijiste %chosen%)',
+    missTapped: '%correct% (tocaste %chosen%)',
     missTimeout: '%correct% (se acabó el tiempo)',
     paused: 'En pausa',
     pausedHint: 'Toca «Seguir» para continuar. Mientras tanto, puedes ver la ayuda.',
     newRecord: 'Nuevo récord',
+    fillTime: 'Tiempo',
   }),
   scoreBands: Object.freeze({
     perfect: '¡Perfecto!',
@@ -449,6 +728,6 @@ export const UI_TEXTS = Object.freeze({
     orientation: 'Auto: vertical con el móvil en vertical.',
     voice: 'La app dice en voz alta la nota o el acorde.',
     defaultTuning: 'Con la que empiezan los ejercicios que la admiten.',
-    dev: 'Para probar el mástil, el sonido, la voz y los motores de ejercicio.',
+    dev: 'Para probar el mástil, el sonido, la voz y el pulso.',
   },
 });

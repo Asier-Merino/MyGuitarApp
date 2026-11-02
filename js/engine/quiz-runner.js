@@ -1,8 +1,11 @@
-// Motor de Teoría (BUILD_PLAN 6.6.7 y 7.2): ronda de N preguntas.
+// Motor de Teoría (BUILD_PLAN 6.6.7 y 7.2): ronda de N preguntas, o por tiempo (Contrarreloj).
 // Al acertar: ✓ verde, "Correcto ✓" y altavoz; pasa sola a los 2 s (si se pulsa el altavoz,
 // se cancela y aparece Continuar). Al fallar: correcta ✓ y elegida ✗, panel con la
 // corrección, altavoz, "¿Por qué?" y Continuar; no avanza solo. Nunca suena nada solo.
-// Temporizador según el nivel. El "?" (o cualquier panel) pausa la ronda. Las preguntas se
+// En las rondas por tiempo no se espera: el acierto pasa enseguida y el fallo enseña la
+// correcta un momento, porque el reloj no se para; los fallos se repasan en el resumen.
+// Se responde con botones o tocando el mástil (ctx.answer). Temporizador según el nivel
+// (o el que pida cada pregunta). El "?" (o cualquier panel) pausa la ronda. Las preguntas se
 // eligen con peso (7.4) y se guardan las estadísticas; al terminar o al salir, la ronda va
 // al registro de sesiones.
 
@@ -15,9 +18,11 @@ import { celebrate } from '../ui/confetti.js';
 import { createCountdown } from './countdown.js';
 import { recordStats, saveRound, saveRecord } from './rounds.js';
 import { createRng } from '../core/random.js';
-import { scoreBand, averageSeconds, formatSecondsDecimal } from '../core/session.js';
+import { scoreBand, averageSeconds, formatSecondsDecimal, formatClock } from '../core/session.js';
 import { currentStreak } from '../core/history.js';
 import { fillTemplate } from '../core/glossary.js';
+import { midiAt } from '../core/fretboard-model.js';
+import { mod12 } from '../core/theory.js';
 import { getTuning, DEFAULT_TUNING_ID } from '../data/tunings.js';
 import { LEVELS } from '../data/modules.js';
 import { UI_TEXTS } from '../data/concepts.js';
@@ -25,6 +30,9 @@ import { store } from '../state.js';
 import { playSequence } from '../audio/synth.js';
 
 const AUTO_ADVANCE_MS = 2000;
+/** En las rondas por tiempo: pausa tras acertar y tiempo que se ve la correcta tras fallar. */
+const FAST_RIGHT_MS = 400;
+const FAST_WRONG_MS = 1200;
 
 export const levelTitle = (id) => LEVELS.find((l) => l.id === id)?.title ?? id;
 export const streakText = (n) => `${n} ${n === 1 ? 'día' : 'días'}`;
@@ -41,19 +49,92 @@ export function exerciseCtx(tuning, extra = {}) {
     fretboard: (opts) => Fretboard({ tuning: tuning.midi, ...opts }),
     noteLabel: (pc, opts) => NoteLabel(pc, opts),
     text: (text, className) => h('p', { class: className }, text),
+    midiAt: (string, fret) => midiAt(string, fret, tuning.midi),
+    pcAt: (string, fret) => mod12(midiAt(string, fret, tuning.midi)),
     ...extra,
   };
+}
+
+/** Altavoz que hace sonar la respuesta de una pregunta (6.6.7). */
+function createSpeaker(exercise) {
+  let stopSound = null;
+  const play = (it) => {
+    stopSound?.();
+    const sound = exercise.sound?.(it);
+    if (sound?.midi?.length) stopSound = playSequence(sound.midi, { gap: 0.7 });
+  };
+  return {
+    stop: () => stopSound?.(),
+    button: (it, onPress) => iconButton({
+      iconName: 'volume',
+      label: 'Escuchar la respuesta',
+      className: 'icon-btn--amber speaker-btn',
+      onClick: (e) => { e.stopPropagation(); onPress?.(); play(it); },
+    }),
+  };
+}
+
+/**
+ * Resumen de ronda de Teoría (6.6.10): puntuación, frase, récord, dos datos y los fallos.
+ * results: [{ item, answer, result, ms }] · tiles: los dos datos (por defecto, tiempo medio y racha).
+ * Devuelve la función que detiene el sonido.
+ */
+export function renderQuizSummary(view, { exercise, level, results, isRecord, ctx, nav, onRepeat, tiles }) {
+  const speaker = createSpeaker(exercise);
+  const correct = results.filter((r) => r.result.correct).length;
+  const band = scoreBand(correct, results.length);
+  const avg = averageSeconds(results.filter((r) => r.answer !== null).map((r) => r.ms));
+  const misses = results.filter((r) => !r.result.correct);
+  const streak = statTile('Racha', streakText(currentStreak(store.data.history)));
+
+  const missRow = (r) => {
+    const missed = exercise.answerBy === 'tap' ? UI_TEXTS.round.missTapped : UI_TEXTS.round.missChosen;
+    const text = fillTemplate(r.answer === null ? UI_TEXTS.round.missTimeout : missed, {
+      correct: exercise.answerMarkup(r.item.answer),
+      chosen: r.answer === null ? '' : exercise.answerMarkup(r.answer),
+    });
+    return h('div', { class: 'miss' },
+      h('button', {
+        type: 'button',
+        class: 'miss__main',
+        onClick: () => openWhySheet({ feedback: r.result.feedback, why: r.result.why, figure: exercise.review?.(r.item, ctx), concepts: exercise.concepts }),
+      },
+      richText(r.result.label, { tag: 'span', className: 'miss__label' }),
+      richText(text, { tag: 'span', className: 'miss__answer' })),
+      speaker.button(r.item));
+  };
+
+  render(view,
+    screenHeader({ title: 'Resumen', onBack: nav.back, onHelp: () => openExerciseHelp(exercise), closeIcon: true }),
+    h('div', { class: 'screen summary' },
+      h('p', { class: 'summary__meta' }, `${exercise.title} · ${levelTitle(level)}`),
+      h('p', { class: 'summary__score' }, `${correct}/${results.length}`),
+      UI_TEXTS.scoreBands[band] && h('p', { class: 'summary__phrase' }, UI_TEXTS.scoreBands[band]),
+      isRecord && h('p', { class: 'summary__record' }, badge(UI_TEXTS.round.newRecord, 'amber')),
+      h('div', { class: 'stats' }, tiles ?? [statTile('Tiempo medio', avg === null ? '—' : formatSecondsDecimal(avg)), streak]),
+      misses.length > 0 && [
+        h('h2', { class: 'section-title' }, 'Fallos'),
+        h('div', { class: 'list misses' }, misses.map(missRow)),
+      ],
+      h('div', { class: 'summary__actions' },
+        button({ label: 'Repetir', iconName: 'repeat', variant: 'primary', block: true, onClick: () => onRepeat() }),
+        button({ label: 'Otro ejercicio', block: true, onClick: () => nav.back() })),
+    ));
+  if (band === 'perfect' || isRecord) celebrate();
+  return speaker.stop;
 }
 
 /**
  * Juega una ronda en `view`. onRepeat(): vuelve a empezar con la misma preparación.
  * Devuelve la función de limpieza (al salir de la pantalla).
  */
-export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
+export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, onRepeat }) {
   const params = exercise.levels[level];
   const tuning = getTuning(tuningId);
   const rng = createRng();
-  const total = exercise.roundLength;
+  const timedRound = Boolean(exercise.roundSeconds);
+  const total = timedRound ? null : exercise.roundLength;
+  const round = {}; // estado que comparten las preguntas de una ronda
   const results = []; // { item, answer, result, ms }
   const pauses = new Set();
   let index = 0;
@@ -63,25 +144,15 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
   let saved = false;
   let qClock = null;
   let advanceTimer = null;
-  let stopSound = null;
   let answerBtns = [];
-  const roundClock = createCountdown({ ms: null });
-
-  const playItemSound = (it) => {
-    stopSound?.();
-    const sound = exercise.sound?.(it);
-    if (sound?.midi?.length) stopSound = playSequence(sound.midi, { gap: 0.7 });
-  };
-  const speakerButton = (it, onPress) => iconButton({
-    iconName: 'volume',
-    label: 'Escuchar la respuesta',
-    className: 'icon-btn--amber speaker-btn',
-    onClick: (e) => { e.stopPropagation(); onPress?.(); playItemSound(it); },
-  });
+  let stopSummarySound = null;
+  const speaker = createSpeaker(exercise);
 
   const ctx = exerciseCtx(tuning, {
-    answerButtons(options) {
-      answerBtns = options.map((o) => {
+    // Compacto: del traste 0 al 12 cabe en la pantalla del móvil, con zonas táctiles de más de 44 px.
+    fretboard: (opts) => Fretboard({ tuning: tuning.midi, compact: true, ...opts }),
+    answerButtons(list) {
+      answerBtns = list.map((o) => {
         const btn = h('button', { type: 'button', class: 'btn btn--grey answer', onClick: () => answer(o.value) },
           o.pc != null ? NoteLabel(o.pc) : o.label,
           h('span', { class: 'answer__mark', 'aria-hidden': 'true' }),
@@ -90,35 +161,55 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
       });
       render(answersEl, answerBtns.map((a) => a.btn));
     },
+    /** Respuesta que no es un botón (p. ej. tocar el mástil). */
+    answer: (value) => answer(value),
   });
 
   /* ----- Pantalla ----- */
   const fill = h('div', { class: 'quiz-progress__fill' });
   const count = h('span', { class: 'quiz-progress__count' });
-  const progress = h('div', { class: 'quiz-progress', role: 'progressbar', 'aria-label': 'Progreso de la ronda', 'aria-valuemin': '0', 'aria-valuemax': String(total) },
-    h('div', { class: 'quiz-progress__track' }, fill), count);
+  const progress = h('div', {
+    class: 'quiz-progress',
+    role: timedRound ? 'timer' : 'progressbar',
+    'aria-label': timedRound ? 'Tiempo restante' : 'Progreso de la ronda',
+    ...(timedRound ? {} : { 'aria-valuemin': '0', 'aria-valuemax': String(total) }),
+  }, h('div', { class: 'quiz-progress__track' }, fill), count);
   const timeFill = h('div', { class: 'quiz-timer__fill' });
+  const timerEl = h('div', { class: 'quiz-timer', 'aria-hidden': 'true', hidden: true }, timeFill);
   const header = h('header', { class: 'screen-header quiz-header' },
     h('div', { class: 'screen-header__bar' },
       iconButton({ iconName: 'close', label: 'Salir de la ronda', onClick: () => exit() }),
       progress,
       iconButton({ iconName: 'help', label: 'Ayuda', onClick: () => openExerciseHelp(exercise) }),
     ),
-    params.timeLimit ? h('div', { class: 'quiz-timer', 'aria-hidden': 'true' }, timeFill) : null,
+    timerEl,
   );
+  const promptEl = h('h2', { class: 'quiz__prompt' });
   const stage = h('div', { class: 'quiz__stage' });
   const answersEl = h('div', { class: 'quiz__answers' });
   const feedbackEl = h('div', { class: 'quiz__feedback', 'aria-live': 'polite' });
   render(view, header, h('div', { class: 'screen quiz' },
-    tuningTag(tuning),
-    h('h2', { class: 'quiz__prompt' }, exercise.prompt),
-    stage, answersEl, feedbackEl));
+    tuningTag(tuning), promptEl, stage, answersEl, feedbackEl));
 
   const setProgress = (done) => {
+    if (timedRound) return;
     fill.style.width = `${(done / total) * 100}%`;
     count.textContent = `${Math.min(index, total)}/${total}`;
     progress.setAttribute('aria-valuenow', String(done));
   };
+
+  /* ----- Reloj de la ronda: cuenta hacia arriba, o hacia atrás en las rondas por tiempo ----- */
+  const roundMs = timedRound ? exercise.roundSeconds * 1000 : null;
+  const roundClock = createCountdown({
+    ms: roundMs,
+    onTick: (value) => {
+      if (!timedRound) return;
+      count.textContent = formatClock(value / 1000);
+      fill.style.width = `${(1 - value / roundMs) * 100}%`;
+    },
+    onDone: () => finish(),
+  });
+  if (timedRound) count.textContent = formatClock(exercise.roundSeconds);
 
   /* ----- Pausa: panel abierto o app en segundo plano ----- */
   const isPaused = () => pauses.size > 0;
@@ -144,17 +235,21 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
     state = 'asking';
     index += 1;
     item = exercise.generate(params, rng, {
-      stats: store.data.stats, previousKey: item?.key ?? null, tuning: tuning.midi, tuningId, now: Date.now(),
+      stats: store.data.stats, previousKey: item?.key ?? null, tuning: tuning.midi, tuningId, options, round, now: Date.now(),
     });
     setProgress(index - 1);
+    render(promptEl, richText(typeof exercise.prompt === 'function' ? exercise.prompt(item) : exercise.prompt, { tag: 'span' }));
     render(stage);
     render(answersEl);
     render(feedbackEl);
+    answerBtns = [];
     itemView = exercise.render(item, stage, ctx);
+    const limit = item.timeLimit !== undefined ? item.timeLimit : params.timeLimit;
+    timerEl.hidden = !limit;
     timeFill.style.width = '100%';
     qClock = createCountdown({
-      ms: params.timeLimit ? params.timeLimit * 1000 : null,
-      onTick: (left) => { if (params.timeLimit) timeFill.style.width = `${(left / (params.timeLimit * 1000)) * 100}%`; },
+      ms: limit ? limit * 1000 : null,
+      onTick: (left) => { if (limit) timeFill.style.width = `${(left / (limit * 1000)) * 100}%`; },
       onDone: () => answer(null),
     });
     if (!isPaused()) qClock.start();
@@ -191,13 +286,21 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
     results.push({ item, answer: value, result, ms });
     setProgress(index);
     markAnswers(value);
-    itemView?.reveal?.(result);
+    itemView?.reveal?.(result, value);
     const current = item;
-    if (result.correct) {
+    if (timedRound) {
+      render(feedbackEl, result.correct
+        ? h('div', { class: 'quiz__result' }, h('span', { class: 'quiz__verdict' }, 'Correcto ✓'))
+        : h('div', { class: 'quiz__result quiz__result--wrong' },
+          h('span', { class: 'quiz__verdict', 'aria-hidden': 'true' }, '✗'),
+          richText(result.feedback, { tag: 'span', className: 'quiz__fast-feedback' })));
+      advanceTimer = createCountdown({ ms: result.correct ? FAST_RIGHT_MS : FAST_WRONG_MS, onDone: () => next() });
+      if (!isPaused()) advanceTimer.start();
+    } else if (result.correct) {
       const slot = h('div');
       render(feedbackEl, h('div', { class: 'quiz__result' },
         h('span', { class: 'quiz__verdict' }, 'Correcto ✓'),
-        speakerButton(current, () => {
+        speaker.button(current, () => {
           advanceTimer?.cancel();
           advanceTimer = null;
           if (!slot.childElementCount) slot.append(continueButton());
@@ -208,7 +311,7 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
       const panel = h('div', { class: 'quiz-panel' },
         richText(result.feedback, { className: 'quiz-panel__text' }),
         h('div', { class: 'quiz-panel__row' },
-          speakerButton(current),
+          speaker.button(current),
           h('button', {
             type: 'button',
             class: 'link-btn',
@@ -224,8 +327,8 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
     if (state !== 'answered') return;
     advanceTimer?.cancel();
     advanceTimer = null;
-    stopSound?.();
-    if (index >= total) finish();
+    speaker.stop();
+    if (!timedRound && index >= total) finish();
     else nextQuestion();
   }
 
@@ -246,15 +349,16 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
     qClock?.cancel();
     advanceTimer?.cancel();
     roundClock.pause();
-    stopSound?.();
+    speaker.stop();
     offSheet();
     document.removeEventListener('visibilitychange', onVisibility);
   }
 
   function finish() {
+    if (state === 'done') return;
     state = 'done';
     stopAll();
-    showSummary(save(true));
+    stopSummarySound = renderQuizSummary(view, { exercise, level, results, isRecord: save(true), ctx, nav, onRepeat });
   }
 
   async function exit() {
@@ -265,48 +369,6 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
     nav.back();
   }
 
-  function missRow(r) {
-    const text = fillTemplate(r.answer === null ? UI_TEXTS.round.missTimeout : UI_TEXTS.round.missChosen, {
-      correct: exercise.answerMarkup(r.item.answer),
-      chosen: r.answer === null ? '' : exercise.answerMarkup(r.answer),
-    });
-    return h('div', { class: 'miss' },
-      h('button', {
-        type: 'button',
-        class: 'miss__main',
-        onClick: () => openWhySheet({ feedback: r.result.feedback, why: r.result.why, figure: exercise.review?.(r.item, ctx), concepts: exercise.concepts }),
-      },
-      richText(r.result.label, { tag: 'span', className: 'miss__label' }),
-      richText(text, { tag: 'span', className: 'miss__answer' })),
-      speakerButton(r.item));
-  }
-
-  function showSummary(isRecord) {
-    const correct = correctCount();
-    const band = scoreBand(correct, results.length);
-    const avg = averageSeconds(results.filter((r) => r.answer !== null).map((r) => r.ms));
-    const misses = results.filter((r) => !r.result.correct);
-    render(view,
-      screenHeader({ title: 'Resumen', onBack: nav.back, onHelp: () => openExerciseHelp(exercise), closeIcon: true }),
-      h('div', { class: 'screen summary' },
-        h('p', { class: 'summary__meta' }, `${exercise.title} · ${levelTitle(level)}`),
-        h('p', { class: 'summary__score' }, `${correct}/${results.length}`),
-        UI_TEXTS.scoreBands[band] && h('p', { class: 'summary__phrase' }, UI_TEXTS.scoreBands[band]),
-        isRecord && h('p', { class: 'summary__record' }, badge(UI_TEXTS.round.newRecord, 'amber')),
-        h('div', { class: 'stats' },
-          statTile('Tiempo medio', avg === null ? '—' : formatSecondsDecimal(avg)),
-          statTile('Racha', streakText(currentStreak(store.data.history)))),
-        misses.length > 0 && [
-          h('h2', { class: 'section-title' }, 'Fallos'),
-          h('div', { class: 'list misses' }, misses.map(missRow)),
-        ],
-        h('div', { class: 'summary__actions' },
-          button({ label: 'Repetir', iconName: 'repeat', variant: 'primary', block: true, onClick: () => onRepeat() }),
-          button({ label: 'Otro ejercicio', block: true, onClick: () => nav.back() })),
-      ));
-    if (band === 'perfect' || isRecord) celebrate();
-  }
-
   roundClock.start();
   nextQuestion();
 
@@ -315,7 +377,6 @@ export function runQuiz(view, { exercise, level, tuningId, nav, onRepeat }) {
       stopAll();
       save(false);
     }
-    stopSound?.();
+    stopSummarySound?.();
   };
 }
-

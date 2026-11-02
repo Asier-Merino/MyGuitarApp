@@ -4,6 +4,8 @@
 // siguiente. Pausa y "Ver posiciones" abajo; el "?" solo en pausa. Duración de la ronda
 // (con el tiempo restante en la cabecera) o un número fijo de consignas. Metrónomo opcional.
 // Pantalla encendida mientras dura. Sin autoevaluación: el resumen solo dice qué se ha hecho.
+// Cada consigna puede traer sus marcas (item.markers), una leyenda (item.legend) y lo que
+// suena al enseñar la solución (item.revealSound, p. ej. un punto y su unísono).
 
 import { h, render, button, iconButton, screenHeader, badge } from '../ui/components.js';
 import { icon } from '../ui/icons.js';
@@ -21,6 +23,7 @@ import { getTuning } from '../data/tunings.js';
 import { UI_TEXTS } from '../data/concepts.js';
 import { settings } from '../state.js';
 import { createMetronome } from '../audio/metronome.js';
+import { playSequence } from '../audio/synth.js';
 
 /** Tiempo que se ven las posiciones al acabarse la cuenta atrás. */
 export const REVEAL_MS = 3000;
@@ -36,6 +39,8 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
   const ctx = exerciseCtx(tuning);
   const pauses = new Set();
   const recentKeys = [];
+  const round = {}; // estado que comparten las consignas de una ronda (p. ej. la cuerda al azar)
+  let stopRevealSound = null;
   let item = null;
   let shown = 0;
   let phase = 'prompt'; // prompt | reveal
@@ -88,10 +93,11 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
   const showBtn = h('button', { type: 'button', class: 'btn btn--grey practice__btn', 'aria-pressed': 'false', onClick: () => togglePositions() },
     icon('eye'), h('span', {}, 'Ver posiciones'));
 
-  render(view, header, h('div', { class: 'screen practice' },
+  const screenEl = h('div', { class: 'screen practice' },
     tuningTag(tuning),
     stage, countdownEl, guideEl, positionsEl, pausedEl,
-    h('div', { class: 'practice__actions' }, pauseBtn, showBtn)));
+    h('div', { class: 'practice__actions' }, pauseBtn, showBtn));
+  render(view, header, screenEl);
 
   /* ----- Reloj de la ronda (cabecera) ----- */
   const roundClock = createCountdown({
@@ -140,11 +146,17 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
   }
 
   function drawPositions() {
-    render(positionsEl, positionsOpen && ctx.fretboard({
-      fromFret: item.fromFret ?? 0,
-      toFret: item.toFret ?? 12,
-      markers: item.positions.map((p) => ({ ...p, pc: item.pc, color: 'amber' })),
-    }));
+    render(positionsEl, positionsOpen && [
+      ctx.fretboard({
+        dense: true,
+        fromFret: item.fromFret ?? 0,
+        toFret: item.toFret ?? 12,
+        markers: item.markers ?? item.positions.map((p) => ({ ...p, pc: item.pc, color: 'amber' })),
+      }),
+      item.legend && h('p', { class: 'practice__legend' }, item.legend),
+    ]);
+    // Con las posiciones a la vista, la consigna se encoge para que el mástil quepa en la pantalla.
+    screenEl.classList.toggle('is-revealing', positionsOpen);
     showBtn.setAttribute('aria-pressed', String(positionsOpen));
     showBtn.querySelector('span').textContent = positionsOpen ? 'Ocultar posiciones' : 'Ver posiciones';
   }
@@ -163,7 +175,8 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
     if (state === 'done') return;
     if (!timed && shown >= total) { finish(); return; }
     phase = 'prompt';
-    item = exercise.generate(params, rng, { recentKeys: recentKeys.slice(-2), tuning: tuning.midi, tuningId });
+    stopRevealSound?.();
+    item = exercise.generate(params, rng, { recentKeys: recentKeys.slice(-2), tuning: tuning.midi, tuningId, options, round });
     recentKeys.push(item.key);
     shown += 1;
     if (!timed) {
@@ -197,6 +210,7 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
     [...guideEl.children].forEach((el) => el.classList.remove('is-on'));
     positionsOpen = true;
     drawPositions();
+    if (item.revealSound?.length) stopRevealSound = playSequence(item.revealSound, { gap: 0.8 });
     if (!timed) fill.style.width = `${(shown / total) * 100}%`;
     revealClock = createCountdown({ ms: REVEAL_MS, onDone: () => nextItem() });
     if (!isPaused()) revealClock.start();
@@ -208,6 +222,7 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
     revealClock?.cancel();
     roundClock.pause();
     metro?.stop();
+    stopRevealSound?.();
     stopSpeech();
     releaseScreen();
     offSheet();

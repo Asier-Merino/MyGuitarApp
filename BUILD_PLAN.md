@@ -143,17 +143,18 @@
 │   │   ├── scheduler.js       # reloj con lookahead
 │   │   ├── metronome.js       # 30–240 BPM, compás, subdivisión y subida automática de tempo
 │   │   └── backing.js         # base de blues (bajo, acordes, percusión)
-│   ├── screens/               # Inicio, Sección, Módulo, Preparación, Ejercicio (play.js), Próximamente
+│   ├── screens/               # Inicio, Sección, Módulo, Preparación, Aprender (lesson.js), Ejercicio (play.js), Próximamente
 │   ├── engine/
 │   │   ├── exercise-registry.js
 │   │   ├── quiz-runner.js     # motor de ejercicios de Teoría
 │   │   ├── practice-runner.js # motor de ejercicios de Práctica (duración, temporizador, voz, wake lock)
+│   │   ├── fill-runner.js     # motor de "Rellena el mástil" (puzle con teclado de 12 notas)
 │   │   ├── rounds.js          # preparación, arranque, registro de sesiones, estadísticas y récords
 │   │   ├── countdown.js       # temporizador que se puede pausar
 │   │   ├── wake-lock.js       # pantalla encendida
 │   │   └── speech.js
 │   └── modules/
-│       ├── notes/
+│       ├── notes/             # common.js, theory-exercises.js, practice-exercises.js, reference-view.js
 │       ├── chords/
 │       ├── ear/
 │       ├── theory/            # Escala y tonalidad
@@ -163,7 +164,7 @@
 │       ├── tunings/           # pantalla Afinaciones
 │       ├── glossary/
 │       ├── tools/             # Herramientas: metronome-view.js (pantalla Metrónomo, 6.6.18)
-│       ├── dev/               # página de prueba (#/dev) y ejercicios de prueba de la Fase 1B
+│       ├── dev/               # página de prueba (#/dev): mástil, acordes, voz y pulso
 │       └── profile/           # Perfil (sustituye a progress/)
 └── tests/
     ├── theory.test.js
@@ -495,6 +496,7 @@ Progresiones típicas con acordes abiertos, **calculadas por grados** (no escrit
 - `auto` usa `matchMedia('(orientation: portrait)')`. En ajustes se puede forzar, por si el iPhone tiene la rotación bloqueada.
 - Marcas de traste en 3, 5, 7, 9, 15 y doble en 12.
 - Zonas táctiles de al menos **44×44 px** (aunque el punto visual sea más pequeño).
+- **Tamaños** (Fase 2): normal (trastes de 58), `compact` (46, para los ejercicios en los que se toca el mástil: del 0 al 12 cabe en la pantalla del iPhone) y `dense` (32, solo para mástiles que se miran sin tocarlos, como la solución de Práctica). En las preguntas con botones se enseña un trozo de 5 trastes alrededor del punto (o del 0 al 5 entero en Básico).
 - El traste 0 (al aire) se representa a la izquierda o encima de la cejuela.
 - **Aspecto** (igual en todas las pantallas y en los diagramas de acordes):
   - **Las cuerdas son más gruesas que las líneas de los trastes**, con grosor graduado como en una guitarra real: la 6ª la más gruesa y la 1ª la más fina (por ejemplo, de 1,5 px a 3,5 px a tamaño normal; ajustar a la escala del dibujo).
@@ -1128,10 +1130,10 @@ Objetivo: las piezas reutilizables que usan todos los módulos.
 
 ### Fase 2 — Módulo Notas del mástil
 **Teoría**
-- [ ] Componente de **lección por tarjetas** (6.6.4), estrenado con la lección de Notas.
-- [ ] Aprender: cómo se distribuyen las notas, las 7 naturales, que entre Mi-Fa y Si-Do solo hay un semitono, el traste 12 como octava de la cuerda al aire, y las formas de octava.
-- [ ] Consulta: mástil completo con todas las notas, con filtro por nota (por ejemplo, ver todos los Sol).
-- [ ] Ejercicios:
+- [x] Componente de **lección por tarjetas** (6.6.4), estrenado con la lección de Notas.
+- [x] Aprender: cómo se distribuyen las notas, las 7 naturales, que entre Mi-Fa y Si-Do solo hay un semitono, el traste 12 como octava de la cuerda al aire, y las formas de octava.
+- [x] Consulta: mástil completo con todas las notas, con filtro por nota (por ejemplo, ver todos los Sol).
+- [x] Ejercicios:
   - "¿Qué nota es?": se ilumina un traste y se responde con botones.
   - "Encuéntrala": se pide una nota en una cuerda concreta y se toca en el mástil.
   - "Todas en una cuerda": encontrar todas las posiciones de una nota en una cuerda entre 0 y 12.
@@ -1141,14 +1143,14 @@ Objetivo: las piezas reutilizables que usan todos los módulos.
   - "Contrarreloj": el máximo de aciertos en 60 s (récord en Perfil).
 
 **Práctica**
-- [ ] "Nota por todas las cuerdas": la app dice una nota y tú la tocas en las 6 cuerdas antes de que acabe el tiempo.
-- [ ] "Cuerda a cuerda": se fija una cuerda y la app canta notas al azar para que las toques.
-- [ ] "Paseo de octavas": la app dice una nota y tú la tocas y luego su octava.
-- [ ] "Unísonos" (ver abajo).
+- [x] "Nota por todas las cuerdas": la app dice una nota y tú la tocas en las 6 cuerdas antes de que acabe el tiempo.
+- [x] "Cuerda a cuerda": se fija una cuerda y la app canta notas al azar para que las toques.
+- [x] "Paseo de octavas": la app dice una nota y tú la tocas y luego su octava.
+- [x] "Unísonos" (ver abajo).
 
 **Unísonos** (Teoría y Práctica)
 Encontrar **la misma nota exacta** (mismo MIDI, no solo el mismo nombre) en otra cuerda.
-- **Teoría**: se marca un punto (por ejemplo, 6ª cuerda traste 7) y se toca su unísono en la cuerda indicada (5ª cuerda traste 2).
+- **Teoría**: se marca un punto (por ejemplo, 5ª cuerda traste 2) y se toca su unísono en la cuerda indicada (6ª cuerda traste 7).
 - **Práctica**: la app dice "6ª cuerda, traste 7"; se toca ese punto y su unísono en la cuerda de al lado. Al mostrar la solución, la app hace sonar las dos para oír que son iguales.
 - Se calcula siempre por MIDI a partir de la afinación (`tunings: 'any'`).
 - Conceptos: "Unísono" y "Regla de los 5 trastes (4 entre Sol y Si)".
@@ -1156,8 +1158,9 @@ Encontrar **la misma nota exacta** (mismo MIDI, no solo el mismo nombre) en otra
 | | Básico | Intermedio | Avanzado |
 |---|---|---|---|
 | Dirección | hacia la cuerda más grave de al lado (+5 trastes) | ambas direcciones, incluido el paso Sol–Si | todas las posiciones de esa nota exacta en 0–15 |
-| Cuerdas | 6, 5 y 4 | todas | todas |
+| Cuerdas | 6, 5 y 4 (el punto en la 5ª o la 4ª; el unísono en la 6ª o la 5ª) | todas | todas |
 
+- Rango: trastes 0–12 en Básico e Intermedio y 0–15 en Avanzado. Tiempo (Teoría): el de la tabla general (sin límite, 10 s y 5 s), multiplicado por el número de unísonos en Avanzado.
 - Test: la respuesta tiene siempre el mismo MIDI que la pregunta y cae dentro del rango.
 
 **Rellena el mástil** (Teoría)
@@ -1181,8 +1184,22 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 | Tiempo (Teoría) | sin límite | 10 s | 5 s |
 | Tiempo por nota (Práctica) | 20 s | 12 s | 7 s |
 
-- [ ] Las estadísticas se guardan con claves `note:s{cuerda}f{traste}`.
-- [ ] Conceptos del bloque Notas en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
+- [x] Las estadísticas se guardan con claves `note:s{cuerda}f{traste}`.
+- [x] Conceptos del bloque Notas en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
+
+**Decisiones de la Fase 2** (aprobadas por el usuario antes de empezar):
+- **Afinaciones**: admiten cualquiera de las 7 "¿Qué nota es?", "Encuéntrala", "Todas en una cuerda", "Rellena el mástil", "Contrarreloj", "Nota por todas las cuerdas", "Cuerda a cuerda" y los dos "Unísonos". "Octavas" y "Paseo de octavas" solo la estándar.
+- **Cuerdas en Básico**: opción "Cuerdas" en la preparación, solo en Básico: 6ª y 5ª (por defecto), 6ª, 5ª o todas.
+- **Tocar varios puntos** ("Todas en una cuerda" y Unísonos Avanzado): la pregunta termina al encontrarlos todos o al primer toque equivocado (fallo y solución). El tiempo del nivel se multiplica por el número de posiciones.
+- **"Todas en una cuerda"**: trastes 0–12 en los tres niveles; el nivel cambia las cuerdas, las notas y el tiempo.
+- **"Octavas"**: vale cualquier forma de octava de 4.3, hacia agudos o graves, dentro del mástil visible (0–7 en Básico, 0–12 en el resto). La misma nota en otro sitio que no sea una forma no cuenta, y el "¿Por qué?" lo explica.
+- **"Rellena el mástil"**: una ronda es una cuerda (dos en Avanzado, la mitad de las veces). En Básico, las casillas con alteración salen rellenas. Un fallo enseña la nota correcta con ✗ y cuenta como fallo. El récord es el tiempo, solo sin fallos. Contrarreloj de Avanzado: 60 s por cuerda (90 s con dos).
+- **"Contrarreloj"**: preguntas de "¿Qué nota es?"; al acertar pasa enseguida y al fallar enseña la correcta un momento, sin esperar a Continuar. Récord por nivel.
+- **Práctica**: rondas de 12 consignas, sin selector de duración. "Cuerda a cuerda": cuerda elegida en la preparación (6ª a 1ª o "Al azar", una para toda la ronda). "Paseo de octavas": la consigna dice la cuerda, y la solución marca las octavas con un 8. "Nota por todas las cuerdas" usa las 6 cuerdas y los trastes 0–12 en todos los niveles (es la naturaleza del ejercicio).
+- **Consulta**: trastes 0–12, con filtro de 12 notas y "Todas".
+- **Pantalla del móvil** (al probarla): en "¿Qué nota es?" y "Contrarreloj" se ve un trozo de 5 trastes (6.6.7), para que los botones queden a la vista; los ejercicios en los que se toca el mástil usan el mástil compacto (6.3); y en Práctica, al enseñar la solución, la consigna se encoge para que el mástil quepa.
+- **`#/dev`**: se quitan los ejercicios de prueba de la 1B; la página queda para el mástil, los acordes, la voz y el pulso.
+- **Conceptos nuevos**: "Unísono", "Regla de los 5 trastes (4 entre la 3ª y la 2ª)" (el título no escribe los nombres de nota a mano; el texto nombra Sol y Si con la notación elegida) y "Formas de octava".
 
 **Hecho cuando**: todos los ejercicios funcionan en los 3 niveles, en ambas orientaciones y con ambas notaciones, los unísonos funcionan también con afinaciones no estándar y las estadísticas se guardan.
 
@@ -1429,6 +1446,7 @@ El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide 
 | `v0.0.0` | 0 | `02807df` (Fase 0: marcar despliegue en BUILD_PLAN) |
 | `v0.1.0` | 1A | `0625545` (Fase 1A: navegación, estilo GuitarSeo, Afinaciones, Glosario y Ajustes) |
 | `v0.1.1` | 1B | commit "Fase 1B: mástil, sonido, metrónomo y motores de ejercicio" |
+| `v0.2.0` | 2 | commit "Fase 2: módulo Notas del mástil" |
 
 ---
 
@@ -1466,3 +1484,4 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 | 2026-11-02 | Plan | Integrado `CAMBIOS.md` (ampliaciones de la v1): **duración elegible** en los ejercicios por tiempo (6.6.6, 6.6.8, 7.3; control común en la Fase 1B, estrenado en la Fase 3), que sustituye a P5; el Calentamiento conserva la subida de tempo y "Cambios en un minuto" sigue en 60 s; **licks** ampliados a unos 12, de 3 a 8 notas, con técnicas, estilo (blues, rock, country), escala y nivel, y sus reglas de test (5.5); filtro por estilo en "Pregunta-respuesta" y "Licks por acorde"; **velocidad 50/75/100 %** en el reproductor de la tablatura (6.7); **etiquetas de versión** por fase (10), creadas ya `v0.0.0` y `v0.1.0`; **simulación de Android** en la verificación (10). **El slide pasa a su propia fase**: Fase 6 blues, Fase 7 slide, Fase 8 CAGED y Fase 9 Perfil y sesión mezclada (`v1.0.0`). | Separar el slide: el usuario lo sugirió y pidió opinión; se adopta. Pendiente: `docs/FUTURAS_UPDATES.md` y la reorganización de las secciones 11 y 12 (nota en la 12); en qué nivel cuenta el vibrato (Fase 6). |
 | 2026-11-02 | Plan | **Metrónomo como herramienta**: fila Herramientas en el Inicio (1, 6.6.1), rama en la navegación (6.4), pantalla nueva 6.6.18 y `modules/tools/` (3); en la Fase 1B, `audio/metronome.js` pasa a 30–240 BPM con tiempos por compás (2–7) y subdivisión, tarea "Herramienta Metrónomo", Wake Lock también en el Metrónomo y nuevo "Hecho cuando". Nuevo tipo de esquema `beats` (pulsos) en 6.8 para el concepto "Metrónomo, tempo y BPM". **Futuras updates**: `docs/FUTURAS_UPDATES.md` añadido (no forma parte del plan); la sección 11 remite a él (CAGED de séptima, *rhythm changes* y Capacitor copiados a "Ideas sin decidir"; el resto ya estaba); P2, P3, P4, P6 y P7 movidas allí con su nombre, y la sección 12 queda sin propuestas pendientes. | Esquema de pulsos elegido por el usuario. Queda resuelta la duda de la descripción de P2–P7. |
 | 2026-11-02 | 1B | Mástil SVG (vertical y horizontal, automático o forzado, cuerdas graduadas, cejuela, marcas, doble notación en los puntos, zonas táctiles de 58×50) y diagrama de acorde (dedos, o, ×, cejilla); `data/chords.js` con la tabla 5.1 y su test (adelantado de la Fase 3, solo datos); audio: contexto creado en el primer toque, `audioSession = playback` o `<audio>` silencioso en bucle en iPhones antiguos, Karplus-Strong con filtro paso bajo, rasgueo (25 ms) y arpegio; planificador con lookahead (25 ms / 100 ms, sin ráfagas al volver de segundo plano); metrónomo 30–240 BPM, 2–7 tiempos, negras/corcheas/tresillos; herramienta **Metrónomo** con −/+ (pulsación larga), deslizador, marcar el tempo tocando (media de 4 intervalos, se reinicia tras 2 s), Wake Lock y ajustes recordados; fila Herramientas en Inicio; concepto «Metrónomo, tempo y BPM» con esquema de pulsos; esquemas calculados en las 14 fichas de la 1A (leyenda escrita en todo lo resaltado con color); voz es-ES/en-US; registro de ejercicios validado; motores de Teoría y de Práctica (pausa con el «?», cuenta atrás, guía de ritmo, posiciones 3 s, duración con «Sin límite», metrónomo opcional); preparación con duración, metrónomo y «Preguntar antes de cada ejercicio»; resumen con frase según el porcentaje, fallos con «¿Por qué?» y confeti; registro de sesiones, estadísticas, récords, racha y «Continuar»; Perfil con racha; página de prueba `#/dev` con dos ejercicios de prueba. Cambios al plan: esquema de datos v3 (`tools`), colores de función del tema claro algo más oscuros (4.5), CAGED en la fase 8 y sesión mezclada en la 9 (`modules.js`), estructura de carpetas (3). | Aceptadas todas las propuestas de la 1B (ejercicios de prueba en `#/dev` que cuentan en Perfil, adelantar `chords.js`, esquemas de las fichas, comportamientos sin definir). Pendiente de comprobar en el iPhone: sonido real, modo silencio, voz, Wake Lock y pulso del metrónomo. |
+| 2026-11-02 | 2 | Módulo **Notas del mástil**: componente de lección por tarjetas (6.6.4: barra segmentada, Anterior/Siguiente, deslizar, "Ir a los ejercicios" y lección completada) con la lección de Notas en 6 tarjetas con esquema interactivo; Consulta con el mástil 0–12 y filtro por nota; 7 ejercicios de Teoría ("¿Qué nota es?", "Encuéntrala", "Todas en una cuerda", "Octavas", "Unísonos", "Rellena el mástil" con su motor y teclado de 12 notas, "Contrarreloj" de 60 s con récord) y 4 de Práctica ("Nota por todas las cuerdas", "Cuerda a cuerda", "Paseo de octavas" y "Unísonos", que hace sonar los dos puntos al enseñar la solución); estadísticas `note:s{cuerda}f{traste}`; récords de Contrarreloj y Rellena; conceptos nuevos "Unísono", "Regla de los 5 trastes (4 entre la 3ª y la 2ª)" y "Formas de octava", con esquemas calculados; motor de Teoría con respuesta tocando el mástil, consigna por pregunta y ronda por tiempo; opciones de elección en la preparación (Cuerdas, Cuerda); mástil `compact` y `dense` (6.3); se quitan los ejercicios de prueba de `#/dev`. Tests contra la teoría (MIDI, formas de octava de 4.3, regla de los 5 trastes) en las 7 afinaciones. Cambios al plan: decisiones de la Fase 2, ejemplo de Unísonos de Teoría corregido para que coincida con su tabla, estructura de carpetas (3), tamaños del mástil (6.3). | Aceptadas todas las propuestas de la Fase 2 (afinaciones, opción de cuerdas, toques múltiples, Octavas, Rellena, Contrarreloj, Práctica de 12 consignas, Consulta 0–12, quitar los ejercicios de prueba). |

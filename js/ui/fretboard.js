@@ -4,7 +4,10 @@
 // gruesa y marcas en 3, 5, 7, 9, 15 y doble en 12. Cada punto lleva siempre su etiqueta.
 //
 // Fretboard({ fromFret, toFret, orientation, tuning, markers, onTap, playOnTap,
-//             showFretNumbers, showStringNumbers, accidentals, label })
+//             showFretNumbers, showStringNumbers, accidentals, label, compact })
+// compact: trastes más cortos (46 en lugar de 58), para que quepan del 0 al 12 en la
+// pantalla del móvil cuando hay que tocar el mástil para responder. dense: aún más cortos
+// (32), solo para mástiles que se miran sin tocarlos (sin onTap ni playOnTap).
 // markers: [{ string, fret, pc?, text?, color?, root?, state?: 'correct'|'wrong', hollow?, midi? }]
 //   color: 'neutral' | 'amber' | 'root' | 'third' | 'fifth' | 'seventh' | 'blue' | 'other'
 //   (si falta y hay `root`, se calcula la función de la nota). Etiqueta: `text`, o la nota
@@ -21,7 +24,9 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 
 // Geometría en unidades del dibujo (≈ píxeles a tamaño normal): las zonas táctiles miden
 // un traste por una cuerda (58 × 50), por encima de los 44 × 44 px.
-const CELL = 58;      // largo de cada traste
+const CELL_DEFAULT = 58; // largo de cada traste
+const CELL_COMPACT = 46; // con `compact`: la zona táctil sigue por encima de 44 px
+const CELL_DENSE = 32;   // con `dense`: sin zonas táctiles
 const SPACING = 50;   // separación entre cuerdas
 const OPEN = 46;      // zona del traste 0, antes de la cejuela
 const TOP = 6;        // borde cuando el dibujo no empieza en la cejuela
@@ -48,7 +53,7 @@ export function resolveOrientation(option) {
 }
 
 /** Posición a lo largo del mástil (centro de un traste, o de la zona al aire). */
-function layout(fromFret, toFret) {
+function layout(fromFret, toFret, cell) {
   const startsAtNut = fromFret === 0;
   const firstFretted = Math.max(1, fromFret);
   const cells = Math.max(0, toFret - firstFretted + 1);
@@ -57,9 +62,9 @@ function layout(fromFret, toFret) {
     startsAtNut,
     firstFretted,
     start,
-    length: start + cells * CELL + END,
-    center: (fret) => (fret === 0 ? OPEN / 2 : start + (fret - firstFretted + 0.5) * CELL),
-    wire: (fret) => start + (fret - firstFretted + 1) * CELL, // traste metálico al final de `fret`
+    length: start + cells * cell + END,
+    center: (fret) => (fret === 0 ? OPEN / 2 : start + (fret - firstFretted + 0.5) * cell),
+    wire: (fret) => start + (fret - firstFretted + 1) * cell, // traste metálico al final de `fret`
   };
 }
 
@@ -92,7 +97,13 @@ export function Fretboard(options = {}) {
     showStringNumbers = false,
     accidentals,
     label = 'Mástil',
+    compact = false,
+    dense = false,
   } = options;
+  if (dense && (onTap || playOnTap)) throw new Error('Un mástil «dense» no se puede tocar: sus casillas miden menos de 44 px');
+  let CELL = CELL_DEFAULT;
+  if (compact) CELL = CELL_COMPACT;
+  if (dense) CELL = CELL_DENSE;
   let markers = options.markers ?? [];
   const wrapper = document.createElement('div');
   wrapper.className = 'fretboard';
@@ -107,7 +118,7 @@ export function Fretboard(options = {}) {
     orientation = resolveOrientation(options.orientation);
     const vertical = orientation === 'vertical';
     wrapper.dataset.orientation = orientation;
-    const L = layout(fromFret, toFret);
+    const L = layout(fromFret, toFret, CELL);
 
     // Márgenes: números de traste a la izquierda (vertical) o debajo (horizontal);
     // números de cuerda arriba (vertical) o a la izquierda (horizontal).

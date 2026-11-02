@@ -9,15 +9,22 @@
 //     { select: 'open' }                       las 6 cuerdas al aire
 //     { select: 'sound', string }              las notas de `sound.midi` del concepto, en esa cuerda
 //     { select: 'string', string }             todos los trastes del rango en esa cuerda
+//     { select: 'frets', frets: [..] }         esos trastes en las 6 cuerdas
+//     { select: 'unison', string, fret }       el punto y sus unísonos (mismo MIDI) en el rango
+//     { select: 'octaves', string, fret }      el punto y, hacia agudos, sus formas de octava
+//     { select: 'five-fret-rule' }             de la 6ª a la 2ª: el traste que suena como la
+//                                              cuerda siguiente al aire, y esa cuerda al aire
 //   highlight (opcional): 'natural-semitones' (Mi–Fa y Si–Do) · 'changed' (cuerdas que cambian
-//     respecto a la estándar) · colorBy: 'function' (colores de R, 3 y 5 respecto a la nota
+//     respecto a la estándar) · 'accidentals' (notas con sostenido o bemol) · 'start' (el
+//     punto de partida de 'unison' u 'octaves') · 'gap' (en 'five-fret-rule', las parejas
+//     que no están a 5 trastes) · colorBy: 'function' (colores de R, 3 y 5 respecto a la nota
 //     que da nombre a la afinación)
 //   showStringNumbers, showFretNumbers · caption (texto con marcado, opcional)
 // diagram (type 'beats'): { beatsPerBar, bpm }  esquema de pulsos
 
 import { mod12, noteFunction } from './theory.js';
 import { LETTER_PC } from './notation.js';
-import { STRINGS, STANDARD_TUNING, midiAt } from './fretboard-model.js';
+import { STRINGS, STANDARD_TUNING, midiAt, unisonsOf, octavesOf } from './fretboard-model.js';
 import { getTuning } from '../data/tunings.js';
 
 export const DIAGRAM_TYPES = Object.freeze(['fretboard', 'chord', 'tab', 'beats']);
@@ -26,6 +33,9 @@ export const DIAGRAM_TYPES = Object.freeze(['fretboard', 'chord', 'tab', 'beats'
 const LOW_TO_HIGH = Object.freeze([...STRINGS].reverse());
 
 const NATURAL_PCS = Object.freeze(Object.values(LETTER_PC).sort((a, b) => a - b));
+
+/** Trastes de la "regla de los 5 trastes" entre cuerdas vecinas (salvo 3ª–2ª, a 4). */
+export const RULE_GAP = 5;
 
 /** Naturales separadas de su vecina natural por un solo semitono: Mi, Fa, Si y Do. */
 export function naturalSemitonePcs() {
@@ -52,6 +62,29 @@ function selectPositions(diagram, concept, tuning) {
       return frets.map((fret) => ({ string: points.string, fret }));
     case 'sound':
       return (concept.sound?.midi ?? []).map((midi) => ({ string: points.string, fret: midi - tuning[points.string] }));
+    case 'frets':
+      return LOW_TO_HIGH.flatMap((string) => points.frets.map((fret) => ({ string, fret })));
+    case 'unison':
+      return [
+        { string: points.string, fret: points.fret, start: true },
+        ...unisonsOf(points.string, points.fret, { fromFret, toFret, tuning }),
+      ];
+    case 'octaves': {
+      // Formas de octava hacia agudos, encadenadas (6ª → 4ª → 2ª…), sin repetir posiciones.
+      const found = [{ string: points.string, fret: points.fret, start: true }];
+      for (let i = 0; i < found.length; i++) {
+        for (const o of octavesOf(found[i].string, found[i].fret, { minFret: fromFret, maxFret: toFret })) {
+          if (o.direction === 'up' && !found.some((p) => p.string === o.string && p.fret === o.fret)) found.push({ string: o.string, fret: o.fret });
+        }
+      }
+      return found;
+    }
+    case 'five-fret-rule':
+      // Para cada cuerda (6ª a 2ª), el traste que suena como la siguiente más aguda al aire.
+      return LOW_TO_HIGH.slice(0, -1).flatMap((string) => {
+        const gap = tuning[string - 1] - tuning[string];
+        return [{ string, fret: gap, gap }, { string: string - 1, fret: 0, gap }];
+      });
     default:
       throw new Error(`Selección de puntos desconocida: ${points.select}`);
   }
@@ -71,7 +104,7 @@ export function fretboardDiagramPoints(concept) {
   const root = diagram.colorBy === 'function' ? tuningData.name.root : undefined;
   if (diagram.colorBy === 'function' && root === undefined) throw new Error(`${concept.id}: la afinación no tiene nota de nombre`);
 
-  const points = selectPositions(diagram, concept, tuning).map(({ string, fret }) => {
+  const points = selectPositions(diagram, concept, tuning).map(({ string, fret, start, gap }) => {
     if (!Number.isInteger(fret) || fret < diagram.fromFret || fret > diagram.toFret) {
       throw new RangeError(`${concept.id}: cuerda ${string}, traste ${fret} fuera del esquema`);
     }
@@ -80,6 +113,9 @@ export function fretboardDiagramPoints(concept) {
     let color = 'neutral';
     if (diagram.highlight === 'natural-semitones' && semis.includes(pc)) color = 'amber';
     if (diagram.highlight === 'changed' && tuning[string] !== STANDARD_TUNING[string]) color = 'amber';
+    if (diagram.highlight === 'accidentals' && !NATURAL_PCS.includes(pc)) color = 'amber';
+    if (diagram.highlight === 'start' && start) color = 'amber';
+    if (diagram.highlight === 'gap' && gap !== undefined && gap !== RULE_GAP) color = 'amber';
     if (root !== undefined) color = noteFunction(root, pc);
     return { string, fret, midi, pc, color, root };
   });

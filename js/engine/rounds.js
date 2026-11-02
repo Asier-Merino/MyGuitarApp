@@ -9,11 +9,13 @@ import { recordResult } from '../core/stats.js';
 import { normalizeMetronome } from '../core/rhythm.js';
 import { exerciseById, isPlayable } from './exercise-registry.js';
 
-/** Opciones propias de un ejercicio (p. ej. metrónomo), con sus valores guardados. */
+/** Opciones propias de un ejercicio (metrónomo, cuerdas…), con sus valores guardados. */
 function exerciseOptions(exercise, saved = {}) {
   const result = {};
   for (const opt of exercise.options ?? []) {
-    if (opt.type === 'metronome') {
+    if (opt.type === 'choice') {
+      result[opt.id] = opt.choices.some((c) => c.value === saved[opt.id]) ? saved[opt.id] : opt.default;
+    } else if (opt.type === 'metronome') {
       const s = saved[opt.id] ?? {};
       result[opt.id] = {
         on: typeof s.on === 'boolean' ? s.on : opt.default.on,

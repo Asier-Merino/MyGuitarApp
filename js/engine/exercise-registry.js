@@ -5,9 +5,13 @@
 import { LEVEL_IDS, getPlannedExercise, getModule } from '../data/modules.js';
 import { getConcept } from '../data/concepts.js';
 import { TUNING_IDS } from '../data/tunings.js';
-import { devWhichNote, devAllStrings } from '../modules/dev/dev-exercises.js';
+import { NOTES_THEORY_EXERCISES } from '../modules/notes/theory-exercises.js';
+import { NOTES_PRACTICE_EXERCISES } from '../modules/notes/practice-exercises.js';
 
-const DEFINITIONS = [devWhichNote, devAllStrings];
+const DEFINITIONS = [...NOTES_THEORY_EXERCISES, ...NOTES_PRACTICE_EXERCISES];
+
+/** Tipos de opción propia de la preparación (6.6.6): metrónomo y elección entre varias. */
+const OPTION_TYPES = ['metronome', 'choice'];
 
 /** Errores de una definición (lista vacía si está bien). */
 export function validateExercise(def) {
@@ -23,17 +27,27 @@ export function validateExercise(def) {
   need(def.tunings === 'standard' || def.tunings === 'any'
     || (Array.isArray(def.tunings) && def.tunings.length && def.tunings.every((t) => TUNING_IDS.includes(t))), 'tunings');
   need(def.levels && LEVEL_IDS.every((l) => def.levels[l] && typeof def.levels[l] === 'object'), 'los 3 niveles');
-  for (const fn of ['generate', 'render', 'statKeys']) need(typeof def[fn] === 'function', fn);
-  // Opcional: record({ results | items, level, tuningId, seconds }) → { key, value, better: 'higher' | 'lower' }.
+  for (const fn of ['generate', 'statKeys']) need(typeof def[fn] === 'function', fn);
+  need(def.runner === undefined || def.runner === 'fill', 'runner');
+  need(def.answerBy === undefined || def.answerBy === 'tap', 'answerBy');
+  // Opcional: record({ results | items, puzzle, level, tuningId, seconds }) → { key, value, better } o null.
   need(def.record === undefined || typeof def.record === 'function', 'record');
+  for (const opt of def.options ?? []) {
+    need(OPTION_TYPES.includes(opt.type) && typeof opt.id === 'string' && opt.label, `opción ${opt.id}`);
+    if (opt.type === 'choice') need(opt.choices?.some((c) => c.value === opt.default), `opción ${opt.id}: valor por defecto`);
+  }
   if (def.section === 'teoria') {
     need(typeof def.check === 'function', 'check');
     need(typeof def.answerMarkup === 'function', 'answerMarkup');
-    need(Number.isInteger(def.roundLength) && def.roundLength > 0, 'roundLength');
-    need(typeof def.prompt === 'string' && def.prompt, 'prompt');
+    need((typeof def.prompt === 'string' && def.prompt) || typeof def.prompt === 'function', 'prompt');
+    // Ronda de N preguntas, por tiempo (roundSeconds) o un puzle (runner 'fill').
+    need(def.runner === 'fill' || (Number.isInteger(def.roundLength) && def.roundLength > 0)
+      || (Number.isInteger(def.roundSeconds) && def.roundSeconds > 0), 'roundLength, roundSeconds o runner');
+    if (def.runner !== 'fill') need(typeof def.render === 'function', 'render');
   } else {
     need(typeof def.speech === 'function', 'speech');
     need(Array.isArray(def.itemNoun) && def.itemNoun.length === 2, 'itemNoun [singular, plural]');
+    need(typeof def.render === 'function', 'render');
     need(def.duration || (Number.isInteger(def.roundLength) && def.roundLength > 0), 'duration o roundLength');
   }
   return errors;
@@ -52,12 +66,10 @@ export function getExercise(id) {
 }
 
 /**
- * Ejercicio de una ruta: { module, section, exercise (slug) }. Los de prueba (módulo 'dev')
- * solo existen en el registro; el resto se anuncian en modules.js y, cuando se construyen,
- * se completan con su definición. Devuelve null si no existe.
+ * Ejercicio de una ruta: { module, section, exercise (slug) }. Se anuncian en modules.js y,
+ * cuando se construyen, se completan con su definición. Devuelve null si no existe.
  */
 export function findExercise({ module, section, exercise }) {
-  if (module === 'dev') return EXERCISES.find((e) => e.module === 'dev' && e.slug === exercise) ?? null;
   const planned = getPlannedExercise(section, module, exercise);
   if (!planned) return null;
   const def = getExercise(planned.id);
@@ -69,21 +81,16 @@ export const isPlayable = (exercise) => typeof exercise?.generate === 'function'
 
 /** Ruta de la preparación de un ejercicio. */
 export function exercisePath(exercise) {
-  return exercise.module === 'dev'
-    ? `/dev/${exercise.slug}`
-    : `/${exercise.section}/${exercise.module}/${exercise.slug}`;
+  return `/${exercise.section}/${exercise.module}/${exercise.slug}`;
 }
 
 /** Ejercicio por id, para "Continuar" (registrado o anunciado), o null. */
 export function exerciseById(id) {
-  const def = getExercise(id);
-  if (def) return def.module === 'dev' ? def : findExercise({ module: def.module, section: def.section, exercise: def.slug });
   const [module, section, exercise] = String(id).split('.');
   return findExercise({ module, section, exercise });
 }
 
-/** Nombre del módulo de un ejercicio ("Notas del mástil", o "Prueba" en los de #/dev). */
+/** Nombre del módulo de un ejercicio ("Notas del mástil"). */
 export function exerciseModuleTitle(exercise) {
-  if (exercise.module === 'dev') return 'Prueba';
   return getModule(exercise.module)?.title ?? '';
 }

@@ -1,8 +1,7 @@
 // Página de prueba interna (#/dev, BUILD_PLAN 1B), enlazada solo desde Ajustes: mástil,
-// diagramas de acorde, sonido, voz, pulso y los ejercicios de prueba de los dos motores
-// (con nivel, afinación y duración). El usuario tiene el Metrónomo en su propia pantalla.
+// diagramas de acorde, sonido, voz y pulso. El usuario tiene el Metrónomo en su propia pantalla.
 
-import { h, render, button, segmented, list, listRow } from '../../ui/components.js';
+import { h, render, button, segmented } from '../../ui/components.js';
 import { renderScreen } from '../../screens/screen.js';
 import { Fretboard, positionMarkers } from '../../ui/fretboard.js';
 import { ChordDiagram } from '../../ui/chord-diagram.js';
@@ -14,7 +13,6 @@ import { CHORDS, getChord } from '../../data/chords.js';
 import { shapeNotes } from '../../core/fretboard-model.js';
 import { spell, spokenName } from '../../core/notation.js';
 import { createRng } from '../../core/random.js';
-import { EXERCISES, exercisePath } from '../../engine/exercise-registry.js';
 import { speak, speechSupported, primeSpeech } from '../../engine/speech.js';
 import { strum, arpeggio, soundEnabled } from '../../audio/synth.js';
 import { settings } from '../../state.js';
@@ -112,13 +110,6 @@ export function renderDev(view, params, nav) {
     className: 'dev',
     content: [
       !soundEnabled() && h('p', { class: 'notice' }, UI_TEXTS.soundOff),
-      h('h2', { class: 'section-title' }, 'Ejercicios de prueba'),
-      list(EXERCISES.filter((e) => e.module === 'dev').map((e) => listRow({
-        href: `#${exercisePath(e)}`,
-        iconName: e.section === 'teoria' ? 'theory' : 'guitar',
-        title: e.title,
-        subtitle: e.section === 'teoria' ? 'Motor de Teoría' : 'Motor de Práctica, con duración',
-      }))),
       h('h2', { class: 'section-title' }, 'Mástil'),
       boardBox,
       h('h2', { class: 'section-title' }, 'Diagramas de acorde'),

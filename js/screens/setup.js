@@ -101,10 +101,18 @@ export function renderSetup(view, params, nav) {
             onChange: (v) => { saveSetup(exercise, { duration: v }); draw(); },
           }),
         ],
-        playable && (exercise.options ?? []).map((opt) => opt.type === 'metronome' && metronomeOption(opt, options[opt.id], (v) => {
-          saveSetup(exercise, { options: { ...options, [opt.id]: v } });
-          draw();
-        })),
+        playable && (exercise.options ?? [])
+          .filter((opt) => !opt.levels || opt.levels.includes(level))
+          .map((opt) => {
+            const onChange = (v) => { saveSetup(exercise, { options: { ...options, [opt.id]: v } }); draw(); };
+            if (opt.type === 'choice') {
+              return [
+                h('h2', { class: 'section-title' }, opt.label),
+                segmented({ label: opt.label, value: options[opt.id], options: opt.choices, onChange }),
+              ];
+            }
+            return opt.type === 'metronome' && metronomeOption(opt, options[opt.id], onChange);
+          }),
         h('div', { class: 'setup__start' },
           button({ label: 'Empezar', variant: 'primary', block: true, disabled: !playable, onClick: playable ? onStart : undefined }),
           !playable && h('p', { class: 'setup__note' }, `Este ejercicio llega en la Fase ${exercise.phase}.`),

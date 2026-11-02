@@ -7,14 +7,16 @@ import { h, render } from './ui/components.js';
 import { closeSheet } from './ui/help-sheet.js';
 import { registerServiceWorker, applyUpdate } from './pwa.js';
 import { APP_NAME } from './version.js';
-import { SECTIONS, getModule, moduleTitle, MIXED_SESSION_PHASE } from './data/modules.js';
+import { SECTIONS, getModule, moduleTitle, isAvailable, MIXED_SESSION_PHASE } from './data/modules.js';
 import { findExercise } from './engine/exercise-registry.js';
-import { getConcept, getBlock } from './data/concepts.js';
+import { getConcept, getBlock, LESSONS } from './data/concepts.js';
 import { renderHome } from './screens/home.js';
 import { renderSection } from './screens/section.js';
 import { renderModule } from './screens/module.js';
 import { renderSetup } from './screens/setup.js';
 import { renderSoon } from './screens/soon.js';
+import { renderLesson } from './screens/lesson.js';
+import { renderNotesReference } from './modules/notes/reference-view.js';
 import { renderTunings } from './modules/tunings/tunings-view.js';
 import { renderMetronome } from './modules/tools/metronome-view.js';
 import { renderDev } from './modules/dev/dev-view.js';
@@ -50,13 +52,22 @@ function pageTitle({ name, params }) {
   }
 }
 
+/** Pantalla de Consulta de cada módulo construido. */
+const REFERENCES = {
+  notas: renderNotesReference,
+};
+
 const VIEWS = {
   home: (p) => renderHome(view, p),
   section: (p, nav) => renderSection(view, p, nav),
   mixed: (p, nav) => renderSoon(view, { title: 'Sesión mezclada', phase: MIXED_SESSION_PHASE }, nav),
   module: (p, nav) => renderModule(view, p, nav),
-  lesson: (p, nav) => renderSoon(view, { title: 'Aprender', phase: getModule(p.module).phase }, nav),
-  reference: (p, nav) => renderSoon(view, { title: 'Consulta', phase: getModule(p.module).phase }, nav),
+  lesson: (p, nav) => (isAvailable(getModule(p.module)) && LESSONS[p.module]
+    ? renderLesson(view, p, nav)
+    : renderSoon(view, { title: 'Aprender', phase: getModule(p.module).phase }, nav)),
+  reference: (p, nav) => (isAvailable(getModule(p.module)) && REFERENCES[p.module]
+    ? REFERENCES[p.module](view, p, nav)
+    : renderSoon(view, { title: 'Consulta', phase: getModule(p.module).phase }, nav)),
   setup: (p, nav) => renderSetup(view, p, nav),
   tunings: (p, nav) => renderTunings(view, p, nav),
   glossary: (p, nav) => renderGlossary(view, p, nav),
