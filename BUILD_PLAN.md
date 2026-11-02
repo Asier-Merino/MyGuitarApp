@@ -32,6 +32,7 @@
   - **AFINACIONES**: las afinaciones que usa la app, para verlas y escucharlas.
   - **GLOSARIO**: todos los conceptos, con buscador.
   - **Perfil** (estadísticas, progreso y récords) y **Ajustes**, como iconos en Inicio.
+  - Fila **Herramientas** debajo de las cuatro secciones: utilidades sueltas para tocar, de momento solo el **Metrónomo** (6.6.18). Admite más herramientas en el futuro sin rediseñar el Inicio.
 - **Estilo inspirado en la app de Chess.com** (solo sus principios, nunca su marca): fondo oscuro neutro, un único acento **ámbar mate**, botones "físicos" y el **mástil** como protagonista visual (6.1).
 - **Ayuda "?" en todos los ejercicios**: un recordatorio corto de la teoría que trabaja cada uno, y un **"¿Por qué?"** que explica cada fallo concreto (6.8).
 - **Navegación libre**: todo está accesible siempre; no hay un orden obligatorio ni nada bloqueado.
@@ -87,6 +88,7 @@
 │   └── make-icons.mjs         # genera los iconos PNG (npm run icons)
 ├── icons/                     # icon-192.png, icon-512.png, apple-touch-icon-180.png, maskable
 ├── docs/
+│   ├── FUTURAS_UPDATES.md     # mejoras para después de la v1.0 e ideas sin decidir (no forma parte del plan)
 │   └── capturas/fase-N/       # capturas de cada fase (fuera de la caché del service worker)
 ├── css/
 │   └── styles.css             # tokens de color (tema oscuro y claro), botón físico, layout
@@ -133,7 +135,7 @@
 │   │   ├── pluck.js           # muestras Karplus-Strong afinadas (sin Web Audio, con test)
 │   │   ├── synth.js           # Karplus-Strong, notas, rasgueos, arpegios
 │   │   ├── scheduler.js       # reloj con lookahead
-│   │   ├── metronome.js       # incluye la subida automática de tempo
+│   │   ├── metronome.js       # 30–240 BPM, compás, subdivisión y subida automática de tempo
 │   │   └── backing.js         # base de blues (bajo, acordes, percusión)
 │   ├── screens/               # Inicio, Sección, Módulo, Preparación, Próximamente
 │   ├── engine/
@@ -151,6 +153,7 @@
 │       ├── warmup/            # Calentamiento
 │       ├── tunings/           # pantalla Afinaciones
 │       ├── glossary/
+│       ├── tools/             # Herramientas: metronome.js (pantalla Metrónomo, 6.6.18)
 │       └── profile/           # Perfil (sustituye a progress/)
 └── tests/
     ├── theory.test.js
@@ -492,6 +495,7 @@ Inicio
  ├── Práctica ──► Módulo ──► Preparación del ejercicio ──► Ejercicio ──► Resumen
  ├── Afinaciones
  ├── Glosario ──► Bloque ──► Ficha de concepto
+ ├── Herramientas ──► Metrónomo
  ├── Perfil (icono) ──► Mapa del mástil · Puntos débiles · Récords · Acerca de
  └── Ajustes (icono)
 ```
@@ -544,11 +548,14 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
    │ [icono] Glosario              │
    │         Todos los conceptos   │
    └───────────────────────────────┘
+   Herramientas
+   [ (icono) Metrónomo ]                ← botones pequeños, grises
 ```
 - **Perfil** (arriba a la izquierda) y **Ajustes** (arriba a la derecha) como iconos.
 - **Continuar** abre la pantalla de preparación del último ejercicio hecho, con su nivel y afinación ya puestos: un toque en Empezar y listo. Es el **único botón ámbar** de la pantalla. Si no hay historial, no se muestra y ningún botón va en ámbar.
 - **Teoría, Práctica, Afinaciones y Glosario**: cuatro botones grandes iguales, en gris con efecto físico, icono en ámbar y una línea de subtítulo.
 - **El Glosario es una sección principal**, no un módulo de Teoría.
+- **Herramientas**: fila debajo de los cuatro botones grandes, con el título "Herramientas" y botones pequeños (gris con efecto físico e icono en ámbar). De momento solo **Metrónomo** (6.6.18). Es el sitio para futuras herramientas (bordón, afinador), así que debe admitir más botones sin rediseñar el Inicio.
 - Racha: solo si hay al menos un día practicado.
 
 #### 6.6.2 Sección (Teoría o Práctica)
@@ -836,6 +843,33 @@ La tablatura está en 6.7.
   - enlace **"Ver la lección completa"**.
 - Las lecciones de Aprender enlazan a las fichas con palabras pulsables, y las fichas enlazan de vuelta a la lección.
 
+#### 6.6.18 Metrónomo (herramienta)
+Se abre desde la fila Herramientas del Inicio (6.6.1).
+```
+ ←  Metrónomo                       ?
+        ( − )      80      ( + )
+                   BPM
+   30 ───────●──────────────── 240
+   [ Marcar el tempo tocando aquí ]
+           ●  ●  ○  ○                ← tiempos; el 1º en ámbar
+   Tiempos por compás
+   [2][3][4][5][6][7]
+   Subdivisión
+   [ Negras ][ Corcheas ][ Tresillos ]
+   ┌────────────── Empezar ──────────────┐   ← único botón ámbar; pasa a "Parar"
+   └─────────────────────────────────────┘
+```
+- **Tempo** grande en el centro (BPM), con botones **−** y **+** a los lados (pulsación larga = cambio rápido) y un **deslizador** de **30 a 240 BPM**.
+- **"Marcar el tempo tocando aquí"**: al tocar varias veces al ritmo, calcula el tempo con la media de los últimos toques (descartando toques demasiado separados).
+- **Indicador de tiempos**: un punto por tiempo del compás que se ilumina al sonar; el primero, acentuado, en ámbar.
+- **Tiempos por compás**: 2 a 7, con acento (clic más agudo y fuerte) en el primero.
+- **Subdivisión**: negras, corcheas o tresillos (clics más suaves entre tiempos).
+- **Empezar / Parar**: botón grande abajo, el único ámbar de la pantalla.
+- Suena **sin límite de tiempo**, mantiene la **pantalla encendida** (Wake Lock) mientras suena y respeta el volumen de Ajustes.
+- Recuerda los últimos ajustes (tempo, compás y subdivisión).
+- Usa el planificador con *lookahead* (`audio/scheduler.js`) para que el pulso sea estable.
+- El "?" abre el concepto "Metrónomo, tempo y BPM" (bloque Ritmo y técnica), con el esquema de pulsos (6.8).
+
 ### 6.7 Tablatura (`ui/tab.js`)
 Tablatura estándar, como la de cualquier web de tablaturas, generada en SVG:
 
@@ -917,7 +951,7 @@ Un recordatorio rápido, en contexto, de la teoría que trabaja cada ejercicio. 
     related: ['octave', 'unison'],
   }
   ```
-- **Esquema obligatorio**: todo concepto lleva `diagram` (`type`: `fretboard`, `chord` o `tab`). Solo si un esquema no tiene sentido se omite, y entonces el concepto lleva `noDiagramReason` con el motivo. Los puntos del esquema se calculan con `js/core/` (nunca se escriben a mano notas ni trastes que se puedan calcular) y suenan al tocarlos.
+- **Esquema obligatorio**: todo concepto lleva `diagram` (`type`: `fretboard`, `chord`, `tab` o `beats`). `beats` es el **esquema de pulsos**: un punto por tiempo del compás, el primero en ámbar, que se iluminan al ritmo al pulsarlo (como el indicador del Metrónomo, 6.6.18); se usa para conceptos de ritmo como "Metrónomo, tempo y BPM". Solo si un esquema no tiene sentido se omite, y entonces el concepto lleva `noDiagramReason` con el motivo. Los puntos del esquema se calculan con `js/core/` (nunca se escriben a mano notas ni trastes que se puedan calcular) y suenan al tocarlos.
 - **Marcado de palabras pulsables**: `[[id-del-concepto|texto visible]]`, por ejemplo `la [[blue-note|blue note]]`.
 - **Campos nuevos en cada ejercicio** (7.1): `howTo` (cómo se juega), `concepts` (ids, al menos uno) y `check()` devuelve también `why` (explicación del error concreto).
 - **Componentes**: `ui/help-sheet.js` (panel) y `ui/term.js` (palabra pulsable y parser).
@@ -1056,7 +1090,9 @@ Objetivo: las piezas reutilizables que usan todos los módulos.
   - Crea el AudioContext **dentro del primer toque** del usuario (botón "Empezar" o el primer toque en cualquier botón).
   - Si existe `navigator.audioSession`, fija `type = 'playback'` para que suene con el iPhone en silencio. Si no existe, reproduce en bucle un `<audio>` silencioso tras el gesto, como alternativa.
 - [ ] `audio/synth.js`: Karplus-Strong generado en un `AudioBuffer` por nota (≈2 s, decaimiento ≈0,996, filtro paso bajo suave) con caché por MIDI. Funciones `playNote(midi)`, `strum(chord, down|up)` con ~25 ms entre cuerdas y `arpeggio(chord)`.
-- [ ] `audio/scheduler.js` (setInterval de 25 ms que programa con 100 ms de antelación sobre `audioCtx.currentTime`) y `audio/metronome.js` (40–200 BPM, acento en el primer tiempo).
+- [ ] `audio/scheduler.js` (setInterval de 25 ms que programa con 100 ms de antelación sobre `audioCtx.currentTime`) y `audio/metronome.js` (**30–240 BPM**, **tiempos por compás de 2 a 7** con acento en el primero, y **subdivisión**: negras, corcheas o tresillos, con clics más suaves entre tiempos).
+- [ ] **Herramienta Metrónomo**: fila Herramientas en el Inicio (6.6.1) y pantalla Metrónomo (6.6.18), con Wake Lock mientras suena y sus ajustes recordados.
+- [ ] Concepto "Metrónomo, tempo y BPM" (bloque Ritmo y técnica) con el nuevo **esquema de pulsos** (`diagram.type: 'beats'`, 6.8), enlazado desde el "?" del Metrónomo.
 - [ ] `engine/speech.js`: voces `es-ES`/`en-US`, nombres de nota hablados y una cola sencilla.
 - [ ] `engine/exercise-registry.js` (con `howTo`, `concepts`, `tunings` y `why`, 7.1), `quiz-runner.js` y `practice-runner.js` (7.2, 7.3).
 - [ ] Selector de afinación en la preparación (6.6.6, 7.6).
@@ -1067,10 +1103,10 @@ Objetivo: las piezas reutilizables que usan todos los módulos.
 - [ ] `ui/help-sheet.js` y el "?" en los ejercicios (6.8), con "Cómo se juega", "La teoría detrás" y "¿Por qué?".
 - [ ] Resumen de ronda de Teoría y de Práctica, sin autoevaluación, y confeti (6.6.10).
 - [ ] **Registro de sesiones** (6.6.13) y récords; "Continuar" en Inicio; el Perfil provisional ya muestra días y tiempo reales.
-- [ ] Wake Lock en Práctica.
-- [ ] Página de prueba interna (`#/dev`, enlazada solo desde ajustes) para ver el mástil, tocar notas y probar metrónomo, voz y duración.
+- [ ] Wake Lock en Práctica y en el Metrónomo.
+- [ ] Página de prueba interna (`#/dev`, enlazada solo desde ajustes) para ver el mástil, tocar notas y probar metrónomo, voz y duración. (El usuario ya tiene el metrónomo en su propia pantalla; aquí es solo para pruebas.)
 
-**Hecho cuando**: en el iPhone se ve el mástil en vertical y en horizontal al girarlo, al tocar un punto suena la nota (también con el iPhone en modo silencio), el metrónomo va estable, la voz dice notas en español, una ronda de prueba se juega de principio a fin con el "?" y el "¿Por qué?", y la ronda aparece en Perfil.
+**Hecho cuando**: en el iPhone se ve el mástil en vertical y en horizontal al girarlo, al tocar un punto suena la nota (también con el iPhone en modo silencio), el metrónomo se abre desde el Inicio y mantiene un pulso estable durante varios minutos en el iPhone, la voz dice notas en español, una ronda de prueba se juega de principio a fin con el "?" y el "¿Por qué?", y la ronda aparece en Perfil.
 
 ### Fase 2 — Módulo Notas del mástil
 **Teoría**
@@ -1333,7 +1369,7 @@ El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide 
   - **Récords**: contrarreloj, cambios en un minuto por pareja de acordes, "Rellena el mástil" por cuerda y tempo máximo en escalas y calentamiento.
 - [ ] **Sesión mezclada** (en Teoría y en Práctica): se elige la duración (5, 10 o 20 min) y la app encadena ejercicios de varios módulos, ponderando por puntos débiles (7.4) y por lo que hace tiempo que no se hace. Solo incluye los módulos y niveles que el usuario ha usado al menos una vez, más uno nuevo de vez en cuando.
 - [ ] Revisión final: accesibilidad (contraste, tamaño de toque), rendimiento en el iPhone y textos.
-- [ ] Actualizar la sección 11 con las ideas que hayan surgido.
+- [ ] Añadir a `docs/FUTURAS_UPDATES.md` ("Ideas sin decidir") las ideas que hayan surgido.
 - [ ] Versión visible **1.0.0** y etiqueta de git **`v1.0.0`** (10): primera versión completa.
 
 **Hecho cuando**: el Perfil refleja lo practicado y la sesión mezclada propone una combinación sensata.
@@ -1345,7 +1381,7 @@ El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide 
 - [ ] El audio solo arranca tras un gesto del usuario.
 - [ ] Sonido con el interruptor de silencio activado: `navigator.audioSession.type = 'playback'`, o la alternativa del `<audio>` silencioso en bucle.
 - [ ] Si el AudioContext queda en estado `suspended` o `interrupted` (llamada, cambio de app), volver a llamar a `resume()` al volver a la app.
-- [ ] Wake Lock en Práctica, y pedirlo de nuevo al volver a la app.
+- [ ] Wake Lock en Práctica y en el Metrónomo, y pedirlo de nuevo al volver a la app.
 - [ ] `speechSynthesis`: la primera locución dentro de un gesto. Las voces pueden cargarse tarde (`voiceschanged`).
 - [ ] Safe areas (`env(safe-area-inset-*)`) y `viewport-fit=cover`.
 - [ ] Bloqueo de rotación: opción manual de orientación del mástil en Ajustes.
@@ -1365,7 +1401,7 @@ El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide 
   - que el diseño se ve bien en esa pantalla (otras proporciones y la fuente del sistema de Android);
   - que el **botón o gesto de atrás** del sistema vuelve a la pantalla anterior (historial del hash router);
   - que la consola no tiene errores.
-  - La prueba en un Android real se hará más adelante, cuando la app se comparta.
+  - La prueba en un Android real se hará antes de publicar la v1.0 (`docs/FUTURAS_UPDATES.md`).
 - **Despliegue**: cada push a `main` actualiza GitHub Pages. Incrementar `CACHE_VERSION` en `sw.js` en cada push que cambie archivos de la app.
 - **Versión visible** en Ajustes y en Perfil → Acerca de, para comprobar en el iPhone qué versión está cargada: `0.N.x` = fase N. La Fase 1A es `0.1.0` y la 1B `0.1.1`; desde la Fase 2, cada fase empieza en `0.N.0`. Al terminar la Fase 9: **`1.0.0`**.
 - **Etiquetas de versión**: al terminar **cada fase**, Claude Code crea una etiqueta de git con la versión de esa fase (`v` + la versión visible, por ejemplo `v0.2.0`) sobre el commit final de la fase y la sube (`git push origin <etiqueta>`). Así se puede volver a cualquier fase anterior si algo sale mal.
@@ -1379,32 +1415,23 @@ El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide 
 
 ## 11. Ideas para el futuro (fuera del alcance actual)
 
-- Detección de notas por micrófono para comprobar en Práctica que la nota tocada es la correcta (notas sueltas; los acordes son mucho más difíciles).
-- CAGED de acordes menores y de séptima.
-- Tríadas en grupos de cuerdas y arpegios.
-- Modos griegos y tonalidades menores.
-- Más progresiones (blues menor, *rhythm changes*).
-- Afinador.
-- "¿Cuándo cambia el acorde?": escuchar la base de blues sin la cuadrícula y pulsar en cada cambio al IV o al V.
-- Convertirla en app nativa con Capacitor (requiere un Mac y una cuenta de desarrollador de Apple).
+Las mejoras para después de la v1.0 y las ideas sin decidir están en `docs/FUTURAS_UPDATES.md`.
 
 ---
 
 ## 12. Propuestas
 
-Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase.
-
-> **Pendiente de cuando el usuario añada `docs/FUTURAS_UPDATES.md`** (la lista de mejoras para después de la v1.0, que no se integra en el plan): copiar en su apartado "Ideas sin decidir" las ideas de la sección 11 que no estén ya allí y dejar la sección 11 como un enlace a ese archivo; mover allí P2, P3, P4, P6 y P7, para que esta sección quede sin propuestas pendientes. Lo que esté en ese archivo no se pregunta en cada fase.
+Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase. Ahora mismo no hay ninguna pendiente. Lo que está en `docs/FUTURAS_UPDATES.md` no se pregunta en cada fase.
 
 | Id | Propuesta | Estado |
 |---|---|---|
 | P1 | ~~Sonido automático al acertar o fallar~~ | **Sustituida** por el botón de altavoz tras responder (6.6.7) |
-| P2 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
-| P3 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
-| P4 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
+| P2 | Reto del día | **Movida a futuras updates** (`docs/FUTURAS_UPDATES.md`, "Ideas sin decidir") |
+| P3 | Cancionero | **Movida a futuras updates** (`docs/FUTURAS_UPDATES.md`, "Ideas sin decidir") |
+| P4 | Calculadora de cejilla | **Movida a futuras updates** (`docs/FUTURAS_UPDATES.md`, "Ideas sin decidir") |
 | P5 | ~~Subida automática de tempo en otros ejercicios~~ | **Sustituida** por la duración elegible (6.6.6). El Calentamiento conserva su subida automática (Fase 3) |
-| P6 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
-| P7 | *(descripción pendiente: pedírsela al usuario)* | Pendiente |
+| P6 | Pedal Bluetooth o teclado | **Movida a futuras updates** (`docs/FUTURAS_UPDATES.md`, "Ideas sin decidir") |
+| P7 | Afinador y detección por micrófono | **Movida a futuras updates** (`docs/FUTURAS_UPDATES.md`, "Ideas sin decidir") |
 | P8 | ~~Logros~~ | **Rechazada** |
 
 ---
@@ -1418,3 +1445,4 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 | 2026-10-30 | 1A | Navegación por pantallas con flecha ← (historial propio; sin historial vuelve a la pantalla madre); estilo GuitarSeo con tokens de los dos temas, botón físico, listas e iconos SVG; Inicio, Sección, Módulo, Preparación (nivel y afinación recordados por ejercicio; Empezar desactivado hasta la Fase 2) y pantallas «Próximamente»; `data/tunings.js` con las 7 afinaciones y cambios calculados; pantalla Afinaciones con sonido Karplus-Strong afinado y «Tocar todas»; `concepts.js` (15 conceptos de Notas y Afinaciones, ayudas «?» de cada pantalla), palabras pulsables y panel inferior; Glosario con buscador ES/EN; Ajustes completos (afinación por defecto, sonido, volumen, voz, mástil); Perfil provisional y Acerca de; esquema de datos v2 (récords, lecciones, progresiones, preparación) y `storage.persist()`; nombre e icono GuitarSeo. Cambios al plan: token `--amber-text` (4.5), franja de la barra de estado, bloques vacíos ocultos en el Glosario, estructura de carpetas (3). | Afinaciones de 4.2 validadas. |
 | 2026-10-30 | Plan | Esquema visual obligatorio en las fichas del glosario y en las tarjetas de lección (`diagram`, o `noDiagramReason` si no tiene sentido), interactivo; tarea «Esquemas del glosario» y su test añadidos a la Fase 1B; convención añadida a CLAUDE.md. «Nombres de las notas» queda sin esquema (`noDiagramReason`). | Petición del usuario al cerrar la 1A; aceptada la propuesta para «Nombres de las notas». |
 | 2026-11-02 | Plan | Integrado `CAMBIOS.md` (ampliaciones de la v1): **duración elegible** en los ejercicios por tiempo (6.6.6, 6.6.8, 7.3; control común en la Fase 1B, estrenado en la Fase 3), que sustituye a P5; el Calentamiento conserva la subida de tempo y "Cambios en un minuto" sigue en 60 s; **licks** ampliados a unos 12, de 3 a 8 notas, con técnicas, estilo (blues, rock, country), escala y nivel, y sus reglas de test (5.5); filtro por estilo en "Pregunta-respuesta" y "Licks por acorde"; **velocidad 50/75/100 %** en el reproductor de la tablatura (6.7); **etiquetas de versión** por fase (10), creadas ya `v0.0.0` y `v0.1.0`; **simulación de Android** en la verificación (10). **El slide pasa a su propia fase**: Fase 6 blues, Fase 7 slide, Fase 8 CAGED y Fase 9 Perfil y sesión mezclada (`v1.0.0`). | Separar el slide: el usuario lo sugirió y pidió opinión; se adopta. Pendiente: `docs/FUTURAS_UPDATES.md` y la reorganización de las secciones 11 y 12 (nota en la 12); en qué nivel cuenta el vibrato (Fase 6). |
+| 2026-11-02 | Plan | **Metrónomo como herramienta**: fila Herramientas en el Inicio (1, 6.6.1), rama en la navegación (6.4), pantalla nueva 6.6.18 y `modules/tools/` (3); en la Fase 1B, `audio/metronome.js` pasa a 30–240 BPM con tiempos por compás (2–7) y subdivisión, tarea "Herramienta Metrónomo", Wake Lock también en el Metrónomo y nuevo "Hecho cuando". Nuevo tipo de esquema `beats` (pulsos) en 6.8 para el concepto "Metrónomo, tempo y BPM". **Futuras updates**: `docs/FUTURAS_UPDATES.md` añadido (no forma parte del plan); la sección 11 remite a él (CAGED de séptima, *rhythm changes* y Capacitor copiados a "Ideas sin decidir"; el resto ya estaba); P2, P3, P4, P6 y P7 movidas allí con su nombre, y la sección 12 queda sin propuestas pendientes. | Esquema de pulsos elegido por el usuario. Queda resuelta la duda de la descripción de P2–P7. |

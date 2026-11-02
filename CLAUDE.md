@@ -45,7 +45,7 @@
 3. Marca las casillas de la fase en `BUILD_PLAN.md` y añade una fila al Registro de cambios.
 4. Commit con mensaje claro (`Fase N: ...`) y push a `main`. Al terminar cada fase, crea una etiqueta de git con su versión y súbela (ver BUILD_PLAN, sección 10).
 5. Explica al usuario, en pocas líneas, qué probar en el iPhone. **No empieces la fase siguiente sin su confirmación.**
-6. Si detectas un error o una mejora en el plan, propónla al usuario y actualiza `BUILD_PLAN.md` si la acepta. Antes de cada fase, pregunta por las propuestas pendientes de su fase (BUILD_PLAN, sección 12), pero no por lo que esté en `docs/FUTURAS_UPDATES.md` (cuando exista): esa lista no se ejecuta hasta que el usuario pase algo al plan.
+6. Si detectas un error o una mejora en el plan, propónla al usuario y actualiza `BUILD_PLAN.md` si la acepta. Antes de cada fase, pregunta por las propuestas pendientes de su fase (BUILD_PLAN, sección 12), pero no por lo que esté en `docs/FUTURAS_UPDATES.md`: esa lista no se ejecuta hasta que el usuario pase algo al plan.
 7. Los datos musicales de BUILD_PLAN (afinaciones, acordes, CAGED, cajas, licks, rasgueos, progresiones) son la referencia; si un test contradice esos datos, revisa ambos y avisa al usuario en vez de "arreglar" el test.
 
 ## Calidad y veracidad

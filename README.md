@@ -32,6 +32,7 @@ Además, desde el Inicio:
 
 - **Perfil**: racha, días practicados, tiempo total, dominio por tema, mapa del mástil, puntos débiles y récords.
 - **Ajustes**: notación, tema, mástil, sonido y voz, afinación por defecto y copia de tus datos.
+- **Herramientas**: un **metrónomo** (30–240 BPM, compás y subdivisión) para usar cuando quieras.
 
 Algunas ideas clave:
 
@@ -189,3 +190,4 @@ La carpeta `engine/` y parte de `data/`, `ui/`, `audio/` y `modules/` se crean e
 
 - **[BUILD_PLAN.md](BUILD_PLAN.md)**: el plan completo, con las fases, los datos musicales de referencia (afinaciones, acordes, CAGED, cajas pentatónicas, licks, rasgueos), el diseño de cada pantalla, las propuestas y el registro de cambios.
 - **[CLAUDE.md](CLAUDE.md)**: las instrucciones y convenciones para Claude Code, que construye la app fase a fase.
+- **[docs/FUTURAS_UPDATES.md](docs/FUTURAS_UPDATES.md)**: mejoras para después de la v1.0 e ideas sin decidir. No forma parte del plan.
