@@ -39,7 +39,7 @@ Algunas ideas clave:
 - **Navegación libre**: todo está siempre disponible, sin un orden obligatorio. Cada pantalla tiene una flecha **←** para volver.
 - **Ejercicios generados al azar**, con **3 niveles** (Básico, Intermedio y Avanzado). La app repite más lo que más fallas.
 - **Ayuda en todos los ejercicios**: el botón **?** recuerda cómo se juega y la teoría que hay detrás, y al fallar, **¿Por qué?** explica el error concreto.
-- **Sin sonido automático**: al responder aparece un botón de altavoz para escuchar la respuesta correcta cuando quieras.
+- **Sin sonido automático**: al responder aparece un botón de altavoz para escuchar la respuesta correcta cuando quieras. La excepción es **Oído**, donde la pregunta es el sonido: suena sola y se puede repetir.
 - **Práctica sin autoevaluación**: al terminar ves qué has hecho y tus récords; tú ya sabes cómo te ha ido.
 - **Doble notación**: la principal en grande y la otra en pequeño, por ejemplo **Fa** <sub>F</sub> o **F** <sub>Fa</sub>. Se elige en **Ajustes**.
 - **Colores con significado**: la fundamental, la 3ª, la 5ª, la 7ª y la *blue note* tienen siempre el mismo color, y cada punto lleva además su etiqueta.
@@ -69,7 +69,7 @@ Algunas ideas clave:
 |---|---|---|---|
 | 1 | **Notas del mástil** | «¿Qué nota es?», encuéntrala, octavas, unísonos, rellena el mástil | La app dice una nota y la tocas en todas las cuerdas a contrarreloj |
 | 2 | **Acordes abiertos** | Diagramas, notas que los forman, quiz | Cambios de acordes con metrónomo, tus propias progresiones y rasgueo |
-| 3 | **Oído** | ¿Mayor o menor?, intervalos | Suena una nota y la buscas en la guitarra |
+| 3 | **Oído** | ¿Mayor o menor?, ¿más agudo o más grave?, intervalos | Suena una nota y la buscas en la guitarra; suena un acorde y lo imitas |
 | 4 | **Escala y tonalidad** | Intervalos, escala mayor, grados, quiz | Escala con metrónomo y progresiones |
 | 5 | **Blues y slide** | 12 compases, *blue note*, quiz | Base shuffle, notas objetivo, licks pregunta-respuesta |
 | 6 | **CAGED** | Explorador de las 5 formas, quiz | Un acorde en una forma, recorrer las 5 formas |
@@ -90,8 +90,8 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?», esquemas del glosario y registro de sesiones | ✅ Hecha (v0.1.1) |
 | 2 | Notas del mástil | ✅ Hecha (v0.2.0) |
 | 3 | Acordes abiertos y Calentamiento | ✅ Hecha (v0.3.0) |
-| 4 | Oído | ⏳ Siguiente |
-| 5 | Escala y tonalidad | Pendiente |
+| 4 | Oído | ✅ Hecha (v0.4.0) |
+| 5 | Escala y tonalidad | ⏳ Siguiente |
 | 6 | Blues y slide: el blues | Pendiente |
 | 7 | Blues y slide: el slide | Pendiente |
 | 8 | CAGED | Pendiente |
@@ -99,7 +99,7 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 
 Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`…), para poder volver a ella si algo sale mal.
 
-### Qué funciona ya (v0.3.0)
+### Qué funciona ya (v0.4.0)
 
 - **Inicio** con Teoría, Práctica, Afinaciones y Glosario, los iconos de Perfil y Ajustes, la **racha** y **Continuar** (abre el último ejercicio hecho).
 - **Metrónomo** (fila Herramientas del Inicio): 30–240 BPM con − y + (mantén pulsado para ir rápido), deslizador, «Marcar el tempo tocando aquí», de 2 a 7 tiempos por compás con el primero acentuado, negras, corcheas o tresillos. Mantiene la pantalla encendida mientras suena y recuerda tus ajustes.
@@ -116,9 +116,14 @@ Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`
   - **Consulta**: los 14 acordes de la biblioteca, con diagrama, notas coloreadas por función, rasgueado, arpegiado y «Ver en el mástil».
   - **Teoría**: «¿Qué acorde es?», «Constrúyelo» (en un diagrama vacío), «¿Qué notas tiene?», «¿Mayor o menor?» y «¿Qué nota falta?», en 3 niveles.
   - **Práctica**: «Cambios de acordes» y «Rasgueo» con metrónomo y la progresión que elijas (predefinidas, calculadas por grados, o **Mis progresiones**), «Cambios en un minuto» con récord por pareja y «Acorde cantado».
+- **Oído**, el tercer módulo (solo ejercicios, sin lección ni consulta):
+  - **Teoría**: «¿Mayor o menor?» (suena un acorde abierto: rasgueado despacio, arpegiado o las dos cosas según el nivel, y en Avanzado también la séptima de dominante), «¿Más agudo o más grave?» (dos notas, cada vez más cerca según el nivel) y «¿Qué intervalo es?» (de 3 opciones en Básico a todos los intervalos hasta la octava, subiendo o bajando, en Avanzado).
+  - **Práctica**: «Encuentra la nota» (suena una nota y la buscas en tu guitarra; la solución enseña todos los sitios donde suena esa nota exacta, en cualquiera de las 7 afinaciones) e «Imita el acorde» (suena un acorde y lo tocas; al final ves su nombre y su diagrama).
+  - La pregunta suena sola al aparecer, el tiempo empieza cuando acaba de sonar y siempre hay un botón **Repetir sonido**. En Práctica no hay voz, para no decirte la respuesta: el sonido se repite a mitad del tiempo y al enseñar la solución.
+  - Si el sonido está desactivado en Ajustes, la preparación te avisa.
 - **Calentamiento**: un dedo por traste con la **tablatura** en pantalla, 4 variantes (también la araña), subida automática de tempo, botón «Bajar» y récord de tempo por variante y nivel.
 - **Tablatura**: todos los símbolos habituales (ligados, deslizamientos, estiramientos, vibrato, armónicos, PM, let ring…), con reproductor a 50, 75 y 100 % y «Ver en el mástil».
-- **Glosario**: 50 conceptos de Notas, Acordes, Afinaciones, Ritmo y Tablatura, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil, un diagrama de acorde, una tablatura, un patrón de rasgueo o el pulso del metrónomo, que suenan al tocarlos) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
+- **Glosario**: 55 conceptos de Notas, Acordes, Intervalos, Afinaciones, Ritmo y Tablatura, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil, un diagrama de acorde, una tablatura, un patrón de rasgueo o el pulso del metrónomo, que suenan al tocarlos) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
 - **Ajustes** completos: notación, alteraciones, tema (oscuro por defecto, claro o automático), mástil, sonido, volumen, voz, afinación por defecto y copia de tus datos.
 - **Perfil** provisional con racha, días practicados y tiempo total, y **Acerca de**.
 - **Página de prueba** (Ajustes → App): mástil en vertical u horizontal, diagramas de los 14 acordes, rasgueo y arpegio, voz y pulso.
@@ -150,7 +155,7 @@ Después abre la dirección que aparece (normalmente http://localhost:3000). Si 
 npm test
 ```
 
-Comprueban toda la lógica musical (nombres de nota, escalas, afinaciones, octavas…), que los textos del glosario digan cosas ciertas y enlacen a conceptos que existen, que el sonido esté afinado, el guardado de datos y que la app tenga todos sus archivos para funcionar sin conexión.
+Comprueban toda la lógica musical (nombres de nota, escalas, afinaciones, octavas, intervalos…), que los textos del glosario digan cosas ciertas y enlacen a conceptos que existen, que el sonido esté afinado, el guardado de datos y que la app tenga todos sus archivos para funcionar sin conexión.
 
 ### Otros comandos
 
@@ -165,7 +170,7 @@ Cada `push` a la rama `main` actualiza la app publicada en 1–2 minutos. Antes 
 1. `npm test` en verde.
 2. Subir `CACHE_VERSION` en [`sw.js`](sw.js), para que los iPhone descarguen la versión nueva.
 3. Subir `APP_VERSION` en [`js/version.js`](js/version.js) (`0.N.x` = fase N).
-4. Al terminar una fase, crear su etiqueta con `v` delante de la versión, por ejemplo `git tag v0.2.0` y `git push origin v0.2.0`.
+4. Al terminar una fase, crear su etiqueta con `v` delante de la versión, por ejemplo `git tag v0.4.0` y `git push origin v0.4.0`.
 
 > El repositorio se sigue llamando `MyGuitarApp` a propósito: cambiarle el nombre cambiaría la dirección de la app y habría que volver a instalarla.
 
