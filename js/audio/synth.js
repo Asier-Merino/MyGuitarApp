@@ -2,7 +2,7 @@
 // ≈0,996), guardado en caché por MIDI, y un filtro paso bajo suave a la salida.
 // playNote, strum (≈25 ms entre cuerdas) y arpeggio. Respeta los ajustes "Sonido" y "Volumen".
 
-import { getAudio, setMasterVolume } from './context.js';
+import { getAudio, setMasterVolume, onAudioReset } from './context.js';
 import { renderPluck } from './pluck.js';
 import { midiToFreq } from '../core/theory.js';
 import { settings } from '../state.js';
@@ -17,6 +17,12 @@ const CHORD_GAIN = 0.45;
 
 const cache = new Map(); // MIDI → AudioBuffer
 let output = null; // filtro paso bajo → master
+
+// Con un contexto de audio nuevo, el filtro y las muestras se vuelven a crear en él.
+onAudioReset(() => {
+  output = null;
+  cache.clear();
+});
 
 function bufferFor(ctx, midi) {
   if (!cache.has(midi)) {
