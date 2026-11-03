@@ -1384,6 +1384,7 @@ export const UI_TEXTS = Object.freeze({
     deleteText: 'Se borrará de «Mis progresiones». No se puede deshacer.',
     editorTitle: 'Mis progresiones',
     howMany: 'Cuántos acordes',
+    slotsLabel: 'Acordes',
     nameLabel: 'Nombre',
     namePlaceholder: 'Por ejemplo, Blues o Country',
     pickChord: 'Elige un acorde',

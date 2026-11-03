@@ -116,6 +116,7 @@ export function openProgressionEditor({ existing = null, onSaved }) {
         options: CUSTOM_PROGRESSION_SIZES.map((n) => ({ value: n, label: String(n) })),
         onChange: (n) => { state.size = n; draw(); },
       }),
+      h('h3', { class: 'sheet__section' }, T.slotsLabel),
       h('div', { class: 'prog-slots' }, Array.from({ length: state.size }, (_, i) => {
         const chord = state.chords[i] ? getChord(state.chords[i]) : null;
         return h('button', {

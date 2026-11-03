@@ -1225,3 +1225,7 @@ p { margin: 0 0 .75em; }
 .chord-ref__fn { color: var(--text-muted); text-align: right; }
 .cd-open--fn { stroke: var(--dot); stroke-width: 3.5; }
 .warmup .practice__actions { position: sticky; bottom: 0; z-index: 2; margin-top: auto; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); background: var(--bg); }
+.prog-editor .sheet__section { margin-top: 22px; }
+.prog-editor .sheet__section:first-of-type { margin-top: 16px; }
+.prog-editor .segmented { display: flex; }
+.prog-editor .segmented button { flex: 1; }
