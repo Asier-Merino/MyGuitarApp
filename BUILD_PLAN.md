@@ -115,7 +115,8 @@
 │   │   ├── diagrams.js        # puntos de los esquemas del glosario, calculados
 │   │   ├── progressions.js    # progresiones por grados y "Mis progresiones" (Fase 3)
 │   │   ├── tab.js             # tablatura: símbolos, texto plano, colocación, ritmo y curvas de altura
-│   │   └── warmup.js          # calentamiento: ida y vuelta, araña y subida de tempo
+│   │   ├── warmup.js          # calentamiento: ida y vuelta, araña y subida de tempo
+│   │   └── ear.js             # oído: parejas de notas, intervalos, notas exactas y plan de lo que suena (Fase 4)
 │   ├── data/
 │   │   ├── modules.js         # secciones, módulos, niveles y ejercicios previstos
 │   │   ├── tunings.js         # las 7 afinaciones (4.2)
@@ -167,7 +168,7 @@
 │   └── modules/
 │       ├── notes/             # common.js, theory-exercises.js, practice-exercises.js, reference-view.js
 │       ├── chords/            # common.js, theory-exercises.js, practice-exercises.js, reference-view.js
-│       ├── ear/
+│       ├── ear/               # Oído: common.js, theory-exercises.js, practice-exercises.js
 │       ├── theory/            # Escala y tonalidad
 │       ├── blues/             # Blues y slide
 │       ├── caged/
@@ -191,6 +192,7 @@
     ├── tab.test.js            # cada símbolo de la tablatura, ritmo y sonido
     ├── warmup.test.js         # calentamiento: un dedo por traste, espejo, araña y tempo
     ├── chords-exercises.test.js # ejercicios de Acordes y Calentamiento, y lo que dicen sus fichas
+    ├── ear.test.js            # ejercicios de Oído, lo que suena y lo que dicen sus fichas (Fase 4)
     ├── concepts.test.js
     ├── random.test.js
     ├── pluck.test.js          # la cuerda sintetizada suena afinada (< 2 cents)
@@ -700,6 +702,7 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 - **Respuestas**: botones grandes en 2 columnas con doble notación y efecto físico.
 - **Sin sonido automático al responder**: la app no suena sola al acertar ni al fallar. En su lugar hay un **botón de altavoz** (icono SVG) que reproduce la nota o el acorde de la respuesta correcta cuando el usuario lo pulsa.
   - Aparece **después de responder**, nunca antes (en los ejercicios de Oído existe aparte el botón "Repetir sonido").
+  - **Excepción de Oído** (Fase 4): en sus ejercicios la pregunta suena sola al aparecer, porque es la pregunta; el tiempo del nivel empieza cuando acaba el sonido.
   - Está en todos los ejercicios cuya respuesta tiene sonido: notas, acordes, intervalos, escalas, tablatura…
   - También en cada fallo del resumen de ronda (6.6.10) y en las fichas del glosario (botón Escuchar).
 - **Al acertar**: el botón se pone verde con ✓ y aparece "Correcto ✓" con el altavoz al lado. **Pasa sola** a la siguiente pregunta tras **2 segundos**. Si se pulsa el altavoz en ese tiempo, el avance automático se cancela, suena la respuesta y aparece el botón **Continuar**.
@@ -716,6 +719,7 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 ```
 (En el esquema, 🔊 representa el icono SVG del altavoz.)
 - **Consigna enorme** con doble notación. La voz la dice al aparecer; el icono del altavoz de la cabecera silencia la voz.
+- **En Oído** (Fase 4) no hay voz, porque diría la respuesta: la consigna suena al aparecer, otra vez a mitad del tiempo y al enseñar la solución, y abajo hay tres botones: Pausa, Repetir sonido y Ver.
 - **Cuenta atrás** en barra y en segundos.
 - **Guía de ritmo**: en los ejercicios que recorren cuerdas, los círculos de las cuerdas (6 a 1) se iluminan uno a uno, repartidos en el tiempo disponible.
 - **Al acabarse el tiempo**: aparece automáticamente un trozo de mástil con las posiciones correctas durante **3 segundos** y después pasa a la siguiente consigna.
@@ -1287,13 +1291,13 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 
 ### Fase 4 — Módulo Oído
 **Teoría**
-- [ ] "¿Mayor o menor?": suena un acorde y se responde.
-- [ ] "¿Más agudo o más grave?": suenan dos notas (calentamiento, nivel Básico).
-- [ ] "¿Qué intervalo es?" (Intermedio y Avanzado): 3ª mayor o menor, 5ª, octava… La lista de intervalos se amplía con el nivel.
+- [x] "¿Mayor o menor?": suena un acorde y se responde.
+- [x] "¿Más agudo o más grave?": suenan dos notas (calentamiento, nivel Básico).
+- [x] "¿Qué intervalo es?" (Intermedio y Avanzado): 3ª mayor o menor, 5ª, octava… La lista de intervalos se amplía con el nivel.
 
 **Práctica**
-- [ ] "Encuentra la nota": suena una nota y la buscas en tu guitarra. Al pulsar "Ver" (o pasado el tiempo), se muestra en el mástil.
-- [ ] "Imita el acorde": suena un acorde abierto y lo tocas.
+- [x] "Encuentra la nota": suena una nota y la buscas en tu guitarra. Al pulsar "Ver" (o pasado el tiempo), se muestra en el mástil.
+- [x] "Imita el acorde": suena un acorde abierto y lo tocas.
 
 **Niveles**
 | | Básico | Intermedio | Avanzado |
@@ -1302,8 +1306,22 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 | Encuentra la nota | cuerda 6 o 5, naturales | cualquier cuerda, 0–12 | con alteraciones, sin pista de cuerda |
 | Intervalos | — | 3ªM, 3ªm, 5ª, 8ª | todos hasta la octava |
 
-- [ ] Botón "Repetir sonido" en todos los ejercicios.
-- [ ] Conceptos del bloque Intervalos (los de oído) en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios.
+- [x] Botón "Repetir sonido" en todos los ejercicios.
+- [x] Conceptos del bloque Intervalos (los de oído) en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios.
+
+**Decisiones de la Fase 4** (aprobadas por el usuario antes de empezar):
+- **Sin voz en Oído**: diría la respuesta. En Práctica, la cabecera no lleva el icono de la voz y abajo hay Pausa · Repetir sonido · Ver.
+- **Sonido automático** solo en Oído: la pregunta o la consigna suena al aparecer (6.6.7). El altavoz de después de responder se mantiene.
+- **Aviso** en la preparación si el sonido está desactivado en Ajustes.
+- **Teoría**: 10 preguntas por ronda. Tiempo: sin límite en Básico, 15 s en Intermedio y 10 s en Avanzado, contado desde que **acaba** el sonido. La misma respuesta no sale 3 veces seguidas, ni la misma pregunta 2 veces seguidas.
+- **"¿Mayor o menor?"**: acordes abiertos de la biblioteca (5.1) del nivel de la Fase 3 (en Básico e Intermedio, sin las séptimas). Básico: rasgueado lento (80 ms entre cuerdas); Intermedio: arpegiado; Avanzado: arpegiado y después rasgueado, con séptima de dominante (3 opciones).
+- **"¿Más agudo o más grave?"**: en los 3 niveles, según la distancia entre las dos notas: Básico de 5 a 12 semitonos, Intermedio de 2 a 4, Avanzado de 1 a 2.
+- **"¿Qué intervalo es?"**: melódico (una nota detrás de otra). Básico: 3ª mayor, 5ª y 8ª, subiendo (3 opciones); Intermedio: 3ªM, 3ªm, 5ª y 8ª, subiendo; Avanzado: de la 2ª menor a la octava (sin el unísono), subiendo o bajando. En los botones, el tritono se escribe solo «Tritono».
+- **Notas**: siempre dentro del registro de la guitarra, de la 6ª al aire (MIDI 40) a la 1ª en el traste 12 (MIDI 76).
+- **"Encuentra la nota"**: 12 consignas; vale cualquier sitio donde suene la misma nota exacta (unísonos), no una octava. Básico: 6ª o 5ª cuerda, naturales, trastes 0–5, con la cuerda indicada, 30 s; Intermedio: cualquier cuerda, naturales, 0–12, con la cuerda indicada, 20 s; Avanzado: con alteraciones, sin pista, 15 s. Cualquier afinación.
+- **"Imita el acorde"**: 12 consignas con los acordes del nivel de la Fase 3, 20 / 15 / 12 s; al acabar, nombre y diagrama 3 s, y vuelve a sonar. Solo afinación estándar.
+- **Conceptos nuevos** (bloque Intervalos): "Intervalo", "Agudo y grave", "3ª mayor y 3ª menor", "5ª justa" y "Tritono", con esquema en el mástil que suena. La Octava (bloque Notas) se reutiliza. Sin canciones de referencia.
+- **Estadísticas**: claves `ear:quality:major`, `ear:pitch:2`, `ear:interval:7`…
 
 **Hecho cuando**: los ejercicios suenan bien en el iPhone y la generación al azar no repite de forma evidente.
 
@@ -1479,6 +1497,7 @@ El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide 
 | `v0.1.1` | 1B | commit "Fase 1B: mástil, sonido, metrónomo y motores de ejercicio" |
 | `v0.2.0` | 2 | commit "Fase 2: módulo Notas del mástil" |
 | `v0.3.0` | 3 | commit "Fase 3: Acordes abiertos, rasgueo, tablatura y Calentamiento" |
+| `v0.4.0` | 4 | commit "Fase 4: módulo Oído" |
 
 ---
 
@@ -1520,3 +1539,4 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 | 2026-11-03 | 3 | Módulo **Acordes abiertos**: lección en 5 tarjetas con diagramas coloreados por función (comparando Mi/Mim, La/Lam y La/La7); Consulta con la biblioteca, notas por función, rasgueado, arpegiado y "Ver en el mástil"; 5 ejercicios de Teoría ("¿Qué acorde es?", "Constrúyelo" con un diagrama editable, "¿Qué notas tiene?" con teclado de varias notas, "¿Mayor o menor?" y "¿Qué nota falta?"); progresiones predefinidas calculadas por grados y **Mis progresiones** (crear, editar y borrar, en la exportación); pantalla de práctica de acordes (6.6.12) con "Mostrar diagramas"; "Cambios de acordes", "Cambios en un minuto" (récord por pareja), "Acorde cantado" y **Rasgueo** (patrones de 5.6 con "Escuchar el patrón", acento y swing). **Calentamiento**: "Un dedo por traste" con tablatura, 4 variantes, subida automática de tempo (función del metrónomo), "Bajar" y récord. **Tablatura** completa (6.7): todos los símbolos, ritmo, partición en líneas, cursor, reproductor a 50/75/100 % y "Ver en el mástil", con sonido de cada técnica (curva de altura sobre la cuerda sintetizada). Glosario: 31 conceptos nuevos (Acordes, Ritmo y técnica, y Tablatura) con esquemas que suenan; marcado `{{chord:id}}`; deletreo por letra de las notas de un acorde. Tests contra la teoría (grados, fórmulas, MIDI, armónicos). Cambios al plan: decisiones de la Fase 3, patrones de Avanzado (5.6), esquema `strum` (6.8), estructura de carpetas (3). | Aceptadas todas las propuestas (una sola sesión; ejercicios de Teoría; progresiones; Acorde cantado; Cambios en un minuto; rasgueo sin voz; patrones con acento y swing; vuelta en espejo y araña; subida cada vuelta en Básico). |
 | 2026-11-03 | 3 (arreglo) | Editor de «Mis progresiones»: el selector de cuántos acordes ocupa todo el ancho y las casillas de los acordes llevan su propio título («Acordes») y más separación, para que no queden pegados. Versión 0.3.1. | Pedido por el usuario al probar la v0.3.0 en el iPhone. Pendiente para otro arreglo: en algunos ejercicios el sonido deja de oírse a partir de la segunda vez. |
 | 2026-11-03 | 3 (arreglo) | Sonido que dejaba de oírse en el iPhone en los ejercicios con voz, a partir de la segunda ronda: la voz se desbloquea una sola vez por sesión (antes, en cada «Empezar»); al acabar o cortar cada locución se vuelve a pedir el modo «playback» y se reanuda el audio; si el audio sigue parado, en el siguiente toque se crea uno nuevo. Test nuevo `tests/speech-audio.test.js`. Versión 0.3.2. | El usuario confirmó que pasa en los ejercicios con voz, con el iPhone en silencio, y que se arregla al cerrar y abrir la app. Pendiente de confirmar en el iPhone. |
+| 2026-11-03 | 4 | Módulo **Oído**: 3 ejercicios de Teoría («¿Mayor o menor?» con acordes de la biblioteca, rasgueado lento, arpegiado o arpegiado y rasgueado según el nivel, y séptima de dominante en Avanzado; «¿Más agudo o más grave?» con 3 niveles por distancia; «¿Qué intervalo es?» de 3 a 12 opciones, subiendo o bajando en Avanzado) y 2 de Práctica («Encuentra la nota», con la nota exacta y todos sus unísonos en la solución y cualquier afinación; «Imita el acorde»). La pregunta suena sola al aparecer y el tiempo empieza al acabar el sonido; botón «Repetir sonido» en todos; en Práctica, sin voz (diría la respuesta), la consigna vuelve a sonar a mitad del tiempo y al enseñar la solución. La misma respuesta no sale 3 veces seguidas. Aviso en la preparación si el sonido está desactivado. Bloque **Intervalos** del glosario: «Intervalo», «Agudo y grave», «3ª mayor y 3ª menor», «5ª justa» y «Tritono», con esquemas calculados que suenan. Lógica en `js/core/ear.js` y test nuevo `tests/ear.test.js` (MIDI, tabla 4.3, fórmulas y lo que dicen las ayudas y las fichas). Cambios al plan: decisiones de la Fase 4, excepciones de sonido y voz de Oído (6.6.7 y 6.6.8), estructura de carpetas (3). Versión 0.4.0. | Aceptadas todas las propuestas de la Fase 4 (sin voz en Oído, sonido automático, niveles, tiempos, número de consignas y conceptos). Pendiente de confirmar en el iPhone: cómo suenan las notas y acordes sintetizados, el modo silencio y el arreglo de la v0.3.2. |

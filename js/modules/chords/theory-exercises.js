@@ -36,7 +36,7 @@ function pickChord(params, rng, { stats = {}, previousKey = null, now = Date.now
 }
 
 /** Explicación de la calidad de un acorde: fundamental, 3ª (y 7ª), con las notas deletreadas. */
-function qualityWhy(chord) {
+export function qualityWhy(chord) {
   const T = EXERCISE_TEXTS['acordes.teoria.mayor-menor'];
   const [r, t, , s] = chordSpelling(chord).map(noteToken);
   const vars = { root: r, third: t, seventh: s ?? '' };

@@ -156,7 +156,7 @@ test('bloques: conteo y bloques con conceptos', () => {
   assert.ok(blockConcepts('rhythm-technique').some((c) => c.id === 'metronome'));
   assert.ok(blockConcepts('chords').length >= 7);
   assert.ok(blockConcepts('tablature').length >= 16);
-  assert.deepEqual(nonEmptyBlocks().map((b) => b.id), ['notes', 'chords', 'tunings', 'rhythm-technique', 'tablature']);
+  assert.deepEqual(nonEmptyBlocks().map((b) => b.id), ['notes', 'chords', 'intervals', 'tunings', 'rhythm-technique', 'tablature']);
 });
 
 /* ----- Buscador ----- */

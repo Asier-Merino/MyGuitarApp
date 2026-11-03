@@ -10,10 +10,13 @@ import { NOTES_PRACTICE_EXERCISES } from '../modules/notes/practice-exercises.js
 import { CHORDS_THEORY_EXERCISES } from '../modules/chords/theory-exercises.js';
 import { CHORDS_PRACTICE_EXERCISES } from '../modules/chords/practice-exercises.js';
 import { WARMUP_EXERCISES } from '../modules/warmup/exercises.js';
+import { EAR_THEORY_EXERCISES } from '../modules/ear/theory-exercises.js';
+import { EAR_PRACTICE_EXERCISES } from '../modules/ear/practice-exercises.js';
 
 const DEFINITIONS = [
   ...NOTES_THEORY_EXERCISES, ...NOTES_PRACTICE_EXERCISES,
   ...CHORDS_THEORY_EXERCISES, ...CHORDS_PRACTICE_EXERCISES, ...WARMUP_EXERCISES,
+  ...EAR_THEORY_EXERCISES, ...EAR_PRACTICE_EXERCISES,
 ];
 
 /**
@@ -46,6 +49,10 @@ export function validateExercise(def) {
   need(def.answerBy === undefined || def.answerBy === 'tap', 'answerBy');
   // Opcional: record({ results | items, puzzle, level, tuningId, seconds }) → { key, value, better } o null.
   need(def.record === undefined || typeof def.record === 'function', 'record');
+  // Oído: lo que suena en cada pregunta (Teoría) o consigna (Práctica), como plan de js/core/ear.js.
+  need(def.questionSound === undefined || typeof def.questionSound === 'function', 'questionSound');
+  need(def.itemSound === undefined || typeof def.itemSound === 'function', 'itemSound');
+  need(def.voice === undefined || typeof def.voice === 'boolean', 'voice');
   for (const opt of def.options ?? []) {
     need(OPTION_TYPES.includes(opt.type) && typeof opt.id === 'string' && opt.label, `opción ${opt.id}`);
     if (opt.type === 'choice') need(opt.choices?.some((c) => c.value === opt.default), `opción ${opt.id}: valor por defecto`);

@@ -8,6 +8,8 @@
 // (o el que pida cada pregunta). El "?" (o cualquier panel) pausa la ronda. Las preguntas se
 // eligen con peso (7.4) y se guardan las estadísticas; al terminar o al salir, la ronda va
 // al registro de sesiones.
+// En los ejercicios de oído (exercise.questionSound), la pregunta suena sola al aparecer, el
+// tiempo empieza cuando acaba el sonido y «Repetir sonido» la vuelve a tocar.
 
 import { h, render, button, iconButton, screenHeader, statTile, badge } from '../ui/components.js';
 import { NoteLabel, ChordLabel } from '../ui/note-label.js';
@@ -28,7 +30,8 @@ import { getTuning, DEFAULT_TUNING_ID } from '../data/tunings.js';
 import { LEVELS } from '../data/modules.js';
 import { UI_TEXTS } from '../data/concepts.js';
 import { store } from '../state.js';
-import { playSequence, strum } from '../audio/synth.js';
+import { playSequence, strum, playEvents } from '../audio/synth.js';
+import { icon } from '../ui/icons.js';
 
 const AUTO_ADVANCE_MS = 2000;
 /** En las rondas por tiempo: pausa tras acertar y tiempo que se ve la correcta tras fallar. */
@@ -64,7 +67,8 @@ function createSpeaker(exercise) {
   const play = (it) => {
     stopSound?.();
     const sound = exercise.sound?.(it);
-    if (sound?.strum?.length) strum(sound.strum, 'down');
+    if (sound?.events) stopSound = playEvents(sound);
+    else if (sound?.strum?.length) strum(sound.strum, 'down');
     else if (sound?.midi?.length) stopSound = playSequence(sound.midi, { gap: 0.7 });
   };
   return {
@@ -151,6 +155,9 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
   let answerBtns = [];
   let checkBtn = null;
   let stopSummarySound = null;
+  let stopQuestionSound = null;
+  let soundWait = null; // espera a que acabe el sonido de la pregunta para empezar el tiempo
+  let heardMs = 0; // lo que ha sonado la pregunta antes de responder (cuenta en el tiempo de respuesta)
   const speaker = createSpeaker(exercise);
 
   const ctx = exerciseCtx(tuning, {
@@ -236,11 +243,14 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     timerEl,
   );
   const promptEl = h('h2', { class: 'quiz__prompt' });
+  const listenEl = h('div', { class: 'quiz__listen', hidden: !exercise.questionSound },
+    h('span', { class: 'quiz__ear', 'aria-hidden': 'true' }, icon('ear', { size: 56 })),
+    button({ label: UI_TEXTS.ear.repeat, iconName: 'volume', className: 'quiz__repeat', onClick: () => playQuestion() }));
   const stage = h('div', { class: 'quiz__stage' });
   const answersEl = h('div', { class: 'quiz__answers' });
   const feedbackEl = h('div', { class: 'quiz__feedback', 'aria-live': 'polite' });
   render(view, header, h('div', { class: 'screen quiz' },
-    tuningTag(tuning), promptEl, stage, answersEl, feedbackEl));
+    tuningTag(tuning), promptEl, listenEl, stage, answersEl, feedbackEl));
 
   const setProgress = (done) => {
     if (timedRound) return;
@@ -270,16 +280,25 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     if (isPaused()) {
       roundClock.pause();
       qClock?.pause();
+      soundWait?.pause();
       advanceTimer?.pause();
+      stopQuestionSound?.();
     } else {
       roundClock.start();
-      if (state === 'asking') qClock?.start();
+      if (soundWait) soundWait.start();
+      else if (state === 'asking') qClock?.start();
       advanceTimer?.start();
     }
   }
   const offSheet = onSheetChange((open) => setPaused('sheet', open));
   const onVisibility = () => setPaused('hidden', document.visibilityState === 'hidden');
   document.addEventListener('visibilitychange', onVisibility);
+
+  /* ----- Sonido de la pregunta (oído) ----- */
+  function playQuestion() {
+    stopQuestionSound?.();
+    stopQuestionSound = playEvents(exercise.questionSound(item));
+  }
 
   /* ----- Preguntas ----- */
   function nextQuestion() {
@@ -305,7 +324,17 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
       onTick: (left) => { if (limit) timeFill.style.width = `${(left / (limit * 1000)) * 100}%`; },
       onDone: () => answer(null),
     });
-    if (!isPaused()) qClock.start();
+    if (exercise.questionSound) {
+      listenEl.hidden = false;
+      playQuestion();
+      const soundMs = exercise.questionSound(item).seconds * 1000;
+      heardMs = 0;
+      soundWait = createCountdown({
+        ms: soundMs,
+        onDone: () => { soundWait = null; heardMs = soundMs; if (state === 'asking' && !isPaused()) qClock.start(); },
+      });
+      if (!isPaused()) soundWait.start();
+    } else if (!isPaused()) qClock.start();
   }
 
   function markAnswers(chosen) {
@@ -332,8 +361,12 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
   function answer(value) {
     if (state !== 'asking') return;
     state = 'answered';
-    const ms = qClock.elapsed;
+    // En oído, el tiempo de respuesta cuenta desde que empieza a sonar la pregunta.
+    const ms = qClock.elapsed + (soundWait ? soundWait.elapsed : heardMs);
     qClock.cancel();
+    soundWait?.cancel();
+    soundWait = null;
+    if (exercise.questionSound) listenEl.hidden = true;
     const result = exercise.check(item, value);
     recordStats(exercise.statKeys(item), { correct: result.correct, ms });
     results.push({ item, answer: value, result, ms });
@@ -382,6 +415,7 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     advanceTimer?.cancel();
     advanceTimer = null;
     speaker.stop();
+    stopQuestionSound?.();
     if (!timedRound && index >= total) finish();
     else nextQuestion();
   }
@@ -401,9 +435,11 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
 
   function stopAll() {
     qClock?.cancel();
+    soundWait?.cancel();
     advanceTimer?.cancel();
     roundClock.pause();
     speaker.stop();
+    stopQuestionSound?.();
     offSheet();
     document.removeEventListener('visibilitychange', onVisibility);
   }

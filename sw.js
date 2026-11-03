@@ -1,6 +1,6 @@
 // Service worker: guarda la app para usarla sin conexión.
 // Incrementa CACHE_VERSION en cada despliegue que cambie archivos de la app.
-const CACHE_VERSION = 7;
+const CACHE_VERSION = 8;
 const CACHE_PREFIX = 'myguitarapp-';
 const CACHE_NAME = `${CACHE_PREFIX}v${CACHE_VERSION}`;
 
@@ -23,6 +23,7 @@ const ASSETS = [
   './js/audio/synth.js',
   './js/audio/tab-player.js',
   './js/core/diagrams.js',
+  './js/core/ear.js',
   './js/core/fretboard-model.js',
   './js/core/glossary.js',
   './js/core/history.js',
@@ -59,6 +60,9 @@ const ASSETS = [
   './js/modules/chords/reference-view.js',
   './js/modules/chords/theory-exercises.js',
   './js/modules/dev/dev-view.js',
+  './js/modules/ear/common.js',
+  './js/modules/ear/practice-exercises.js',
+  './js/modules/ear/theory-exercises.js',
   './js/modules/glossary/glossary-view.js',
   './js/modules/notes/common.js',
   './js/modules/notes/practice-exercises.js',

@@ -17,6 +17,7 @@ import { clampBpm } from '../core/rhythm.js';
 import { getAudio } from '../audio/context.js';
 import { renderOption, stopSetupSound, warmupPreview } from './setup-options.js';
 import { settings } from '../state.js';
+import { UI_TEXTS } from '../data/concepts.js';
 
 const TEMPO_STEP = 5;
 
@@ -77,6 +78,7 @@ export function renderSetup(view, params, nav) {
       className: 'setup',
       content: [
         h('p', { class: 'lead' }, exercise.description),
+        playable && exercise.needsSound && !settings.get('sound') && h('p', { class: 'notice' }, UI_TEXTS.ear.soundNeeded),
         h('h2', { class: 'section-title' }, 'Nivel'),
         segmented({
           label: 'Nivel',

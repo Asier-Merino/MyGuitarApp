@@ -65,6 +65,11 @@ export const PLANNED_EXERCISES = Object.freeze([
   x('acordes', 'practica', 'un-minuto', 'Cambios en un minuto', 'Cambias entre dos acordes todo lo que puedas en 60 segundos.', { phase: 3 }),
   x('acordes', 'practica', 'acorde-cantado', 'Acorde cantado', 'La app dice un acorde al azar y tú lo tocas.', { phase: 3 }),
   x('acordes', 'practica', 'rasgueo', 'Rasgueo', 'Tocas una progresión con un patrón de rasgueo, al ritmo del metrónomo.', { phase: 3 }),
+  x('oido', 'teoria', 'mayor-menor', '¿Mayor o menor?', 'Suena un acorde y decides si es mayor o menor.', { phase: 4 }),
+  x('oido', 'teoria', 'agudo-grave', '¿Más agudo o más grave?', 'Suenan dos notas y decides si la segunda es más aguda o más grave.', { phase: 4 }),
+  x('oido', 'teoria', 'que-intervalo', '¿Qué intervalo es?', 'Suenan dos notas, una detrás de otra, y eliges el intervalo que hay entre ellas.', { phase: 4 }),
+  x('oido', 'practica', 'encuentra-la-nota', 'Encuentra la nota', 'Suena una nota y la buscas en tu guitarra.', { tunings: 'any', phase: 4 }),
+  x('oido', 'practica', 'imita-el-acorde', 'Imita el acorde', 'Suena un acorde abierto y lo tocas en tu guitarra.', { phase: 4 }),
   x('calentamiento', 'practica', 'cromatico', 'Un dedo por traste', 'Recorres las 6 cuerdas con un dedo por traste, con tablatura y metrónomo, y el tempo sube solo.', { tunings: 'any', phase: 3 }),
 ]);
 
@@ -89,6 +94,6 @@ export function getPlannedExercise(section, slug, exerciseSlug) {
 }
 
 /** Última fase construida: lo de fases posteriores se muestra como "Próximamente". */
-export const BUILT_THROUGH_PHASE = 3;
+export const BUILT_THROUGH_PHASE = 4;
 
 export const isAvailable = (item) => item.phase <= BUILT_THROUGH_PHASE;

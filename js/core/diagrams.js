@@ -8,6 +8,7 @@
 //     { select: 'naturals', strings?: [..] }   notas naturales en esas cuerdas (todas por defecto)
 //     { select: 'open' }                       las 6 cuerdas al aire
 //     { select: 'sound', string }              las notas de `sound.midi` del concepto, en esa cuerda
+//                                              (la primera es el punto de partida)
 //     { select: 'string', string }             todos los trastes del rango en esa cuerda
 //     { select: 'frets', frets: [..] }         esos trastes en las 6 cuerdas
 //     { select: 'unison', string, fret }       el punto y sus unísonos (mismo MIDI) en el rango
@@ -16,7 +17,7 @@
 //                                              cuerda siguiente al aire, y esa cuerda al aire
 //   highlight (opcional): 'natural-semitones' (Mi–Fa y Si–Do) · 'changed' (cuerdas que cambian
 //     respecto a la estándar) · 'accidentals' (notas con sostenido o bemol) · 'start' (el
-//     punto de partida de 'unison' u 'octaves') · 'gap' (en 'five-fret-rule', las parejas
+//     punto de partida de 'unison', 'octaves' o 'sound') · 'gap' (en 'five-fret-rule', las parejas
 //     que no están a 5 trastes) · colorBy: 'function' (colores de R, 3 y 5 respecto a la nota
 //     que da nombre a la afinación)
 //   showStringNumbers, showFretNumbers · caption (texto con marcado, opcional)
@@ -65,7 +66,8 @@ function selectPositions(diagram, concept, tuning) {
     case 'string':
       return frets.map((fret) => ({ string: points.string, fret }));
     case 'sound':
-      return (concept.sound?.midi ?? []).map((midi) => ({ string: points.string, fret: midi - tuning[points.string] }));
+      // La primera nota es el punto de partida (highlight 'start'), p. ej. en los intervalos.
+      return (concept.sound?.midi ?? []).map((midi, i) => ({ string: points.string, fret: midi - tuning[points.string], start: i === 0 }));
     case 'frets':
       return LOW_TO_HIGH.flatMap((string) => points.frets.map((fret) => ({ string, fret })));
     case 'unison':

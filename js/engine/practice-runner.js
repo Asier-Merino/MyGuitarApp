@@ -6,6 +6,8 @@
 // Pantalla encendida mientras dura. Sin autoevaluación: el resumen solo dice qué se ha hecho.
 // Cada consigna puede traer sus marcas (item.markers), una leyenda (item.legend) y lo que
 // suena al enseñar la solución (item.revealSound, p. ej. un punto y su unísono).
+// Ejercicios de oído (exercise.itemSound): sin voz (diría la respuesta); la consigna suena al
+// aparecer, otra vez a mitad del tiempo y al enseñar la solución, y hay «Repetir sonido».
 
 import { h, render, button, iconButton, screenHeader, badge } from '../ui/components.js';
 import { icon } from '../ui/icons.js';
@@ -23,7 +25,7 @@ import { getTuning } from '../data/tunings.js';
 import { UI_TEXTS } from '../data/concepts.js';
 import { settings } from '../state.js';
 import { createMetronome } from '../audio/metronome.js';
-import { playSequence } from '../audio/synth.js';
+import { playSequence, playEvents } from '../audio/synth.js';
 
 /** Tiempo que se ven las posiciones al acabarse la cuenta atrás. */
 export const REVEAL_MS = 3000;
@@ -41,6 +43,9 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
   const recentKeys = [];
   const round = {}; // estado que comparten las consignas de una ronda (p. ej. la cuerda al azar)
   let stopRevealSound = null;
+  let stopItemSound = null;
+  let replayed = false; // en oído, si ya ha vuelto a sonar a mitad del tiempo
+  const hasVoice = exercise.voice !== false;
   let item = null;
   let shown = 0;
   let phase = 'prompt'; // prompt | reveal
@@ -75,7 +80,7 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
     h('div', { class: 'screen-header__bar' },
       iconButton({ iconName: 'close', label: unlimited ? 'Terminar la ronda' : 'Salir de la ronda', onClick: () => exit() }),
       h('div', { class: 'quiz-progress' }, h('div', { class: 'quiz-progress__track' }, fill), count),
-      voiceBtn,
+      hasVoice ? voiceBtn : h('span', { 'aria-hidden': 'true' }),
     ));
   const stage = h('div', { class: 'practice__stage', 'aria-live': 'assertive' });
   const secs = h('span', { class: 'practice__secs' });
@@ -95,10 +100,13 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
   const showBtn = h('button', { type: 'button', class: 'btn btn--grey practice__btn', 'aria-pressed': 'false', onClick: () => togglePositions() },
     icon('eye'), h('span', {}, showLabel));
 
+  const repeatBtn = exercise.itemSound && h('button', { type: 'button', class: 'btn btn--grey practice__btn', onClick: () => playItem() },
+    icon('volume'), h('span', {}, UI_TEXTS.ear.repeat));
+
   const screenEl = h('div', { class: 'screen practice' },
     tuningTag(tuning),
     stage, countdownEl, guideEl, positionsEl, pausedEl,
-    h('div', { class: 'practice__actions' }, pauseBtn, showBtn));
+    h('div', { class: ['practice__actions', repeatBtn && 'practice__actions--three'].filter(Boolean).join(' ') }, pauseBtn, repeatBtn, showBtn));
   render(view, header, screenEl);
 
   /* ----- Reloj de la ronda (cabecera) ----- */
@@ -130,6 +138,7 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
       revealClock?.pause();
       metro?.stop();
       stopSpeech();
+      stopItemSound?.();
     } else {
       roundClock.start();
       if (phase === 'prompt') itemClock?.start(); else revealClock?.start();
@@ -142,8 +151,14 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
   document.addEventListener('visibilitychange', onVisibility);
 
   /* ----- Consignas ----- */
+  function playItem() {
+    if (!item || !exercise.itemSound) return;
+    stopItemSound?.();
+    stopItemSound = playEvents(exercise.itemSound(item));
+  }
+
   function speakItem() {
-    if (!item || !settings.get('voice') || isPaused()) return;
+    if (!item || !hasVoice || !settings.get('voice') || isPaused()) return;
     speak(exercise.speech(item, { notation: settings.get('notation'), accidentals: settings.get('accidentals') }), { notation: settings.get('notation') });
   }
 
@@ -180,6 +195,8 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
     if (!timed && shown >= total) { finish(); return; }
     phase = 'prompt';
     stopRevealSound?.();
+    stopItemSound?.();
+    replayed = false;
     item = exercise.generate(params, rng, { recentKeys: recentKeys.slice(-2), tuning: tuning.midi, tuningId, options, round });
     recentKeys.push(item.key);
     shown += 1;
@@ -200,11 +217,13 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
         timeFill.style.width = `${(left / ms) * 100}%`;
         secs.textContent = `${Math.ceil(left / 1000)} s`;
         if (item.guide) drawGuide(1 - left / ms);
+        if (exercise.itemSound && !replayed && left <= ms / 2) { replayed = true; playItem(); }
       },
       onDone: () => reveal(),
     });
     if (!isPaused()) itemClock.start();
     speakItem();
+    if (!isPaused()) playItem();
   }
 
   function reveal() {
@@ -214,7 +233,8 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
     [...guideEl.children].forEach((el) => el.classList.remove('is-on'));
     positionsOpen = true;
     drawPositions();
-    if (item.revealSound?.length) stopRevealSound = playSequence(item.revealSound, { gap: 0.8 });
+    if (exercise.itemSound) playItem();
+    else if (item.revealSound?.length) stopRevealSound = playSequence(item.revealSound, { gap: 0.8 });
     if (!timed) fill.style.width = `${(shown / total) * 100}%`;
     revealClock = createCountdown({ ms: REVEAL_MS, onDone: () => nextItem() });
     if (!isPaused()) revealClock.start();
@@ -227,6 +247,7 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
     roundClock.pause();
     metro?.stop();
     stopRevealSound?.();
+    stopItemSound?.();
     stopSpeech();
     releaseScreen();
     offSheet();

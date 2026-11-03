@@ -929,6 +929,13 @@ p { margin: 0 0 .75em; }
 .practice__paused .btn { background: var(--bg); }
 .practice__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 16px; }
 .practice__btn { min-height: 64px; font-size: 1.05rem; }
+.practice__actions--three { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.practice__actions--three .practice__btn { flex-direction: column; gap: 4px; padding-inline: 6px; font-size: 0.95rem; line-height: 1.2; }
+
+/* ===== Oído: «Repetir sonido» en las preguntas ===== */
+.quiz__listen { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 8px 0 16px; }
+.quiz__listen[hidden] { display: none; }
+.quiz__ear { display: flex; color: var(--icon-amber); }
 .practice__btn-icon { display: flex; }
 
 /* ===== Resumen de ronda ===== */
@@ -999,6 +1006,7 @@ p { margin: 0 0 .75em; }
 .practice.is-revealing .practice__instruction { margin-top: 4px; font-size: 1rem; }
 .practice.is-revealing .practice__guide { display: none; }
 .practice__positions .fretboard { margin: 4px 0; }
+.practice__reveal-name { display: flex; justify-content: center; align-items: baseline; gap: 6px; margin: 4px 0 8px; }
 
 /* ===== Aprender: lección por tarjetas ===== */
 .lesson { display: flex; flex-direction: column; min-height: calc(100dvh - 56px - env(safe-area-inset-top)); }

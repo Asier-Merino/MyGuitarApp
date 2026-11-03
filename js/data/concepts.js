@@ -35,6 +35,8 @@ const CHORDS_LESSON = '#/teoria/acordes/aprender';
 const CHANGES_SETUP = '#/practica/acordes/cambios';
 const STRUM_SETUP = '#/practica/acordes/rasgueo';
 const WARMUP_SETUP = '#/practica/calentamiento/cromatico';
+const INTERVAL_SETUP = '#/teoria/oido/que-intervalo';
+const PITCH_SETUP = '#/teoria/oido/agudo-grave';
 
 const c = (concept) => Object.freeze({ aliases: [], related: [], ...concept });
 
@@ -242,6 +244,98 @@ export const CONCEPTS = Object.freeze([
     },
     lesson: NOTES_LESSON,
     related: ['octave', 'five-fret-rule', 'string-numbers'],
+  }),
+
+  // ----- Intervalos (Fase 4: los de oído) -----
+  c({
+    id: 'interval',
+    block: 'intervals',
+    title: 'Intervalo',
+    aliases: ['intervalo', 'intervalos', 'distancia entre notas', 'intervalo melódico', 'intervalo armónico', 'interval', 'intervals'],
+    short: 'La distancia entre dos notas, contada en semitonos.',
+    summary: 'Un intervalo es la distancia entre dos notas, contada en [[semitone-tone|semitonos]]: en una misma cuerda, cada [[fret|traste]] es un semitono. '
+      + 'Cada distancia tiene su nombre; por ejemplo, 4 semitonos son una [[third-interval|3ª mayor]], 7 una [[perfect-fifth|5ª justa]] y 12 una [[octave|octava]]. '
+      + 'Si las dos notas suenan una detrás de otra, el intervalo es melódico; si suenan a la vez, armónico. '
+      + 'Con práctica, cada intervalo se reconoce de oído.',
+    sound: { midi: [45, 52] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 12, points: { select: 'sound', string: 5 }, highlight: 'start',
+      caption: 'En la 5ª cuerda, del punto ámbar (al aire) al gris hay 7 trastes: 7 semitonos, una 5ª justa.',
+    },
+    lesson: INTERVAL_SETUP,
+    related: ['semitone-tone', 'third-interval', 'perfect-fifth', 'octave'],
+  }),
+  c({
+    id: 'pitch',
+    block: 'intervals',
+    title: 'Agudo y grave',
+    aliases: ['agudo', 'grave', 'altura', 'más agudo', 'más grave', 'subir', 'bajar', 'pitch', 'high', 'low'],
+    short: 'Una nota es más aguda cuanto más rápido vibra, y más grave cuanto más despacio.',
+    summary: 'La altura de una nota dice si es aguda o grave: cuanto más rápido vibra la cuerda, más aguda suena. '
+      + 'En la guitarra, la 6ª cuerda es la más grave y la 1ª, la más aguda. '
+      + 'En una misma cuerda, cada [[fret|traste]] hacia el cuerpo de la guitarra sube un [[semitone-tone|semitono]]. '
+      + 'Ojo: «subir» una nota es hacerla más aguda, aunque la 1ª cuerda quede abajo cuando tocas.',
+    sound: { midi: [40, 52] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 12, points: { select: 'sound', string: 6 }, highlight: 'start',
+      caption: 'En la 6ª cuerda, el traste 12 (gris) suena una octava más aguda que la cuerda al aire (ámbar).',
+    },
+    lesson: PITCH_SETUP,
+    related: ['semitone-tone', 'string-numbers', 'interval'],
+  }),
+  c({
+    id: 'third-interval',
+    block: 'intervals',
+    title: '3ª mayor y 3ª menor',
+    aliases: ['intervalo de tercera', 'terceras', '3ª mayor', '3ª menor', 'tercera de oído', 'thirds'],
+    short: 'Intervalos de 4 y 3 semitonos: los que deciden si un acorde es mayor o menor.',
+    summary: 'La 3ª mayor son 4 [[semitone-tone|semitonos]] y la 3ª menor, 3: en una cuerda, 4 y 3 [[fret|trastes]]. '
+      + 'Solo las separa un semitono, pero suenan muy distintas: la mayor se suele describir como luminosa y la menor, como triste. '
+      + 'Son las que deciden si un acorde es mayor o menor ([[chord-third|la 3ª del acorde]]). '
+      + 'Por ejemplo, desde la 5ª cuerda al aire, el traste 4 es su 3ª mayor y el traste 3, su 3ª menor.',
+    sound: { midi: [45, 48, 49] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 7, points: { select: 'sound', string: 5 }, highlight: 'start',
+      caption: 'Desde el punto ámbar (5ª cuerda al aire), 3 trastes más allá está su 3ª menor y 4 trastes más allá, su 3ª mayor.',
+    },
+    lesson: INTERVAL_SETUP,
+    related: ['chord-third', 'interval', 'perfect-fifth'],
+  }),
+  c({
+    id: 'perfect-fifth',
+    block: 'intervals',
+    title: '5ª justa',
+    aliases: ['quinta', 'quinta justa', '5ª', 'acorde de quinta', 'power chord', 'perfect fifth', 'fifth'],
+    short: 'Un intervalo de 7 semitonos, muy estable.',
+    summary: 'La 5ª justa son 7 [[semitone-tone|semitonos]]: en una cuerda, 7 [[fret|trastes]]. '
+      + 'Suena muy estable y abierta, y junto a la [[root|fundamental]] forma el acorde de quinta (*power chord*) del rock. '
+      + 'En la [[standard-tuning|afinación estándar]], la 5ª de una nota está en la cuerda aguda de al lado, dos trastes más allá; desde la 3ª cuerda a la 2ª, tres trastes. '
+      + 'Todos los acordes mayores y menores la llevan.',
+    sound: { midi: [40, 47] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 12, points: { select: 'sound', string: 6 }, highlight: 'start',
+      caption: 'En la 6ª cuerda, del punto ámbar (al aire) al gris hay 7 trastes: una 5ª justa.',
+    },
+    lesson: INTERVAL_SETUP,
+    related: ['interval', 'root', 'third-interval'],
+  }),
+  c({
+    id: 'tritone',
+    block: 'intervals',
+    title: 'Tritono',
+    aliases: ['tritono', '4ª aumentada', '5ª disminuida', 'cuarta aumentada', 'quinta disminuida', 'tritone'],
+    short: 'Un intervalo de 6 semitonos: justo la mitad de la octava.',
+    summary: 'El tritono son 6 [[semitone-tone|semitonos]], justo la mitad de una [[octave|octava]]. '
+      + 'Se llama así porque son tres tonos seguidos, y también se le llama 4ª aumentada o 5ª disminuida. '
+      + 'Suena muy tenso, como si pidiera moverse a otra nota. '
+      + 'En la escala de blues, la *blue note* está a un tritono de la fundamental.',
+    sound: { midi: [45, 51] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 7, points: { select: 'sound', string: 5 }, highlight: 'start',
+      caption: 'En la 5ª cuerda, del punto ámbar (al aire) al gris hay 6 trastes: un tritono.',
+    },
+    lesson: INTERVAL_SETUP,
+    related: ['interval', 'perfect-fifth', 'octave'],
   }),
 
   // ----- Acordes (Fase 3) -----
@@ -1186,6 +1280,82 @@ export const EXERCISE_TEXTS = Object.freeze({
       + 'Avanzado: 90–110 BPM, con patrones con [[accent|acento]] y con [[swing|swing]].',
   }),
 
+  // ----- Oído (Fase 4) -----
+  'oido.teoria.mayor-menor': Object.freeze({
+    prompt: '¿Mayor o menor?',
+    howTo: 'Suena un [[open-chord|acorde abierto]], sin que lo veas, y decides si es mayor o menor. '
+      + 'Lo decide su [[chord-third|3ª]]: el mayor se suele describir como más luminoso y el menor, como más triste. '
+      + 'Pulsa «Repetir sonido» para oírlo otra vez; el tiempo empieza cuando acaba de sonar. '
+      + 'Básico: los 8 acordes básicos, rasgueados despacio, sin tiempo. '
+      + 'Intermedio: además, {{chord:F-mini}}, arpegiados (nota a nota), con 15 segundos. '
+      + 'Avanzado: también las séptimas y {{chord:F-barre}}, arpegiados y después rasgueados, con una tercera opción, '
+      + '[[dominant-seventh|séptima de dominante]], y 10 segundos.',
+    missLabel: 'Sonó {{chord:%chord%}}',
+    feedbackWrong: 'No es %chosen%: es %answer%. Sonó {{chord:%chord%}}.',
+    feedbackTimeout: 'Se acabó el tiempo: es %answer%. Sonó {{chord:%chord%}}.',
+    whySoundMajor: ' Por eso se suele describir como luminoso.',
+    whySoundMinor: ' Por eso se suele describir como más triste.',
+    whySoundDom7: ' La 7ª le da un sonido con tensión, que pide pasar a otro acorde.',
+  }),
+  'oido.teoria.agudo-grave': Object.freeze({
+    prompt: '¿La segunda nota es más aguda o más grave?',
+    howTo: 'Suenan dos notas, una detrás de otra. Decide si la segunda es más aguda o más grave que la primera ([[pitch|agudo y grave]]). '
+      + 'Pulsa «Repetir sonido» para oírlas otra vez; el tiempo empieza cuando acaban de sonar. '
+      + 'Básico: las notas están muy separadas, de 5 a 12 [[semitone-tone|semitonos]], sin tiempo. '
+      + 'Intermedio: de 2 a 4 semitonos, con 15 segundos. Avanzado: muy cerca, a 1 o 2 semitonos, con 10 segundos.',
+    missLabel: 'Notas a %semis%',
+    feedbackWrong: 'No: la segunda nota era %answer%.',
+    feedbackTimeout: 'Se acabó el tiempo: la segunda nota era %answer%.',
+    whyUp: 'La segunda nota estaba %semis% por encima de la primera. En una misma cuerda, eso son %frets% hacia el cuerpo de la guitarra: '
+      + 'cuanto más cerca del cuerpo, más aguda.',
+    whyDown: 'La segunda nota estaba %semis% por debajo de la primera. En una misma cuerda, eso son %frets% hacia la cejuela: '
+      + 'cuanto más cerca de la cejuela, más grave.',
+    whyClose: ' Con notas tan cerca cuesta más: tararéalas en voz baja y fíjate en si tu voz sube o baja.',
+  }),
+  'oido.teoria.que-intervalo': Object.freeze({
+    promptUp: '¿Qué intervalo es? La segunda nota sube.',
+    promptDown: '¿Qué intervalo es? La segunda nota baja.',
+    howTo: 'Suenan dos notas, una detrás de otra, y eliges el [[interval|intervalo]] que hay entre ellas: cuántos [[semitone-tone|semitonos]] las separan. '
+      + 'Pulsa «Repetir sonido» para oírlas otra vez; el tiempo empieza cuando acaban de sonar. '
+      + 'Básico: [[third-interval|3ª mayor]], [[perfect-fifth|5ª justa]] y [[octave|octava]], siempre subiendo, sin tiempo. '
+      + 'Intermedio: además, la 3ª menor, con 15 segundos. '
+      + 'Avanzado: todos los intervalos de la 2ª menor a la octava, incluido el [[tritone|tritono]], subiendo o bajando, con 10 segundos.',
+    missLabelUp: 'Desde {{pc:%first%}}, subiendo',
+    missLabelDown: 'Desde {{pc:%first%}}, bajando',
+    feedbackWrong: 'No es %chosen%: es %answer%.',
+    feedbackTimeout: 'Se acabó el tiempo: es %answer%.',
+    whyUp: 'La segunda nota estaba %semis% por encima de la primera: eso es %answer%. En una misma cuerda, son %frets% de distancia.',
+    whyDown: 'La segunda nota estaba %semis% por debajo de la primera: eso es %answer%. En una misma cuerda, son %frets% de distancia.',
+    whyChosen: ' Tú elegiste %chosen%, que son %semis%.',
+    tipThird: ' Las dos 3ªs se parecen: la mayor se suele describir como más luminosa y la menor, como más triste, igual que los acordes mayores y menores.',
+    tipOctave: ' La octava suena casi como la misma nota repetida, más aguda o más grave.',
+    tipTritone: ' El tritono es justo la mitad de la octava y suena muy tenso, como si pidiera moverse.',
+  }),
+  'oido.practica.encuentra-la-nota': Object.freeze({
+    howTo: 'Suena una nota. Búscala en tu guitarra hasta que suene igual: la misma nota exacta, a la misma altura, no una [[octave|octava]] más aguda o más grave. '
+      + 'La nota vuelve a sonar a mitad del tiempo, y puedes pulsar «Repetir sonido» cuando quieras. '
+      + 'Al acabar el tiempo, o con «Ver», el mástil enseña dónde estaba ([[unison|todos sus unísonos]]). '
+      + 'Básico: [[natural-notes|notas naturales]] en la 6ª o la 5ª cuerda, del traste 0 al 5, y la pantalla te dice la cuerda; 30 segundos. '
+      + 'Intermedio: naturales en cualquier [[string-numbers|cuerda]], del traste 0 al 12, también con la cuerda; 20 segundos. '
+      + 'Avanzado: cualquier nota, también con [[sharp-flat|alteraciones]], sin decirte la cuerda; 15 segundos.',
+    listen: 'Escucha',
+    instructionHint: 'Búscala en la %string%ª cuerda',
+    instruction: 'Búscala en tu guitarra',
+    legendHint: 'En ámbar, la nota en la %string%ª cuerda. En gris, la misma nota exacta en otras cuerdas.',
+    legendHintOnly: 'En ámbar, la nota en la %string%ª cuerda. Del traste 0 al 12, no está en ninguna otra cuerda.',
+    legendAll: 'Todos los sitios en los que suena esta nota exacta, del traste 0 al 12.',
+  }),
+  'oido.practica.imita-el-acorde': Object.freeze({
+    howTo: 'Suena un [[open-chord|acorde abierto]] rasgueado. Tócalo en tu guitarra hasta que suene igual. '
+      + 'Escucha primero si es mayor o menor (lo decide [[chord-third|la 3ª]]) y busca la nota más grave, que en estos acordes es la [[root|fundamental]]. '
+      + 'Vuelve a sonar a mitad del tiempo, y puedes pulsar «Repetir sonido» cuando quieras. '
+      + 'Al acabar el tiempo, o con «Ver acorde», ves su nombre y su [[chord-diagram|diagrama]]. '
+      + 'Básico: los 8 acordes básicos, 20 segundos. Intermedio: además, {{chord:F-mini}} y las séptimas, 15 segundos. '
+      + 'Avanzado: también {{chord:F-barre}}, 12 segundos.',
+    listen: 'Escucha',
+    instruction: 'Tócalo en tu guitarra',
+  }),
+
   // ----- Calentamiento -----
   'calentamiento.practica.cromatico': Object.freeze({
     howTo: 'Un dedo por traste, de la 6ª cuerda a la 1ª y vuelta, en la posición que elijas (desde el traste 1 o desde el 5), con la [[tablature|tablatura]] en pantalla y [[metronome|metrónomo]]. '
@@ -1364,6 +1534,14 @@ export const UI_TEXTS = Object.freeze({
     tunings: 'Ir a Afinaciones',
     metronome: 'Abrir el Metrónomo',
     setup: 'Ir al ejercicio',
+  }),
+  // Oído (Fase 4).
+  ear: Object.freeze({
+    repeat: 'Repetir sonido',
+    higher: 'Más aguda',
+    lower: 'Más grave',
+    pairLegend: 'En ámbar (1), la primera nota; en gris (2), la segunda. Las dos en la misma cuerda.',
+    soundNeeded: 'Este ejercicio necesita sonido, y está desactivado en Ajustes.',
   }),
   // Acordes (Fase 3).
   chordQualities: Object.freeze({ major: 'Mayor', minor: 'Menor', dom7: 'Séptima de dominante' }),

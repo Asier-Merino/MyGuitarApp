@@ -125,6 +125,34 @@ export function playSequence(midis, { gap = 0.6, onStep, onEnd } = {}) {
   return stop;
 }
 
+/**
+ * Toca un plan de sonido de js/core/ear.js: { events: [{ midi, at, gain }] }, con `at` en
+ * segundos desde ahora. Devuelve una función que lo para (también lo que aún no ha sonado),
+ * o null si no suena.
+ */
+export function playEvents(plan) {
+  const ctx = ready();
+  if (!ctx || !plan?.events?.length) return null;
+  const start = ctx.currentTime + 0.05;
+  const voices = plan.events.map(({ midi, at, gain = 1 }) => {
+    const source = ctx.createBufferSource();
+    source.buffer = bufferFor(ctx, midi);
+    const g = ctx.createGain();
+    g.gain.value = gain;
+    source.connect(g).connect(output);
+    source.start(start + at);
+    return { source, gain: g };
+  });
+  return () => {
+    for (const v of voices) {
+      try {
+        v.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.01);
+        v.source.stop(ctx.currentTime + 0.05);
+      } catch { /* ya parada */ }
+    }
+  };
+}
+
 /** true si hay sonido disponible y activado (para avisar al usuario si no). */
 export const soundEnabled = () => settings.get('sound');
 
