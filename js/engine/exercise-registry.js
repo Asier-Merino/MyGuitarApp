@@ -7,11 +7,25 @@ import { getConcept } from '../data/concepts.js';
 import { TUNING_IDS } from '../data/tunings.js';
 import { NOTES_THEORY_EXERCISES } from '../modules/notes/theory-exercises.js';
 import { NOTES_PRACTICE_EXERCISES } from '../modules/notes/practice-exercises.js';
+import { CHORDS_THEORY_EXERCISES } from '../modules/chords/theory-exercises.js';
+import { CHORDS_PRACTICE_EXERCISES } from '../modules/chords/practice-exercises.js';
+import { WARMUP_EXERCISES } from '../modules/warmup/exercises.js';
 
-const DEFINITIONS = [...NOTES_THEORY_EXERCISES, ...NOTES_PRACTICE_EXERCISES];
+const DEFINITIONS = [
+  ...NOTES_THEORY_EXERCISES, ...NOTES_PRACTICE_EXERCISES,
+  ...CHORDS_THEORY_EXERCISES, ...CHORDS_PRACTICE_EXERCISES, ...WARMUP_EXERCISES,
+];
 
-/** Tipos de opción propia de la preparación (6.6.6): metrónomo y elección entre varias. */
-const OPTION_TYPES = ['metronome', 'choice'];
+/**
+ * Tipos de opción propia de la preparación (6.6.6): metrónomo, elección entre varias,
+ * interruptor, progresión (6.6.11), patrón de rasgueo, tempo dentro de un rango, pareja de
+ * acordes y elección que depende del nivel (byLevel).
+ */
+export const OPTION_TYPES = Object.freeze(['metronome', 'choice', 'toggle', 'progression', 'strum-pattern', 'tempo', 'chord-pair', 'level-choice']);
+
+/** Motores propios: Rellena el mástil (Teoría) y, en Práctica, acordes, un minuto y calentamiento. */
+const THEORY_RUNNERS = ['fill'];
+const PRACTICE_RUNNERS = ['chords', 'minute', 'warmup'];
 
 /** Errores de una definición (lista vacía si está bien). */
 export function validateExercise(def) {
@@ -28,13 +42,15 @@ export function validateExercise(def) {
     || (Array.isArray(def.tunings) && def.tunings.length && def.tunings.every((t) => TUNING_IDS.includes(t))), 'tunings');
   need(def.levels && LEVEL_IDS.every((l) => def.levels[l] && typeof def.levels[l] === 'object'), 'los 3 niveles');
   for (const fn of ['generate', 'statKeys']) need(typeof def[fn] === 'function', fn);
-  need(def.runner === undefined || def.runner === 'fill', 'runner');
+  need(def.runner === undefined || (def.section === 'teoria' ? THEORY_RUNNERS : PRACTICE_RUNNERS).includes(def.runner), 'runner');
   need(def.answerBy === undefined || def.answerBy === 'tap', 'answerBy');
   // Opcional: record({ results | items, puzzle, level, tuningId, seconds }) → { key, value, better } o null.
   need(def.record === undefined || typeof def.record === 'function', 'record');
   for (const opt of def.options ?? []) {
     need(OPTION_TYPES.includes(opt.type) && typeof opt.id === 'string' && opt.label, `opción ${opt.id}`);
     if (opt.type === 'choice') need(opt.choices?.some((c) => c.value === opt.default), `opción ${opt.id}: valor por defecto`);
+    if (opt.type === 'toggle') need(typeof opt.default === 'boolean', `opción ${opt.id}: valor por defecto`);
+    if (['level-choice', 'strum-pattern', 'tempo'].includes(opt.type)) need(LEVEL_IDS.every((l) => opt.byLevel?.[l]), `opción ${opt.id}: valores de cada nivel`);
   }
   if (def.section === 'teoria') {
     need(typeof def.check === 'function', 'check');
@@ -47,8 +63,9 @@ export function validateExercise(def) {
   } else {
     need(typeof def.speech === 'function', 'speech');
     need(Array.isArray(def.itemNoun) && def.itemNoun.length === 2, 'itemNoun [singular, plural]');
-    need(typeof def.render === 'function', 'render');
-    need(def.duration || (Number.isInteger(def.roundLength) && def.roundLength > 0), 'duration o roundLength');
+    if (!def.runner) need(typeof def.render === 'function', 'render');
+    need(def.duration || (Number.isInteger(def.roundLength) && def.roundLength > 0)
+      || (Number.isInteger(def.roundSeconds) && def.roundSeconds > 0), 'duration, roundLength o roundSeconds');
   }
   return errors;
 }

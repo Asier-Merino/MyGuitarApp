@@ -1,7 +1,8 @@
 // Acordes de BUILD_PLAN 5.1, comprobados con las reglas de la teoría (no contra sí mismos).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CHORDS, getChord, chordTones, CHORD_SUFFIX } from '../js/data/chords.js';
+import { CHORDS, getChord, chordTones, CHORD_SUFFIX, chordSpelling, chordsForLevel, sameChordName, chordMidis } from '../js/data/chords.js';
+import { spellingPc, LETTERS } from '../js/core/notation.js';
 import { shapeNotes } from '../js/core/fretboard-model.js';
 import { mod12, CHORD_FORMULAS } from '../js/core/theory.js';
 import { LEVEL_IDS } from '../js/data/modules.js';
@@ -68,4 +69,30 @@ test('ejemplos concretos de la tabla', () => {
   assert.deepEqual(shapeNotes(getChord('C').frets).map((n) => n.midi), [48, 52, 55, 60, 64]); // Do Mi Sol Do Mi
   assert.deepEqual(shapeNotes(getChord('B7').frets).map((n) => mod12(n.midi)), [11, 3, 9, 11, 6]); // Si Re♯ La Si Fa♯
   assert.equal(getChord('nada'), null);
+});
+
+test('notas de cada acorde deletreadas por letra: R, 3, 5 (y 7) a dos letras de distancia', () => {
+  const name = (sp) => sp.letter + (sp.accidental === 1 ? '#' : sp.accidental === -1 ? 'b' : '');
+  const spelled = (id) => chordSpelling(getChord(id)).map(name).join(' ');
+  assert.equal(spelled('E'), 'E G# B');   // Sol♯, no La♭
+  assert.equal(spelled('B7'), 'B D# F# A'); // Re♯, no Mi♭
+  assert.equal(spelled('D'), 'D F# A');
+  assert.equal(spelled('F-mini'), 'F A C');
+  assert.equal(spelled('Dm'), 'D F A');
+  for (const c of CHORDS) {
+    const sp = chordSpelling(c);
+    assert.deepEqual(sp.map(spellingPc), chordTones(c), c.id); // mismo sonido que la fórmula
+    const letters = sp.map((s) => LETTERS.indexOf(s.letter));
+    letters.forEach((l, i) => assert.equal((l - letters[0] + 7) % 7, (2 * i) % 7, c.id));
+  }
+});
+
+test('acordes de cada nivel: los 8 básicos; + Fa mini y séptimas; + Fa con cejilla', () => {
+  assert.deepEqual(chordsForLevel('basico').map((c) => c.id), ['C', 'D', 'E', 'G', 'A', 'Am', 'Em', 'Dm']);
+  assert.deepEqual(chordsForLevel('intermedio').map((c) => c.id).slice(8), ['F-mini', 'A7', 'D7', 'E7', 'B7']);
+  assert.equal(chordsForLevel('avanzado').length, 14);
+  assert.throws(() => chordsForLevel('nada'));
+  assert.ok(sameChordName(getChord('F-mini'), getChord('F-barre')));
+  assert.ok(!sameChordName(getChord('A'), getChord('Am')));
+  assert.deepEqual(chordMidis(getChord('Em')), [40, 47, 52, 55, 59, 64]);
 });

@@ -90,8 +90,10 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
   const pauseLabel = h('span', {}, 'Pausa');
   const pauseIcon = h('span', { class: 'practice__btn-icon' }, icon('pause'));
   const pauseBtn = h('button', { type: 'button', class: 'btn btn--grey practice__btn', onClick: () => setPaused('user', !pauses.has('user')) }, pauseIcon, pauseLabel);
+  const showLabel = exercise.revealLabel ?? 'Ver posiciones';
+  const hideLabel = exercise.hideRevealLabel ?? 'Ocultar posiciones';
   const showBtn = h('button', { type: 'button', class: 'btn btn--grey practice__btn', 'aria-pressed': 'false', onClick: () => togglePositions() },
-    icon('eye'), h('span', {}, 'Ver posiciones'));
+    icon('eye'), h('span', {}, showLabel));
 
   const screenEl = h('div', { class: 'screen practice' },
     tuningTag(tuning),
@@ -146,7 +148,9 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
   }
 
   function drawPositions() {
-    render(positionsEl, positionsOpen && [
+    // Los ejercicios pueden enseñar otra cosa en lugar del mástil (p. ej. el diagrama de un acorde).
+    if (exercise.reveal) render(positionsEl, positionsOpen && exercise.reveal(item, ctx));
+    else render(positionsEl, positionsOpen && [
       ctx.fretboard({
         dense: true,
         fromFret: item.fromFret ?? 0,
@@ -158,7 +162,7 @@ export function runPractice(view, { exercise, level, tuningId, duration, options
     // Con las posiciones a la vista, la consigna se encoge para que el mástil quepa en la pantalla.
     screenEl.classList.toggle('is-revealing', positionsOpen);
     showBtn.setAttribute('aria-pressed', String(positionsOpen));
-    showBtn.querySelector('span').textContent = positionsOpen ? 'Ocultar posiciones' : 'Ver posiciones';
+    showBtn.querySelector('span').textContent = positionsOpen ? hideLabel : showLabel;
   }
   function togglePositions() {
     positionsOpen = !positionsOpen;

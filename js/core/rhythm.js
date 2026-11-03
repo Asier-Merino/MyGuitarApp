@@ -79,3 +79,24 @@ export function addTap(taps, timeMs) {
   const avg = (next[next.length - 1] - next[0]) / (next.length - 1);
   return { taps: next, bpm: clampBpm(60000 / avg) };
 }
+
+/**
+ * Momento de una corchea dentro de su tiempo, en fracciones de tiempo: la del tiempo en 0 y
+ * la del "y" en 1/2, o en 2/3 con swing (corcheas largas y cortas, en proporción 2:1).
+ */
+export function eighthOffset(index, { swing = false } = {}) {
+  if (index % 2 === 0) return 0;
+  return swing ? 2 / 3 : 1 / 2;
+}
+
+/** Instante (en tiempos desde el principio del compás) de cada casilla de corchea. */
+export const eighthTime = (index, opts) => Math.floor(index / 2) + eighthOffset(index, opts);
+
+/**
+ * Subida automática de tempo (Calentamiento, Fase 3): el tempo tras `beatsDone` tiempos,
+ * empezando en `startBpm` y subiendo `step` cada `everyBeats` tiempos, sin pasar de 240.
+ */
+export function rampedBpm(startBpm, beatsDone, { everyBeats, step }) {
+  const steps = Math.floor(Math.max(0, beatsDone) / everyBeats);
+  return clampBpm(startBpm + steps * step);
+}

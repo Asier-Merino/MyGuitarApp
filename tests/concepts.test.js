@@ -11,7 +11,7 @@ import { parseRichText, searchConcepts, normalizeText, plainText, parseNoteToken
 import { LETTER_PC, LETTERS, spellingPc } from '../js/core/notation.js';
 import { midiAt, pcAt, STRINGS } from '../js/core/fretboard-model.js';
 import { mod12 } from '../js/core/theory.js';
-import { fretboardDiagramPoints, naturalSemitonePcs, DIAGRAM_TYPES } from '../js/core/diagrams.js';
+import { fretboardDiagramPoints, naturalSemitonePcs, DIAGRAM_TYPES, chordDiagramFunctions } from '../js/core/diagrams.js';
 import { secondsPerBeat } from '../js/core/rhythm.js';
 import { fillTemplate } from '../js/core/glossary.js';
 
@@ -154,7 +154,9 @@ test('bloques: conteo y bloques con conceptos', () => {
   assert.ok(blockConcepts('notes').length >= 8);
   assert.ok(blockConcepts('tunings').length >= 4);
   assert.ok(blockConcepts('rhythm-technique').some((c) => c.id === 'metronome'));
-  assert.deepEqual(nonEmptyBlocks().map((b) => b.id), ['notes', 'tunings', 'rhythm-technique']);
+  assert.ok(blockConcepts('chords').length >= 7);
+  assert.ok(blockConcepts('tablature').length >= 16);
+  assert.deepEqual(nonEmptyBlocks().map((b) => b.id), ['notes', 'chords', 'tunings', 'rhythm-technique', 'tablature']);
 });
 
 /* ----- Buscador ----- */
@@ -336,7 +338,7 @@ test('plantillas: {{pc:N}} y %variables%', () => {
 test('ningún esquema informa solo con color: lo resaltado lleva leyenda escrita', () => {
   for (const c of CONCEPTS.filter((x) => x.diagram?.highlight)) assert.ok(c.diagram.caption, `${c.id}: falta la leyenda`);
   // Los colores de función llevan la leyenda automática (FunctionLegend) con su nombre.
-  for (const c of CONCEPTS.filter((x) => x.diagram?.colorBy === 'function')) {
+  for (const c of CONCEPTS.filter((x) => x.diagram?.type === 'fretboard' && x.diagram.colorBy === 'function')) {
     for (const p of fretboardDiagramPoints(c).points) assert.ok(UI_TEXTS.functionNames[p.color], `${c.id}: ${p.color}`);
   }
 });
@@ -396,6 +398,10 @@ test('lecciones: de 3 a 6 tarjetas con título, texto de 2 a 4 frases y esquema 
       assert.ok(sentences.length >= 2 && sentences.length <= 4, `${card.id}: ${sentences.length} frases`);
       for (const part of parseRichText(card.text)) if (part.type === 'term') assert.ok(getConcept(part.id), `${card.id}: ${part.id}`);
       if (card.diagram.highlight) assert.ok(card.diagram.caption, `${card.id}: falta la leyenda`);
+      if (card.diagram.type === 'chord') {
+        assert.ok(chordDiagramFunctions(card.diagram).length > 0, card.id);
+        continue;
+      }
       const { points, tuning } = fretboardDiagramPoints(card);
       assert.ok(points.length > 0, card.id);
       for (const p of points) {

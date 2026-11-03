@@ -56,6 +56,16 @@ export const PLANNED_EXERCISES = Object.freeze([
   x('notas', 'practica', 'cuerda-a-cuerda', 'Cuerda a cuerda', 'Eliges una cuerda y la app dice notas al azar para que las toques.', { tunings: 'any', phase: 2 }),
   x('notas', 'practica', 'paseo-octavas', 'Paseo de octavas', 'La app dice una nota y la tocas; después, su octava.', { phase: 2 }),
   x('notas', 'practica', 'unisonos', 'Unísonos', 'La app dice un punto del mástil; lo tocas y después su unísono en la cuerda de al lado.', { tunings: 'any', phase: 2 }),
+  x('acordes', 'teoria', 'que-acorde', '¿Qué acorde es?', 'Ves un diagrama de acorde y eliges cuál es entre 4 opciones.', { phase: 3 }),
+  x('acordes', 'teoria', 'construyelo', 'Constrúyelo', 'Te piden un acorde y lo construyes en un diagrama vacío.', { phase: 3 }),
+  x('acordes', 'teoria', 'que-notas', '¿Qué notas tiene?', 'Eliges todas las notas que forman un acorde.', { phase: 3 }),
+  x('acordes', 'teoria', 'mayor-menor', '¿Mayor o menor?', 'Ves un diagrama y decides si el acorde es mayor o menor.', { phase: 3 }),
+  x('acordes', 'teoria', 'nota-falta', '¿Qué nota falta?', 'A un diagrama le falta un punto y eliges la nota que va ahí.', { phase: 3 }),
+  x('acordes', 'practica', 'cambios', 'Cambios de acordes', 'Tocas una progresión con metrónomo, cambiando de acorde cada pocos tiempos.', { phase: 3 }),
+  x('acordes', 'practica', 'un-minuto', 'Cambios en un minuto', 'Cambias entre dos acordes todo lo que puedas en 60 segundos.', { phase: 3 }),
+  x('acordes', 'practica', 'acorde-cantado', 'Acorde cantado', 'La app dice un acorde al azar y tú lo tocas.', { phase: 3 }),
+  x('acordes', 'practica', 'rasgueo', 'Rasgueo', 'Tocas una progresión con un patrón de rasgueo, al ritmo del metrónomo.', { phase: 3 }),
+  x('calentamiento', 'practica', 'cromatico', 'Un dedo por traste', 'Recorres las 6 cuerdas con un dedo por traste, con tablatura y metrónomo, y el tempo sube solo.', { tunings: 'any', phase: 3 }),
 ]);
 
 export function getModule(slug) {
@@ -79,6 +89,6 @@ export function getPlannedExercise(section, slug, exerciseSlug) {
 }
 
 /** Última fase construida: lo de fases posteriores se muestra como "Próximamente". */
-export const BUILT_THROUGH_PHASE = 2;
+export const BUILT_THROUGH_PHASE = 3;
 
 export const isAvailable = (item) => item.phase <= BUILT_THROUGH_PHASE;

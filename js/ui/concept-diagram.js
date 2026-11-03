@@ -6,7 +6,11 @@ import { richText } from './term.js';
 import { Fretboard } from './fretboard.js';
 import { ChordDiagram } from './chord-diagram.js';
 import { BeatsDiagram } from './beats.js';
-import { fretboardDiagramPoints } from '../core/diagrams.js';
+import { Tab } from './tab.js';
+import { StrumDiagram } from './strum.js';
+import { getStrumPattern } from '../data/strum-patterns.js';
+import { ChordLabel } from './note-label.js';
+import { fretboardDiagramPoints, chordDiagramFunctions } from '../core/diagrams.js';
 import { getTuning } from '../data/tunings.js';
 import { getChord } from '../data/chords.js';
 import { UI_TEXTS } from '../data/concepts.js';
@@ -42,7 +46,20 @@ export function ConceptDiagram(concept, { compact = false } = {}) {
       label: `Esquema de «${concept.title}»`,
     });
   } else if (d.type === 'chord') {
-    figure = ChordDiagram(getChord(d.chord), { size: compact ? 'small' : 'large' });
+    // Uno o varios acordes lado a lado (p. ej. Mi y Mim), con su nombre si se comparan.
+    const ids = [d.chord, ...[].concat(d.compare ?? [])];
+    const colorByFunction = d.colorBy === 'function';
+    const diagrams = ids.map((id) => {
+      const chord = getChord(id);
+      const diagram = ChordDiagram(chord, { size: compact || ids.length > 1 ? 'small' : 'large', colorByFunction });
+      return ids.length > 1 ? h('div', { class: 'concept-diagram__chord' }, ChordLabel(chord), diagram) : diagram;
+    });
+    figure = ids.length > 1 ? h('div', { class: 'concept-diagram__chords' }, diagrams) : diagrams[0];
+    if (colorByFunction) legend = FunctionLegend(chordDiagramFunctions(d));
+  } else if (d.type === 'tab') {
+    figure = Tab(d.tab, { bpm: d.bpm ?? 70, player: true, label: `Tablatura de «${concept.title}»` });
+  } else if (d.type === 'strum') {
+    figure = StrumDiagram(getStrumPattern(d.pattern), { chord: d.chord, bpm: d.bpm });
   } else if (d.type === 'beats') {
     figure = BeatsDiagram({ beatsPerBar: d.beatsPerBar, bpm: d.bpm });
   }

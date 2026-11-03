@@ -13,6 +13,9 @@
 //   lesson (opcional: ruta de la lección o pantalla relacionada), related (ids).
 // sound: { midi: [notas en orden] } o { tuning: id } (las 6 cuerdas al aire, de la 6ª a la 1ª).
 
+import { tabFromNotes } from '../core/tab.js';
+import { warmupOutward } from '../core/warmup.js';
+
 export const BLOCKS = Object.freeze([
   { id: 'notes', title: 'Notas' },
   { id: 'chords', title: 'Acordes' },
@@ -28,6 +31,10 @@ export const BLOCKS = Object.freeze([
 const NOTES_LESSON = '#/teoria/notas/aprender';
 const TUNINGS_SCREEN = '#/afinaciones';
 const METRONOME_SCREEN = '#/metronomo';
+const CHORDS_LESSON = '#/teoria/acordes/aprender';
+const CHANGES_SETUP = '#/practica/acordes/cambios';
+const STRUM_SETUP = '#/practica/acordes/rasgueo';
+const WARMUP_SETUP = '#/practica/calentamiento/cromatico';
 
 const c = (concept) => Object.freeze({ aliases: [], related: [], ...concept });
 
@@ -237,6 +244,144 @@ export const CONCEPTS = Object.freeze([
     related: ['octave', 'five-fret-rule', 'string-numbers'],
   }),
 
+  // ----- Acordes (Fase 3) -----
+  c({
+    id: 'chord',
+    block: 'chords',
+    title: 'Acorde',
+    aliases: ['acorde', 'acordes', 'chord', 'chords'],
+    short: 'Tres o más notas distintas que suenan a la vez.',
+    summary: 'Un acorde son tres o más notas distintas que suenan a la vez. '
+      + 'En la guitarra se toca pisando varias cuerdas y rasgueándolas juntas. '
+      + 'Su nombre dice su [[root|fundamental]] y su tipo: {{chord:Am}} es un acorde menor con fundamental {{A}}. '
+      + 'Toca el diagrama para oírlo, o cada punto para oír su nota.',
+    diagram: { type: 'chord', chord: 'C', colorBy: 'function' },
+    lesson: CHORDS_LESSON,
+    related: ['triad', 'root', 'chord-diagram'],
+  }),
+  c({
+    id: 'triad',
+    block: 'chords',
+    title: 'Tríada',
+    aliases: ['tríada', 'triada', 'triad', 'fundamental, 3ª y 5ª', 'r 3 5'],
+    short: 'Acorde de tres notas: fundamental, 3ª y 5ª.',
+    summary: 'Una tríada es un acorde de tres notas: la [[root|fundamental]], la [[chord-third|3ª]] y la 5ª. '
+      + 'La 3ª está a 3 o 4 [[semitone-tone|semitonos]] de la fundamental, y la 5ª, a 7. '
+      + 'En la guitarra se tocan más de tres cuerdas porque algunas notas se repiten en otra [[octave|octava]]: '
+      + '{{chord:C}} suena con {{C}}, {{E}}, {{G}}, {{C}} y {{E}}.',
+    diagram: { type: 'chord', chord: 'C', colorBy: 'function' },
+    lesson: CHORDS_LESSON,
+    related: ['chord', 'root', 'chord-third'],
+  }),
+  c({
+    id: 'root',
+    block: 'chords',
+    title: 'Fundamental',
+    aliases: ['fundamental', 'raíz', 'root', 'nota fundamental', 'bajo del acorde'],
+    short: 'La nota que da nombre al acorde.',
+    summary: 'La fundamental (R, de *root*) es la nota que da nombre al acorde: en {{chord:G}}, es {{G}}. '
+      + 'En los [[open-chord|acordes abiertos]] de la app es también la nota más grave, la de la cuerda más gruesa que suena. '
+      + 'En los esquemas se pinta en rojo coral, y con «Mostrar en los puntos: intervalos» lleva una R.',
+    diagram: { type: 'chord', chord: 'G', colorBy: 'function' },
+    lesson: CHORDS_LESSON,
+    related: ['triad', 'chord-third'],
+  }),
+  c({
+    id: 'chord-third',
+    block: 'chords',
+    title: 'La 3ª: mayor o menor',
+    aliases: ['tercera', '3ª', 'tercera mayor', 'tercera menor', 'mayor o menor', 'acorde mayor', 'acorde menor', 'third', 'major third', 'minor third', 'major', 'minor'],
+    short: 'La nota que decide si un acorde es mayor o menor.',
+    summary: 'La 3ª es la nota que decide el carácter del acorde. '
+      + 'Si está a 4 [[semitone-tone|semitonos]] de la [[root|fundamental]] (3ª mayor), el acorde es mayor; si está a 3 (3ª menor), es menor. '
+      + 'El mayor se suele describir como más luminoso y el menor, como más triste. '
+      + 'Por ejemplo, {{chord:E}} lleva {{G#}} y {{chord:Em}} lleva {{G}}: es la única nota que cambia.',
+    diagram: { type: 'chord', chord: 'E', compare: 'Em', colorBy: 'function' },
+    lesson: CHORDS_LESSON,
+    related: ['triad', 'root', 'dominant-seventh'],
+  }),
+  c({
+    id: 'chord-diagram',
+    block: 'chords',
+    title: 'Diagrama de acorde',
+    aliases: ['diagrama', 'diagrama de acorde', 'digitación', 'dedos', 'chord diagram', 'chord chart', 'chord box'],
+    short: 'El dibujo que dice dónde pisar y con qué dedo.',
+    summary: 'Un diagrama de acorde es el mástil visto de frente y en vertical: las líneas verticales son las cuerdas (la 6ª a la izquierda) y las horizontales, los [[fret|trastes]], con la cejuela arriba. '
+      + 'Los puntos dicen dónde pisar, y el número de dentro, con qué dedo: 1 índice, 2 corazón, 3 anular y 4 meñique. '
+      + 'Una o encima es una [[open-string|cuerda al aire]], y una ×, una cuerda que no se toca.',
+    diagram: { type: 'chord', chord: 'D' },
+    lesson: CHORDS_LESSON,
+    related: ['open-chord', 'fret', 'string-numbers'],
+  }),
+  c({
+    id: 'open-chord',
+    block: 'chords',
+    title: 'Acorde abierto',
+    aliases: ['acorde abierto', 'acordes abiertos', 'acordes de primera posición', 'open chord', 'open chords', 'cowboy chords'],
+    short: 'Acorde con cuerdas al aire, cerca de la cejuela.',
+    summary: 'Un acorde abierto usa [[open-string|cuerdas al aire]] y se toca en los primeros trastes, cerca de la cejuela. '
+      + 'Son los primeros que se aprenden, y suenan amplios porque las cuerdas al aire vibran libres. '
+      + '{{chord:Em}} es de los más sencillos: dos dedos y cuatro cuerdas al aire.',
+    diagram: { type: 'chord', chord: 'Em' },
+    lesson: CHORDS_LESSON,
+    related: ['chord-diagram', 'barre-chord'],
+  }),
+  c({
+    id: 'dominant-seventh',
+    block: 'chords',
+    title: 'Acorde de séptima de dominante',
+    aliases: ['séptima', 'séptima de dominante', 'acorde de séptima', 'siete', 'dominant seventh', 'seventh chord', 'dom7'],
+    short: 'Tríada mayor con la 7ª menor: el «7» del nombre.',
+    summary: 'Un acorde de séptima de dominante (el «7» del nombre, como {{chord:A7}}) es una tríada mayor con una nota más: la 7ª menor, a 10 [[semitone-tone|semitonos]] de la [[root|fundamental]]. '
+      + 'Esa nota le da un sonido con tensión, que pide pasar a otro acorde, y es la base del blues. '
+      + '{{chord:A7}} sale de {{chord:A}} levantando el dedo de la 3ª cuerda, que pasa a sonar al aire: {{G}}. '
+      + 'En los esquemas, la 7ª se pinta en rosa.',
+    diagram: { type: 'chord', chord: 'A', compare: 'A7', colorBy: 'function' },
+    lesson: CHORDS_LESSON,
+    related: ['chord-third', 'triad'],
+  }),
+  c({
+    id: 'barre-chord',
+    block: 'chords',
+    title: 'Cejilla',
+    aliases: ['cejilla', 'hacer cejilla', 'barra', 'barre', 'barre chord', 'capo', 'capotraste'],
+    short: 'Pisar varias cuerdas en el mismo traste con un solo dedo.',
+    summary: 'Hacer cejilla es pisar varias cuerdas en el mismo traste con un solo dedo, normalmente el índice estirado. '
+      + '{{chord:F-barre}} pisa las 6 cuerdas en el traste 1; {{chord:F-mini}} solo pisa así la 1ª y la 2ª. '
+      + 'Al principio cuesta: apoya el dedo justo detrás del traste y gíralo un poco hacia su lado, que es más duro. '
+      + 'Ojo: en España también se llama cejilla a la pieza que se pone en el mástil para subir el tono (*capo*).',
+    diagram: { type: 'chord', chord: 'F-mini', compare: 'F-barre' },
+    lesson: CHORDS_LESSON,
+    related: ['open-chord', 'chord-diagram'],
+  }),
+  c({
+    id: 'progression',
+    block: 'chords',
+    title: 'Progresión de acordes',
+    aliases: ['progresión', 'progresiones', 'grados', 'números romanos', 'i iv v', 'progression', 'chord progression', 'degrees'],
+    short: 'Una serie de acordes que se repite, escrita por grados.',
+    summary: 'Una progresión es una serie de acordes que se repite, como la base de una canción. '
+      + 'Se suele escribir por grados, con números romanos que dicen el lugar del acorde en la tonalidad: I es el primero, IV el cuarto y V el quinto, y en minúscula los menores (vi). '
+      + 'Así, I–IV–V en {{G}} es {{chord:G}}–{{chord:C}}–{{chord:D}}, y en {{D}} es {{chord:D}}–{{chord:G}}–{{chord:A}}: la misma progresión en otra tonalidad.',
+    diagram: { type: 'chord', chord: 'G', compare: ['C', 'D'] },
+    lesson: CHANGES_SETUP,
+    related: ['chord-changes', 'chord'],
+  }),
+  c({
+    id: 'chord-changes',
+    block: 'chords',
+    title: 'Cambios de acorde',
+    aliases: ['cambios', 'cambio de acorde', 'cambios en un minuto', 'dedo guía', 'chord changes', 'one minute changes'],
+    short: 'Pasar de un acorde a otro a tiempo.',
+    summary: 'Cambiar de acorde a tiempo es lo que más cuesta al empezar. '
+      + 'Practica despacio y con metrónomo: mejor un cambio lento y a tiempo que uno rápido y a destiempo. '
+      + 'Busca los dedos que no se mueven entre dos acordes: {{chord:C}} y {{chord:Am}} comparten los dedos 1 y 2, y solo se mueve el 3. '
+      + 'Levanta los dedos a la vez, como una sola forma, y colócalos juntos en el acorde siguiente.',
+    diagram: { type: 'chord', chord: 'C', compare: 'Am' },
+    lesson: CHANGES_SETUP,
+    related: ['progression', 'metronome'],
+  }),
+
   // ----- Afinaciones -----
   c({
     id: 'tuning',
@@ -331,6 +476,322 @@ export const CONCEPTS = Object.freeze([
       + 'Para mejorar, empieza a un tempo lento en el que todo te salga limpio y súbelo poco a poco.',
     diagram: { type: 'beats', beatsPerBar: 4, bpm: 60 },
     lesson: METRONOME_SCREEN,
+  }),
+  c({
+    id: 'strumming',
+    block: 'rhythm-technique',
+    title: 'Rasgueo y regla del péndulo',
+    aliases: ['rasgueo', 'rasguear', 'péndulo', 'regla del péndulo', 'patrón de rasgueo', 'abajo arriba', 'strumming', 'strum', 'strumming pattern'],
+    short: 'Tocar las cuerdas de un golpe, con la mano como un péndulo.',
+    summary: 'Rasguear es tocar las cuerdas de un golpe con la mano derecha, hacia abajo (↓) o hacia arriba (↑). '
+      + 'Regla del péndulo: la mano baja en cada tiempo y sube en cada «y», aunque no toque las cuerdas. '
+      + 'Así, los golpes abajo caen siempre en 1, 2, 3 y 4, y los de arriba, en los «y». '
+      + 'Cuando una casilla no suena (·), la mano pasa igual por el aire, y el ritmo no se descuadra.',
+    diagram: { type: 'strum', pattern: 'pop', chord: 'G', bpm: 70 },
+    lesson: STRUM_SETUP,
+    related: ['accent', 'swing', 'metronome'],
+  }),
+  c({
+    id: 'accent',
+    block: 'rhythm-technique',
+    title: 'Acento',
+    aliases: ['acento', 'acentos', 'golpe fuerte', 'backbeat', 'accent'],
+    short: 'Un golpe más fuerte que los demás.',
+    summary: 'Un acento es un golpe más fuerte que los demás. '
+      + 'En el pop y el rock se suelen acentuar los tiempos 2 y 4 (el *backbeat*), que es donde suena la caja de la batería. '
+      + 'En los patrones de la app, el golpe acentuado lleva un > encima.',
+    diagram: { type: 'strum', pattern: 'pop-acento', chord: 'G', bpm: 90 },
+    lesson: STRUM_SETUP,
+    related: ['strumming', 'swing'],
+  }),
+  c({
+    id: 'swing',
+    block: 'rhythm-technique',
+    title: 'Swing',
+    aliases: ['swing', 'shuffle', 'corcheas con swing', 'ritmo ternario', 'swung eighths'],
+    short: 'Corcheas largas y cortas, en proporción 2:1.',
+    summary: 'Con swing, las corcheas no duran lo mismo: la del tiempo es larga y la del «y», corta, en proporción 2:1, como un «taa-ta, taa-ta». '
+      + 'Es el ritmo del blues, del jazz y del *shuffle*. '
+      + 'Se cuenta igual, «1 y 2 y», pero cada «y» llega un poco más tarde.',
+    diagram: { type: 'strum', pattern: 'swing', chord: 'G', bpm: 90 },
+    lesson: STRUM_SETUP,
+    related: ['strumming', 'accent'],
+  }),
+  c({
+    id: 'chromatic-warmup',
+    block: 'rhythm-technique',
+    title: 'Calentamiento cromático',
+    aliases: ['calentamiento', 'cromático', 'un dedo por traste', 'araña', '1-2-3-4', 'spider', 'chromatic exercise', 'warm up', 'warm-up'],
+    short: 'Un dedo por traste, cuerda a cuerda, para soltar los dedos.',
+    summary: 'El calentamiento cromático recorre los trastes uno tras otro, de [[semitone-tone|semitono]] en semitono, con un dedo por traste: el índice en el primero, el corazón en el segundo, el anular en el tercero y el meñique en el cuarto. '
+      + 'Se toca de la 6ª cuerda a la 1ª y vuelta, con [[metronome|metrónomo]], para soltar los dedos y que trabajen cada uno por su lado. '
+      + 'No tiene que sonar bonito, sino limpio y a tiempo: la app sube el tempo poco a poco. '
+      + 'Si te duele la mano, para y descansa.',
+    diagram: { type: 'tab', tab: tabFromNotes(warmupOutward('1234', 1).slice(0, 8).map(({ string, fret }) => ({ string, fret, dur: 1 }))), bpm: 70 },
+    lesson: WARMUP_SETUP,
+    related: ['metronome', 'tablature'],
+  }),
+
+  // ----- Tablatura (Fase 3) -----
+  c({
+    id: 'tablature',
+    block: 'tablature',
+    title: 'Tablatura',
+    aliases: ['tablatura', 'tab', 'tabs', 'tablature', 'leer tablatura', 'cómo leer una tablatura'],
+    short: 'Música para guitarra escrita con números de traste.',
+    summary: 'La tablatura (*tab*) escribe la música para guitarra con números en lugar de notas. '
+      + 'Tiene 6 líneas, una por cuerda: la de arriba es la 1ª, la más aguda, y la de abajo, la 6ª, como en el mástil en horizontal de la app. '
+      + 'Cada número es el [[fret|traste]] que hay que pisar (0 es la [[open-string|cuerda al aire]]), y los números de una misma columna suenan a la vez. '
+      + 'Se lee de izquierda a derecha; la separación entre números y el conteo de debajo marcan el ritmo.',
+    diagram: {
+      type: 'tab',
+      tab: {
+        beatsPerBar: 4,
+        events: [
+          { notes: [{ string: 6, fret: 0 }], dur: 1 },
+          { notes: [{ string: 5, fret: 2 }], dur: 1 },
+          { notes: [{ string: 4, fret: 2 }], dur: 2 },
+          { notes: [{ string: 3, fret: 0 }, { string: 2, fret: 0 }, { string: 1, fret: 0 }], dur: 4 },
+        ],
+      },
+    },
+    related: ['string-numbers', 'fret', 'hammer-on'],
+  }),
+  c({
+    id: 'hammer-on',
+    block: 'tablature',
+    title: 'Ligado ascendente (h)',
+    aliases: ['ligado ascendente', 'ligado', 'martilleo', 'hammer-on', 'hammer on', 'hammer', 'h'],
+    short: 'Hacer sonar una nota más aguda golpeando con otro dedo.',
+    summary: 'Un ligado ascendente (*hammer-on*) hace sonar una nota sin pulsarla: tocas la primera y golpeas con otro dedo un traste más arriba, en la misma cuerda. '
+      + 'Se escribe con una h entre los dos números, 5h7, y se dibuja con un arco. '
+      + 'Solo se pulsa la primera nota: la segunda suena por el golpe del dedo, así que golpea fuerte y justo detrás del traste.',
+    diagram: { type: 'tab', tab: tabFromNotes([{ string: 3, fret: 5, dur: 2, tech: { type: 'hammer' } }, { string: 3, fret: 7, dur: 2 }]) },
+    related: ['pull-off', 'trill', 'tapping'],
+  }),
+  c({
+    id: 'pull-off',
+    block: 'tablature',
+    title: 'Ligado descendente (p)',
+    aliases: ['ligado descendente', 'pull-off', 'pull off', 'pull', 'p'],
+    short: 'Hacer sonar una nota más grave levantando el dedo.',
+    summary: 'Un ligado descendente (*pull-off*) es lo contrario: con dos notas pisadas en la misma cuerda, tocas la más aguda y levantas ese dedo tirando un poco de la cuerda, y suena la más grave. '
+      + 'Se escribe con una p, 7p5, y se dibuja con un arco. '
+      + 'El dedo de la nota grave tiene que estar pisando antes de levantar el otro.',
+    diagram: { type: 'tab', tab: tabFromNotes([{ string: 3, fret: 7, dur: 2, tech: { type: 'pull' } }, { string: 3, fret: 5, dur: 2 }]) },
+    related: ['hammer-on', 'trill'],
+  }),
+  c({
+    id: 'slide-up',
+    block: 'tablature',
+    title: 'Deslizamiento hacia arriba (/)',
+    aliases: ['deslizamiento', 'deslizar', 'arrastre', 'slide', 'slide up', 's', '/'],
+    short: 'Cambiar de nota arrastrando el dedo hacia agudos.',
+    summary: 'Un deslizamiento (*slide*) cambia de nota sin levantar el dedo: tocas una nota y arrastras el dedo por la cuerda hasta otro traste. '
+      + 'Hacia arriba (hacia los agudos) se escribe con una barra, 5/7, y se dibuja con una línea que sube. '
+      + 'Si la barra va delante, /7, se entra deslizando desde unos trastes más abajo, sin una nota de salida concreta. '
+      + 'Algunas tablaturas usan una s en lugar de la barra.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes([
+        { string: 3, fret: 5, dur: 2, tech: { type: 'slide' } }, { string: 3, fret: 7, dur: 2 },
+        { string: 3, fret: 7, dur: 4, tech: { type: 'slide-in', from: 'below' } },
+      ]),
+    },
+    related: ['slide-down', 'hammer-on'],
+  }),
+  c({
+    id: 'slide-down',
+    block: 'tablature',
+    title: 'Deslizamiento hacia abajo (\\)',
+    aliases: ['deslizamiento hacia abajo', 'salir deslizando', 'slide down', '\\'],
+    short: 'Cambiar de nota arrastrando el dedo hacia graves.',
+    summary: 'Hacia abajo (hacia los graves), el deslizamiento se escribe con la barra invertida, 7\\5, y se dibuja con una línea que baja. '
+      + 'Si la barra va detrás, 7\\, se sale deslizando: tocas la nota y arrastras el dedo hacia la cejuela mientras se apaga. '
+      + 'Mantén la presión justa: si aprietas poco, la nota se corta, y si aprietas mucho, cuesta mover el dedo.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes([
+        { string: 3, fret: 7, dur: 2, tech: { type: 'slide' } }, { string: 3, fret: 5, dur: 2 },
+        { string: 3, fret: 7, dur: 4, tech: { type: 'slide-out', to: 'down' } },
+      ]),
+    },
+    related: ['slide-up'],
+  }),
+  c({
+    id: 'bend',
+    block: 'tablature',
+    title: 'Estiramiento (b)',
+    aliases: ['estiramiento', 'estirar', 'bending', 'bend', 'b', 'full', '^'],
+    short: 'Subir la nota empujando la cuerda hacia un lado.',
+    summary: 'Un estiramiento (*bend*) sube la nota empujando la cuerda hacia un lado con el dedo, sin cambiar de traste. '
+      + 'Se escribe con una b y el traste cuyo sonido hay que alcanzar: 7b9 sube un tono, hasta lo que sonaría en el traste 9 (algunas tablaturas usan ^ en lugar de b). '
+      + 'En la app se dibuja con una flecha curva hacia arriba y la cantidad encima: ½ es medio tono, 1 es un tono (en inglés, *full*) y 1½, tono y medio. '
+      + 'Se hace sobre todo en la 2ª y la 3ª cuerda, empujando con varios dedos a la vez.',
+    diagram: { type: 'tab', tab: tabFromNotes([{ string: 3, fret: 7, dur: 4, tech: { type: 'bend', amount: 1 } }]) },
+    related: ['release', 'pre-bend', 'vibrato'],
+  }),
+  c({
+    id: 'release',
+    block: 'tablature',
+    title: 'Soltar el estiramiento (r)',
+    aliases: ['soltar', 'soltar el estiramiento', 'release', 'bend and release', 'r'],
+    short: 'Devolver la cuerda a su sitio tras un estiramiento.',
+    summary: 'Soltar (*release*) es devolver la cuerda a su sitio después de un [[bend|estiramiento]], sin dejar de pisar: la nota baja hasta la original. '
+      + 'Se escribe con una r, 7b9r7 (estiras hasta el sonido del traste 9 y vuelves al 7), y se dibuja con una flecha que sube y baja. '
+      + 'Suelta despacio y con control, para que se oiga cómo baja.',
+    diagram: { type: 'tab', tab: tabFromNotes([{ string: 3, fret: 7, dur: 4, tech: { type: 'bend', amount: 1, release: true } }]) },
+    related: ['bend', 'pre-bend'],
+  }),
+  c({
+    id: 'pre-bend',
+    block: 'tablature',
+    title: 'Estiramiento previo (pb)',
+    aliases: ['estiramiento previo', 'pre-bend', 'prebend', 'pb'],
+    short: 'Estirar la cuerda antes de tocarla.',
+    summary: 'En un estiramiento previo (*pre-bend*) estiras la cuerda antes de tocarla, así que la nota ya suena alta desde el principio. '
+      + 'Se escribe pb, 7pb9, y se dibuja con una flecha vertical antes del número; si después se suelta, 7pb9r7, una flecha baja. '
+      + 'Es difícil porque hay que acertar la altura sin oírla: compárala antes con la nota del traste 9.',
+    diagram: { type: 'tab', tab: tabFromNotes([{ string: 3, fret: 7, dur: 4, tech: { type: 'prebend', amount: 1, release: true } }]) },
+    related: ['bend', 'release'],
+  }),
+  c({
+    id: 'vibrato',
+    block: 'tablature',
+    title: 'Vibrato (~)',
+    aliases: ['vibrato', 'vibrar', '~'],
+    short: 'Hacer temblar la nota con pequeños estiramientos.',
+    summary: 'El vibrato hace temblar la nota, subiéndola y bajándola un poco y muy deprisa con pequeños [[bend|estiramientos]] del dedo. '
+      + 'Se escribe con una ~ detrás del número, 7~, y se dibuja con una línea ondulada encima. '
+      + 'Se usa sobre todo en las notas largas, al final de una frase, para que canten.',
+    diagram: { type: 'tab', tab: tabFromNotes([{ string: 2, fret: 7, dur: 8, tech: { type: 'vibrato' } }]) },
+    related: ['bend'],
+  }),
+  c({
+    id: 'dead-note',
+    block: 'tablature',
+    title: 'Nota muerta (x)',
+    aliases: ['nota muerta', 'nota apagada', 'golpe apagado', 'dead note', 'muted note', 'x'],
+    short: 'Un golpe seco, sin altura.',
+    summary: 'Una nota muerta suena como un golpe seco, sin altura: apoyas el dedo sobre la cuerda sin pisarla hasta el traste y la tocas. '
+      + 'Se escribe con una x en lugar del número. '
+      + 'Da ritmo y percusión, sobre todo en el rasgueo y en el funk.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes([
+        { string: 4, fret: 0, dur: 1, tech: { type: 'dead' } }, { string: 4, fret: 0, dur: 1, tech: { type: 'dead' } },
+        { string: 4, fret: 2, dur: 2 },
+      ]),
+    },
+    related: ['ghost-note', 'palm-mute'],
+  }),
+  c({
+    id: 'ghost-note',
+    block: 'tablature',
+    title: 'Nota fantasma ( )',
+    aliases: ['nota fantasma', 'ghost note', 'paréntesis', '( )'],
+    short: 'Una nota muy suave, casi sin que se oiga.',
+    summary: 'Una nota fantasma se toca muy suave, casi sin que se oiga: más que una nota, es un adorno del ritmo. '
+      + 'Se escribe con el número entre paréntesis, (7). '
+      + 'Algunas tablaturas usan los paréntesis para otras cosas, como una nota que sigue sonando: fíjate en la leyenda de cada una.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes([{ string: 3, fret: 5, dur: 2 }, { string: 3, fret: 7, dur: 1, tech: { type: 'ghost' } }, { string: 3, fret: 5, dur: 1 }]),
+    },
+    related: ['dead-note'],
+  }),
+  c({
+    id: 'palm-mute',
+    block: 'tablature',
+    title: 'Apagado con la palma (PM)',
+    aliases: ['apagado con la palma', 'palm mute', 'palm muting', 'pm'],
+    short: 'Notas cortas y apagadas con el canto de la mano.',
+    summary: 'Para apagar con la palma (*palm mute*), apoyas el canto de la mano derecha sobre las cuerdas, justo encima del puente, mientras tocas: el sonido sale corto y apagado. '
+      + 'Se escribe PM encima de las notas, con una línea discontinua que marca hasta dónde dura. '
+      + 'Es el sonido típico de las guitarras rítmicas del rock.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes([0, 0, 0, 0, 2, 2, 0, 0].map((fret) => ({ string: 6, fret, dur: 1 })), { spans: [{ type: 'pm', from: 0, to: 7 }] }),
+      bpm: 100,
+    },
+    related: ['dead-note', 'let-ring'],
+  }),
+  c({
+    id: 'natural-harmonic',
+    block: 'tablature',
+    title: 'Armónico natural (<12>)',
+    aliases: ['armónico', 'armónico natural', 'armónicos', 'harmonic', 'natural harmonic', '<12>'],
+    short: 'Un sonido agudo y limpio, rozando la cuerda sobre el traste.',
+    summary: 'Un armónico natural es un sonido agudo y limpio, como de campana. '
+      + 'Se hace rozando la cuerda justo encima del traste metálico, sin apretar, y levantando el dedo al pulsarla. '
+      + 'Se escribe con el número entre < >: <12> suena una [[octave|octava]] más aguda que la cuerda al aire; <7>, una octava y una quinta; y <5>, dos octavas. '
+      + 'Los más fáciles son los de los trastes 12, 7 y 5.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes([12, 7, 5].map((fret) => ({ string: 3, fret, dur: 4, tech: { type: 'harmonic' } }))),
+    },
+    related: ['artificial-harmonic', 'octave'],
+  }),
+  c({
+    id: 'artificial-harmonic',
+    block: 'tablature',
+    title: 'Armónico artificial y pellizcado (AH, PH)',
+    aliases: ['armónico artificial', 'armónico pellizcado', 'pinch harmonic', 'artificial harmonic', 'ah', 'ph'],
+    short: 'Armónicos sobre una nota pisada.',
+    summary: 'Un armónico artificial (AH) se hace sobre una nota pisada: rozas la cuerda 12 trastes más arriba con un dedo de la mano derecha y pulsas con otro, y suena una [[octave|octava]] más aguda. '
+      + 'El armónico pellizcado (PH) se hace al pulsar con la púa: el pulgar roza la cuerda justo después y sale un chillido agudo, típico del rock y del metal. '
+      + 'Se escriben con AH o PH junto al número, por ejemplo 7 AH o 5 PH. '
+      + 'Qué armónico sale en el PH depende del punto exacto en que pulses, así que en la app suena solo aproximado.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes([{ string: 3, fret: 7, dur: 4, tech: { type: 'ah' } }, { string: 3, fret: 5, dur: 4, tech: { type: 'ph' } }]),
+    },
+    related: ['natural-harmonic'],
+  }),
+  c({
+    id: 'tapping',
+    block: 'tablature',
+    title: 'Tapping (t)',
+    aliases: ['tapping', 'tap', 'golpeo', 't'],
+    short: 'Pisar una nota de golpe con un dedo de la mano derecha.',
+    summary: 'En el *tapping* pisas una nota de golpe con un dedo de la mano derecha, como un [[hammer-on|ligado ascendente]], y la haces sonar sin pulsar. '
+      + 'Se escribe con una t junto al número, 12t, y suele encadenarse con ligados hacia notas que pisa la mano izquierda, como 5h8. '
+      + 'Golpea con la yema, justo detrás del traste.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes([{ string: 1, fret: 12, dur: 1, tech: { type: 'tap' } }, { string: 1, fret: 5, dur: 1, tech: { type: 'hammer' } }, { string: 1, fret: 8, dur: 2 }]),
+    },
+    related: ['hammer-on', 'pull-off'],
+  }),
+  c({
+    id: 'trill',
+    block: 'tablature',
+    title: 'Trino (tr)',
+    aliases: ['trino', 'trill', 'tr'],
+    short: 'Alternar muy deprisa dos notas con ligados.',
+    summary: 'Un trino alterna muy deprisa dos notas de la misma cuerda, con [[hammer-on|ligados ascendentes]] y [[pull-off|descendentes]] seguidos y sin volver a pulsar. '
+      + 'Se escribe tr con las dos notas, 5tr7; en la app, tr encima y la nota de destino entre paréntesis. '
+      + 'Empieza despacio y a tiempo, y acelera solo cuando salga limpio.',
+    diagram: { type: 'tab', tab: tabFromNotes([{ string: 3, fret: 5, dur: 8, tech: { type: 'trill', to: 7 } }]) },
+    related: ['hammer-on', 'pull-off'],
+  }),
+  c({
+    id: 'let-ring',
+    block: 'tablature',
+    title: 'Dejar sonar (let ring)',
+    aliases: ['dejar sonar', 'let ring', 'que suene'],
+    short: 'Mantener las notas para que suenen unas sobre otras.',
+    summary: '«Let ring» significa dejar sonar: mantienes pisadas las notas para que sigan sonando unas sobre otras, en lugar de apagarlas al tocar la siguiente. '
+      + 'Se escribe let ring encima de las notas, con una línea discontinua hasta donde dura. '
+      + 'Es típico en los arpegios de acordes abiertos.',
+    diagram: {
+      type: 'tab',
+      tab: tabFromNotes(
+        [[5, 3], [4, 2], [3, 0], [2, 1], [1, 0], [2, 1], [3, 0], [4, 2]].map(([string, fret]) => ({ string, fret, dur: 1 })),
+        { spans: [{ type: 'letring', from: 0, to: 7 }] },
+      ),
+    },
+    related: ['palm-mute', 'open-chord'],
   }),
 ]);
 
@@ -432,6 +893,19 @@ export const SCREEN_HELP = Object.freeze({
       + 'Toca cualquier punto para oírlo.',
     concepts: ['natural-notes', 'octave', 'unison'],
   },
+  referenceChords: {
+    title: 'Consulta',
+    text: 'La biblioteca de [[open-chord|acordes abiertos]]. Elige uno arriba para ver su [[chord-diagram|diagrama]] y sus notas, coloreadas según su función: '
+      + '[[root|fundamental]], [[chord-third|3ª]], 5ª y 7ª. Escúchalo rasgueado o arpegiado, y activa «Ver en el mástil» para verlo sobre el mástil. '
+      + 'Toca un punto para oír esa nota.',
+    concepts: ['chord', 'chord-diagram', 'chord-third'],
+  },
+  progressions: {
+    title: 'Mis progresiones',
+    text: 'Una [[progression|progresión]] es una serie de acordes que se repite. Las predefinidas se calculan por grados. '
+      + 'En «Mis progresiones» puedes guardar las tuyas, de 3 a 5 acordes de la biblioteca, con el nombre que quieras: se guardan al momento y van en la copia que exportas.',
+    concepts: ['progression', 'chord-changes'],
+  },
   soon: {
     title: 'Próximamente',
     text: 'Esta parte aún no está construida: la app se construye por fases. Mientras tanto, todo lo demás funciona.',
@@ -462,6 +936,9 @@ const NOTE_ON_STRING = Object.freeze({
   whyOctave: ' Doce trastes más allá, en el traste %fret%, vuelve a sonar una [[octave|octava]] más aguda.',
   whyString: ' Fíjate en el número de la [[string-numbers|cuerda]]: la 1ª es la más fina y aguda, y la 6ª, la más gruesa y grave.',
 });
+
+// Etiqueta de fallo con la forma de un acorde ("¿Qué acorde es?" y "¿Mayor o menor?").
+const CHORD_SHAPE = Object.freeze({ missLabel: 'Trastes %shape%' });
 
 /**
  * Textos de cada ejercicio (BUILD_PLAN 6.8 y 7.1): howTo ("Cómo se juega") y las plantillas
@@ -596,6 +1073,127 @@ export const EXERCISE_TEXTS = Object.freeze({
     speechEs: '%string% cuerda, traste %fret%',
     speechEn: 'string %string%, fret %fret%',
   }),
+
+  // ----- Acordes abiertos: Teoría -----
+  'acordes.teoria.que-acorde': Object.freeze({
+    prompt: '¿Qué acorde es?',
+    howTo: 'Ves el [[chord-diagram|diagrama]] de un acorde, sin su nombre, y eliges cuál es entre 4 opciones. '
+      + 'Fíjate en la nota más grave, que en los [[open-chord|acordes abiertos]] es la [[root|fundamental]], y en la [[chord-third|3ª]], que dice si es mayor o menor. '
+      + 'Básico: los 8 acordes básicos, sin tiempo. '
+      + 'Intermedio: además, {{chord:F-mini}} y los acordes de [[dominant-seventh|séptima]], con 15 segundos. '
+      + 'Avanzado: también {{chord:F-barre}}, con 8 segundos.',
+    ...CHORD_SHAPE,
+    feedbackWrong: 'No es {{chord:%chosen%}}: es {{chord:%chord%}}.',
+    feedbackTimeout: 'Se acabó el tiempo: es {{chord:%chord%}}.',
+    whyName: 'Es {{chord:%chord%}}: suenan %tones%. ',
+    whyChosen: ' {{chord:%chosen%}} tendría %chosenTones%.',
+    whySameRoot: ' Tienen la misma fundamental: los distingue la 3ª.',
+  }),
+  'acordes.teoria.construyelo': Object.freeze({
+    prompt: 'Construye {{chord:%chord%}}',
+    howTo: 'Te piden un acorde: constrúyelo en el diagrama vacío. '
+      + 'Toca una casilla para poner un punto en ese [[fret|traste]] (otra vez, para quitarlo), y toca encima de la cejuela para marcar cada cuerda al aire (o) o sin tocar (×); todas empiezan al aire. '
+      + 'Cuando lo tengas, pulsa «Comprobar». No hace falta indicar los dedos. '
+      + 'Básico: los 8 acordes básicos, sin tiempo. '
+      + 'Intermedio: además, {{chord:F-mini}} y los de [[dominant-seventh|séptima]], con 30 segundos. '
+      + 'Avanzado: también {{chord:F-barre}}, con 20 segundos.',
+    missLabel: '{{chord:%chord%}}',
+    feedbackWrong: 'Así no es. {{chord:%chord%}} se toca así: %shape% (de la 6ª cuerda a la 1ª).',
+    feedbackTimeout: 'Se acabó el tiempo. {{chord:%chord%}} se toca así: %shape% (de la 6ª cuerda a la 1ª).',
+    whyTones: '{{chord:%chord%}} tiene las notas %tones%.',
+    whyString: ' En la %string%ª cuerda va %expected%, y has puesto %got%.',
+    stringOpen: 'al aire (o)',
+    stringMuted: 'sin tocar (×)',
+    stringFret: 'el traste %fret% (%note%)',
+  }),
+  'acordes.teoria.que-notas': Object.freeze({
+    prompt: '¿Qué %count% notas tiene {{chord:%chord%}}?',
+    howTo: 'Ves un acorde con su diagrama. Elige en el teclado todas sus notas (3 en las [[triad|tríadas]] y 4 en los acordes de [[dominant-seventh|séptima]]) y pulsa «Comprobar». '
+      + 'Da igual el orden y en qué cuerdas suenen. '
+      + 'Truco: la [[root|fundamental]] da nombre al acorde; la [[chord-third|3ª]] está a 3 o 4 [[semitone-tone|semitonos]] de ella, y la 5ª, a 7. '
+      + 'Básico: los 8 acordes básicos, sin tiempo. '
+      + 'Intermedio: además, {{chord:F-mini}} y las séptimas, con 30 segundos. Avanzado: también {{chord:F-barre}}, con 20 segundos.',
+    missLabel: 'Notas de {{chord:%chord%}}',
+    feedbackWrong: '{{chord:%chord%}} tiene %tones%.',
+    feedbackTimeout: 'Se acabó el tiempo. {{chord:%chord%}} tiene %tones%.',
+    whyTriad: 'Su fundamental es %root%; la 3ª, %third%, está a %thirdSemis% semitonos (3ª %thirdKind%); y la 5ª, %fifth%, a 7.',
+    whySeventh: ' Además lleva la 7ª, %seventh%, a 10 semitonos.',
+    whyExtra: ' Sobra: %list%.',
+    whyMissing: ' Falta: %list%.',
+    thirdMajor: 'mayor',
+    thirdMinor: 'menor',
+  }),
+  'acordes.teoria.mayor-menor': Object.freeze({
+    prompt: '¿Mayor o menor?',
+    howTo: 'Ves el diagrama de un acorde, sin su nombre, y decides si es mayor o menor. '
+      + 'Busca la [[root|fundamental]] (la nota más grave) y su [[chord-third|3ª]]: a 4 [[semitone-tone|semitonos]], mayor; a 3, menor. '
+      + 'Desde Intermedio hay una tercera opción, [[dominant-seventh|séptima de dominante]]: un acorde mayor con la 7ª menor añadida. '
+      + 'Básico: los 8 acordes básicos, sin tiempo. Intermedio: además, {{chord:F-mini}} y las séptimas, con 15 segundos. '
+      + 'Avanzado: también {{chord:F-barre}}, con 8 segundos.',
+    ...CHORD_SHAPE,
+    feedbackWrong: 'No es %chosen%: es %answer%. Es {{chord:%chord%}}.',
+    feedbackTimeout: 'Se acabó el tiempo: es %answer%. Es {{chord:%chord%}}.',
+    whyMajor: 'La fundamental es %root% (la nota más grave). Su 3ª, %third%, está a 4 semitonos: es una 3ª mayor, así que el acorde es mayor.',
+    whyMinor: 'La fundamental es %root% (la nota más grave). Su 3ª, %third%, está a 3 semitonos: es una 3ª menor, así que el acorde es menor.',
+    whyDom7: 'La fundamental es %root% (la nota más grave). Su 3ª, %third%, está a 4 semitonos (3ª mayor), y además suena %seventh%, la 7ª menor, a 10 semitonos: es un acorde de séptima de dominante.',
+    whyWhere: ' En el diagrama, la 3ª suena en la %string%ª cuerda.',
+  }),
+  'acordes.teoria.nota-falta': Object.freeze({
+    prompt: 'En {{chord:%chord%}}, ¿qué nota va en el «?»?',
+    howTo: 'Ves el diagrama de un acorde con su nombre, pero a una cuerda le falta el punto: en su lugar hay un «?». Elige qué nota suena ahí. '
+      + 'Cuenta desde la [[open-string|cuerda al aire]]: cada [[fret|traste]] sube un [[semitone-tone|semitono]]. Pista: tiene que ser una nota del acorde. '
+      + 'Básico: los 8 acordes básicos, sin tiempo. Intermedio: además, {{chord:F-mini}} y las séptimas, con 15 segundos. '
+      + 'Avanzado: también {{chord:F-barre}}, con 8 segundos.',
+    missLabel: '{{chord:%chord%}} · %string%ª cuerda',
+    feedbackWrong: 'No es {{pc:%chosen%}}: es %answer% (%string%ª cuerda, traste %fret%).',
+    feedbackTimeout: 'Se acabó el tiempo: es %answer% (%string%ª cuerda, traste %fret%).',
+    why: 'La %string%ª cuerda al aire es {{pc:%open%}}; %fret% %frets% más arriba suena %answer%, que es %function% de {{chord:%chord%}}.',
+    fretOne: 'traste',
+    fretMany: 'trastes',
+    whyChosenTone: ' {{pc:%chosen%}} también es del acorde, pero suena en otra cuerda.',
+    whyChosenOther: ' {{pc:%chosen%}} no es del acorde.',
+  }),
+
+  // ----- Acordes abiertos: Práctica -----
+  'acordes.practica.cambios': Object.freeze({
+    howTo: 'Elige una [[progression|progresión]]: una predefinida o una tuya («Mis progresiones»). '
+      + 'La app enseña el acorde actual en grande, con su diagrama, y el siguiente en pequeño. '
+      + 'Toca cada acorde al ritmo del [[metronome|metrónomo]] y cambia cuando toque: el último tiempo antes del cambio se marca en ámbar. '
+      + 'La progresión se repite hasta que acabe la duración. '
+      + 'Básico: 60 BPM, cambio cada 8 tiempos. Intermedio: 80 BPM, cada 4. Avanzado: 100 BPM, cada 2.',
+  }),
+  'acordes.practica.un-minuto': Object.freeze({
+    howTo: 'Elige dos acordes y pasa de uno a otro tan rápido como puedas durante 60 segundos, tocando cada vez el acorde completo. '
+      + 'Al acabar, anota cuántos cambios has hecho: cada paso de un acorde al otro cuenta uno. '
+      + 'Se guarda tu récord para cada pareja, en cualquier orden. '
+      + 'El nivel decide qué acordes puedes elegir: los 8 básicos; además, {{chord:F-mini}} y las séptimas; o también {{chord:F-barre}}.',
+    countTitle: '¿Cuántos cambios has hecho?',
+    countHint: 'Cada paso de un acorde al otro cuenta uno.',
+    go: 'Ya',
+  }),
+  'acordes.practica.acorde-cantado': Object.freeze({
+    howTo: 'La app dice un acorde en voz alta y lo enseña en grande. Tócalo antes de que acabe la cuenta atrás: al acabar verás su diagrama, y pasa sola al siguiente. '
+      + 'Con «Mostrar diagramas» desactivado solo ves el nombre, para comprobar que te lo sabes de memoria. Son 12 acordes. '
+      + 'Básico: los 8 básicos, con 12 segundos. Intermedio: además, {{chord:F-mini}} y las séptimas, con 8 segundos. '
+      + 'Avanzado: también {{chord:F-barre}}, con 5 segundos.',
+    instruction: 'Tócalo',
+  }),
+  'acordes.practica.rasgueo': Object.freeze({
+    howTo: 'Elige una [[progression|progresión]] y un [[strumming|patrón de rasgueo]]: 8 casillas con ↓ (abajo), ↑ (arriba) o · (sin golpe). '
+      + 'Puedes oírlo antes con «Escuchar el patrón». '
+      + 'Durante el ejercicio, la casilla que toca se ilumina al ritmo del [[metronome|metrónomo]]: recuerda la regla del péndulo. '
+      + 'Básico: 60–70 BPM y cambio de acorde cada 2 compases. Intermedio: 70–90 BPM y cambio en cada compás. '
+      + 'Avanzado: 90–110 BPM, con patrones con [[accent|acento]] y con [[swing|swing]].',
+  }),
+
+  // ----- Calentamiento -----
+  'calentamiento.practica.cromatico': Object.freeze({
+    howTo: 'Un dedo por traste, de la 6ª cuerda a la 1ª y vuelta, en la posición que elijas (desde el traste 1 o desde el 5), con la [[tablature|tablatura]] en pantalla y [[metronome|metrónomo]]. '
+      + 'La nota que toca se ilumina en ámbar. El tempo sube 4 BPM en cada vuelta completa (ida y vuelta) en Básico, y cada 2 vueltas en el resto; «Bajar» resta 8 BPM y detiene la subida. '
+      + 'Tu récord es el tempo más alto al que terminas una vuelta entera, para cada variante y nivel. '
+      + 'Básico: negras, con 1-2-3-4, desde 60 BPM. Intermedio: corcheas, con 4-3-2-1 y 1-3-2-4 además, desde 70. '
+      + 'Avanzado: semicorcheas y también la araña (dedos 1 y 3 en una cuerda y 2 y 4 en la de al lado), desde 80.',
+  }),
 });
 
 /** Piezas de texto de las posiciones y números de cuerda hablados (ejercicios de Notas). */
@@ -675,6 +1273,50 @@ export const LESSONS = Object.freeze({
       }),
     ]),
   }),
+  acordes: Object.freeze({
+    cards: Object.freeze([
+      Object.freeze({
+        id: 'acorde',
+        title: 'Qué es un acorde',
+        text: 'Un [[chord|acorde]] son varias notas distintas que suenan a la vez. '
+          + 'El más sencillo es la [[triad|tríada]]: tres notas, que en la guitarra se reparten por varias cuerdas. '
+          + 'Toca el diagrama para oír {{chord:C}} rasgueado, o cada punto para oír su nota.',
+        diagram: { type: 'chord', chord: 'C', colorBy: 'function' },
+      }),
+      Object.freeze({
+        id: 'fundamental',
+        title: 'La fundamental',
+        text: 'La [[root|fundamental]] es la nota que da nombre al acorde: en {{chord:G}}, {{G}}. '
+          + 'En los [[open-chord|acordes abiertos]] es la nota más grave, así que la encontrarás en la cuerda más gruesa que suena. '
+          + 'En los esquemas se pinta en rojo coral.',
+        diagram: { type: 'chord', chord: 'G', colorBy: 'function' },
+      }),
+      Object.freeze({
+        id: 'tercera',
+        title: 'La 3ª decide: mayor o menor',
+        text: 'Además de la fundamental, la tríada tiene una [[chord-third|3ª]] y una 5ª. '
+          + 'Si la 3ª está a 4 [[semitone-tone|semitonos]] de la fundamental, el acorde es mayor; si está a 3, es menor. '
+          + '{{chord:E}} y {{chord:Em}} solo se diferencian en esa nota: {{G#}} pasa a ser {{G}}.',
+        diagram: { type: 'chord', chord: 'E', compare: 'Em', colorBy: 'function' },
+      }),
+      Object.freeze({
+        id: 'otra-pareja',
+        title: 'Mayor y menor, otra vez',
+        text: 'Lo mismo pasa con {{chord:A}} y {{chord:Am}}: la 3ª baja un semitono, de {{C#}} a {{C}}. '
+          + 'En el diagrama solo cambia la 2ª cuerda, del traste 2 al 1, aunque los dedos se colocan de otra forma. '
+          + 'Escucha los dos y compara: el mayor suele sonar más luminoso, y el menor, más triste.',
+        diagram: { type: 'chord', chord: 'A', compare: 'Am', colorBy: 'function' },
+      }),
+      Object.freeze({
+        id: 'quinta-septima',
+        title: 'La 5ª y la 7ª',
+        text: 'La 5ª está a 7 semitonos de la fundamental, tanto en los acordes mayores como en los menores. '
+          + 'Si a un acorde mayor le añades la 7ª menor, a 10 semitonos, tienes un acorde de [[dominant-seventh|séptima de dominante]], como {{chord:A7}}. '
+          + 'Con esto ya puedes leer cualquier [[chord-diagram|diagrama de acorde]] y saber qué notas tiene.',
+        diagram: { type: 'chord', chord: 'A', compare: 'A7', colorBy: 'function' },
+      }),
+    ]),
+  }),
 });
 
 /** Textos fijos de la interfaz que explican algo (BUILD_PLAN 6.9). */
@@ -697,6 +1339,7 @@ export const UI_TEXTS = Object.freeze({
     paused: 'En pausa',
     pausedHint: 'Toca «Seguir» para continuar. Mientras tanto, puedes ver la ayuda.',
     newRecord: 'Nuevo récord',
+    getReady: 'Prepárate:',
     fillTime: 'Tiempo',
   }),
   scoreBands: Object.freeze({
@@ -720,6 +1363,40 @@ export const UI_TEXTS = Object.freeze({
     lesson: 'Ver la lección completa',
     tunings: 'Ir a Afinaciones',
     metronome: 'Abrir el Metrónomo',
+    setup: 'Ir al ejercicio',
+  }),
+  // Acordes (Fase 3).
+  chordQualities: Object.freeze({ major: 'Mayor', minor: 'Menor', dom7: 'Séptima de dominante' }),
+  chordFunctions: Object.freeze({ root: 'la fundamental', third: 'la 3ª', fifth: 'la 5ª', seventh: 'la 7ª' }),
+  chordPractice: Object.freeze({
+    next: 'Siguiente',
+    showDiagrams: 'Mostrar diagramas',
+    showDiagramsHint: 'Desactivado, solo ves los nombres.',
+    check: 'Comprobar',
+    slowDown: 'Bajar',
+    rampStopped: 'Subida de tempo detenida',
+    listenPattern: 'Escuchar el patrón',
+    stopPattern: 'Parar',
+    newProgression: 'Nueva',
+    editProgression: 'Editar',
+    deleteProgression: 'Borrar',
+    deleteTitle: '¿Borrar esta progresión?',
+    deleteText: 'Se borrará de «Mis progresiones». No se puede deshacer.',
+    editorTitle: 'Mis progresiones',
+    howMany: 'Cuántos acordes',
+    nameLabel: 'Nombre',
+    namePlaceholder: 'Por ejemplo, Blues o Country',
+    pickChord: 'Elige un acorde',
+    save: 'Guardar',
+    emptyCustom: 'Aún no has guardado ninguna. Toca «Nueva» para crear la tuya.',
+    presets: 'Predefinidas',
+    custom: 'Mis progresiones',
+    pairFirst: 'Primer acorde',
+    pairSecond: 'Segundo acorde',
+    countSave: 'Guardar',
+    record: 'Récord',
+    noRecord: 'Aún sin récord',
+    lapMax: 'Vuelta más rápida',
   }),
   hints: {
     notation: 'La otra se ve en pequeño. Ejemplo:',

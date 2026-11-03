@@ -10,7 +10,8 @@
 // al registro de sesiones.
 
 import { h, render, button, iconButton, screenHeader, statTile, badge } from '../ui/components.js';
-import { NoteLabel } from '../ui/note-label.js';
+import { NoteLabel, ChordLabel } from '../ui/note-label.js';
+import { ChordDiagram, ChordEditor } from '../ui/chord-diagram.js';
 import { richText, TuningName } from '../ui/term.js';
 import { Fretboard } from '../ui/fretboard.js';
 import { openExerciseHelp, openWhySheet, onSheetChange, confirmSheet } from '../ui/help-sheet.js';
@@ -27,7 +28,7 @@ import { getTuning, DEFAULT_TUNING_ID } from '../data/tunings.js';
 import { LEVELS } from '../data/modules.js';
 import { UI_TEXTS } from '../data/concepts.js';
 import { store } from '../state.js';
-import { playSequence } from '../audio/synth.js';
+import { playSequence, strum } from '../audio/synth.js';
 
 const AUTO_ADVANCE_MS = 2000;
 /** En las rondas por tiempo: pausa tras acertar y tiempo que se ve la correcta tras fallar. */
@@ -51,6 +52,8 @@ export function exerciseCtx(tuning, extra = {}) {
     text: (text, className) => h('p', { class: className }, text),
     midiAt: (string, fret) => midiAt(string, fret, tuning.midi),
     pcAt: (string, fret) => mod12(midiAt(string, fret, tuning.midi)),
+    chordDiagram: (chord, opts) => ChordDiagram(chord, opts),
+    chordLabel: (chord, opts) => ChordLabel(chord, opts),
     ...extra,
   };
 }
@@ -61,7 +64,8 @@ function createSpeaker(exercise) {
   const play = (it) => {
     stopSound?.();
     const sound = exercise.sound?.(it);
-    if (sound?.midi?.length) stopSound = playSequence(sound.midi, { gap: 0.7 });
+    if (sound?.strum?.length) strum(sound.strum, 'down');
+    else if (sound?.midi?.length) stopSound = playSequence(sound.midi, { gap: 0.7 });
   };
   return {
     stop: () => stopSound?.(),
@@ -145,6 +149,7 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
   let qClock = null;
   let advanceTimer = null;
   let answerBtns = [];
+  let checkBtn = null;
   let stopSummarySound = null;
   const speaker = createSpeaker(exercise);
 
@@ -154,7 +159,7 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     answerButtons(list) {
       answerBtns = list.map((o) => {
         const btn = h('button', { type: 'button', class: 'btn btn--grey answer', onClick: () => answer(o.value) },
-          o.pc != null ? NoteLabel(o.pc) : o.label,
+          o.pc != null ? NoteLabel(o.pc, { spelling: o.spelling }) : o.label,
           h('span', { class: 'answer__mark', 'aria-hidden': 'true' }),
           h('span', { class: 'sr-only answer__sr' }));
         return { btn, value: o.value };
@@ -163,6 +168,52 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     },
     /** Respuesta que no es un botón (p. ej. tocar el mástil). */
     answer: (value) => answer(value),
+    /** Diagrama vacío para construir un acorde. */
+    chordEditor: () => ChordEditor(),
+    /** Botón "Comprobar" (el principal mientras se responde); desaparece al responder. */
+    checkButton(onClick) {
+      checkBtn = button({ label: UI_TEXTS.chordPractice.check, variant: 'primary', block: true, className: 'quiz__check', onClick });
+      feedbackEl.append(checkBtn);
+    },
+    /**
+     * Teclado de notas que se marcan y desmarcan (respuesta con varias notas).
+     * list: [{ pc, spelling? }]. Devuelve { selected(), reveal(correctas, elegidas) }.
+     */
+    noteToggles(list) {
+      const chosen = new Set();
+      const keys = list.map((o) => {
+        const btn = h('button', { type: 'button', class: 'btn btn--grey answer answer--toggle', 'aria-pressed': 'false' },
+          NoteLabel(o.pc, { spelling: o.spelling }),
+          h('span', { class: 'answer__mark', 'aria-hidden': 'true' }),
+          h('span', { class: 'sr-only answer__sr' }));
+        btn.addEventListener('click', () => {
+          if (chosen.has(o.pc)) chosen.delete(o.pc); else chosen.add(o.pc);
+          btn.setAttribute('aria-pressed', String(chosen.has(o.pc)));
+        });
+        return { btn, pc: o.pc };
+      });
+      render(answersEl, keys.map((k) => k.btn));
+      answersEl.classList.add('quiz__answers--keys');
+      return {
+        selected: () => [...chosen].sort((a, b) => a - b),
+        reveal(correct, picked) {
+          for (const { btn, pc } of keys) {
+            btn.disabled = true;
+            const mark = btn.querySelector('.answer__mark');
+            const sr = btn.querySelector('.answer__sr');
+            if (correct.includes(pc)) {
+              btn.classList.add('answer--correct');
+              mark.textContent = '✓';
+              sr.textContent = picked.includes(pc) ? ', correcta y elegida' : ', correcta';
+            } else if (picked.includes(pc)) {
+              btn.classList.add('answer--wrong');
+              mark.textContent = '✗';
+              sr.textContent = ', elegida, no es del acorde';
+            }
+          }
+        },
+      };
+    },
   });
 
   /* ----- Pantalla ----- */
@@ -242,7 +293,9 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     render(stage);
     render(answersEl);
     render(feedbackEl);
+    answersEl.classList.remove('quiz__answers--keys');
     answerBtns = [];
+    checkBtn = null;
     itemView = exercise.render(item, stage, ctx);
     const limit = item.timeLimit !== undefined ? item.timeLimit : params.timeLimit;
     timerEl.hidden = !limit;
@@ -286,6 +339,7 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     results.push({ item, answer: value, result, ms });
     setProgress(index);
     markAnswers(value);
+    checkBtn?.remove();
     itemView?.reveal?.(result, value);
     const current = item;
     if (timedRound) {

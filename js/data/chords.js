@@ -4,7 +4,10 @@
 // bassNote: solo si la nota más grave no es la fundamental (ninguno de la tabla lo necesita).
 // variant: para distinguir dos formas del mismo acorde (Fa mini y Fa con cejilla).
 
-import { chordPcs } from '../core/theory.js';
+import { chordPcs, CHORD_FORMULAS } from '../core/theory.js';
+import { spellChordTones, majorKeyRootSpelling } from '../core/notation.js';
+import { shapeNotes } from '../core/fretboard-model.js';
+import { LEVEL_IDS } from './modules.js';
 
 /** Sufijo del cifrado según la calidad: Do, Lam, La7. */
 export const CHORD_SUFFIX = Object.freeze({ major: '', minor: 'm', dom7: '7' });
@@ -44,3 +47,22 @@ export function getChord(id) {
 
 /** Notas (pitch class) que forman el acorde, en orden R, 3, 5, (7). */
 export const chordTones = (chord) => chordPcs(chord.root, chord.quality);
+
+/** Notas del acorde deletreadas por letra (R, 3, 5, 7): Mi = Mi Sol♯ Si; Si7 = Si Re♯ Fa♯ La. */
+export const chordSpelling = (chord) => spellChordTones(majorKeyRootSpelling(chord.root), CHORD_FORMULAS[chord.quality]);
+
+/** MIDI de las cuerdas que suenan, de la más grave a la más aguda (afinación estándar). */
+export const chordMidis = (chord) => shapeNotes(chord.frets).map((n) => n.midi);
+
+/** Mismo acorde por su nombre (fundamental y calidad): el Fa mini y el Fa con cejilla son el mismo Fa. */
+export const sameChordName = (a, b) => a.root === b.root && a.quality === b.quality;
+
+/**
+ * Acordes de un nivel (tabla de la Fase 3): Básico, los 8 básicos; Intermedio, además el Fa
+ * mini y las séptimas; Avanzado, además el Fa con cejilla.
+ */
+export function chordsForLevel(level) {
+  const upTo = LEVEL_IDS.indexOf(level);
+  if (upTo < 0) throw new Error(`Nivel desconocido: ${level}`);
+  return CHORDS.filter((c) => LEVEL_IDS.indexOf(c.level) <= upTo);
+}

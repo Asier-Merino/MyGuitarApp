@@ -15,6 +15,7 @@ import { primeSpeech } from '../engine/speech.js';
 import { durationOptions } from '../core/session.js';
 import { clampBpm } from '../core/rhythm.js';
 import { getAudio } from '../audio/context.js';
+import { renderOption, stopSetupSound, warmupPreview } from './setup-options.js';
 import { settings } from '../state.js';
 
 const TEMPO_STEP = 5;
@@ -37,6 +38,7 @@ export function renderSetup(view, params, nav) {
   const playable = isPlayable(exercise);
 
   const start = (setup, tuningId = setup.tuning) => {
+    stopSetupSound();
     // Dentro del toque: desbloquea el audio y la voz (iOS).
     primeSpeech();
     if (settings.get('sound')) getAudio();
@@ -52,7 +54,9 @@ export function renderSetup(view, params, nav) {
 
   const draw = () => {
     const setup = exerciseSetup(exercise);
-    const { level, tuning, allowed, duration, options } = setup;
+    const { level, tuning, allowed, duration, options, savedOptions } = setup;
+    // Se guardan las opciones tal como se eligieron (el tempo, uno por nivel).
+    const saveOptions = (patch) => { saveSetup(exercise, { options: { ...savedOptions, ...patch } }); draw(); };
     const onStart = () => {
       if (settings.get('askTuning') && allowed.length > 1) {
         openTuningPicker({
@@ -104,7 +108,11 @@ export function renderSetup(view, params, nav) {
         playable && (exercise.options ?? [])
           .filter((opt) => !opt.levels || opt.levels.includes(level))
           .map((opt) => {
-            const onChange = (v) => { saveSetup(exercise, { options: { ...options, [opt.id]: v } }); draw(); };
+            const onChange = (v) => saveOptions({ [opt.id]: v });
+            const own = renderOption(opt, {
+              exercise, level, value: options[opt.id], options, saved: savedOptions, onChange, save: saveOptions, redraw: draw,
+            });
+            if (own) return own;
             if (opt.type === 'choice') {
               return [
                 h('h2', { class: 'section-title' }, opt.label),
@@ -113,6 +121,7 @@ export function renderSetup(view, params, nav) {
             }
             return opt.type === 'metronome' && metronomeOption(opt, options[opt.id], onChange);
           }),
+        playable && exercise.runner === 'warmup' && warmupPreview(exercise, setup),
         h('div', { class: 'setup__start' },
           button({ label: 'Empezar', variant: 'primary', block: true, disabled: !playable, onClick: playable ? onStart : undefined }),
           !playable && h('p', { class: 'setup__note' }, `Este ejercicio llega en la Fase ${exercise.phase}.`),
@@ -121,4 +130,5 @@ export function renderSetup(view, params, nav) {
     });
   };
   draw();
+  return () => stopSetupSound();
 }

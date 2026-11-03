@@ -7,6 +7,7 @@
 //                   (la usan los textos que se generan con reglas, p. ej. el "¿Por qué?")
 //   {{tuning:id}}   las notas de las cuerdas al aire de una afinación, de la 6ª a la 1ª
 //   {{tname:id}}    el nombre de una afinación ("Sol abierto")
+//   {{chord:id}}    el nombre de un acorde de la biblioteca ("Lam"), con doble notación
 //   *texto*         cursiva (términos en inglés)
 
 import { LETTER_PC } from './notation.js';
@@ -52,7 +53,7 @@ const TOKEN_RE = /\[\[([a-z0-9-]+)\|([^\]]+)\]\]|\{\{([^}]+)\}\}|\*([^*]+)\*/g;
 /**
  * Convierte un texto con marcado en una lista de piezas:
  * { type: 'text', text } · { type: 'term', id, text } · { type: 'note', spelling, pc } (spelling null con {{pc:N}})
- * { type: 'tuning', id } · { type: 'tuningName', id } · { type: 'em', text }
+ * { type: 'tuning', id } · { type: 'tuningName', id } · { type: 'chord', id } · { type: 'em', text }
  * Lanza un error si encuentra un {{…}} que no entiende, para detectarlo en los tests.
  */
 export function parseRichText(text) {
@@ -71,6 +72,10 @@ export function parseRichText(text) {
       parts.push({ type: 'note', spelling: null, pc: Number(arg) });
     }
     else if (kind === 'tname') parts.push({ type: 'tuningName', id: arg });
+    else if (kind === 'chord') {
+      if (!/^[A-Za-z0-9-]+$/.test(arg ?? '')) throw new Error(`Marcado desconocido: ${m[0]}`);
+      parts.push({ type: 'chord', id: arg });
+    }
     else {
       const spelling = kind === null ? parseNoteToken(arg) : null;
       if (!spelling) throw new Error(`Marcado desconocido: ${m[0]}`);
@@ -88,6 +93,7 @@ export function plainText(text, { noteName = (p) => (p.spelling ? p.spelling.let
       case 'note': return noteName(p);
       case 'tuning': return `[${p.id}]`;
       case 'tuningName': return tuningName(p.id);
+      case 'chord': return `[${p.id}]`;
       default: return p.text;
     }
   }).join('');
@@ -112,4 +118,10 @@ const NOTE_WORD = /(^|[\s(])(do|re|mi|fa|sol|la|si|[a-g])(#|b|♯|♭)?(?=$|[\s)
 export function displayAliases(concept) {
   const title = normalizeText(concept.title);
   return (concept.aliases ?? []).filter((a) => !NOTE_WORD.test(a) && normalizeText(a) !== title && !/^[#♯♭]$/.test(a));
+}
+
+/** Marcado de una nota con su deletreo: { letter: 'G', accidental: 1 } → '{{G#}}'. */
+export function noteToken({ letter, accidental }) {
+  if (accidental < -1 || accidental > 1) throw new RangeError('El marcado solo admite ♯ o ♭ sencillos');
+  return `{{${letter}${accidental === 1 ? '#' : accidental === -1 ? 'b' : ''}}}`;
 }

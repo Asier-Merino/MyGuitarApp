@@ -94,3 +94,19 @@ export function majorKeyRootSpelling(pc, { accidentals = 'sharp' } = {}) {
 export function majorScaleSpelling(rootPc, options) {
   return spellScale(majorKeyRootSpelling(rootPc, options), SCALE_FORMULAS.major);
 }
+
+/**
+ * Deletreo por letra de las notas de un acorde a partir de su fundamental: cada nota va dos
+ * letras más allá (fundamental, 3ª, 5ª y 7ª), con la alteración calculada. Así Mi mayor
+ * lleva Sol♯ (no La♭) y Si7 lleva Re♯ (no Mi♭). intervals: semitonos desde la fundamental.
+ */
+export function spellChordTones(rootSpelling, intervals) {
+  const rootPc = spellingPc(rootSpelling);
+  const rootIndex = LETTERS.indexOf(rootSpelling.letter);
+  return intervals.map((semitones, i) => {
+    const letter = LETTERS[(rootIndex + 2 * i) % 7];
+    let accidental = mod12(rootPc + semitones - LETTER_PC[letter]);
+    if (accidental > 6) accidental -= 12;
+    return { letter, accidental };
+  });
+}

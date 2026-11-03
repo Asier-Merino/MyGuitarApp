@@ -8,15 +8,36 @@ import { historyEntry, updateRecord, normalizeDuration } from '../core/session.j
 import { recordResult } from '../core/stats.js';
 import { normalizeMetronome } from '../core/rhythm.js';
 import { exerciseById, isPlayable } from './exercise-registry.js';
+import { resolveProgressionChoice } from '../core/progressions.js';
 
-/** Opciones propias de un ejercicio (metrónomo, cuerdas…), con sus valores guardados. */
-function exerciseOptions(exercise, saved = {}) {
+/**
+ * Opciones propias de un ejercicio (metrónomo, cuerdas, progresión…), con sus valores
+ * guardados. Las que dependen del nivel (patrón, tempo, variante) se ajustan al nivel elegido.
+ */
+export function exerciseOptions(exercise, saved = {}, level = LEVEL_IDS[0]) {
   const result = {};
   for (const opt of exercise.options ?? []) {
-    if (opt.type === 'choice') {
-      result[opt.id] = opt.choices.some((c) => c.value === saved[opt.id]) ? saved[opt.id] : opt.default;
+    const value = saved[opt.id];
+    if (opt.type === 'toggle') {
+      result[opt.id] = typeof value === 'boolean' ? value : opt.default;
+    } else if (opt.type === 'progression') {
+      result[opt.id] = resolveProgressionChoice(value, store.data.progressions).id;
+    } else if (opt.type === 'chord-pair') {
+      const allowed = exercise.levels[level].chords;
+      const ok = Array.isArray(value) && value.length === 2 && value[0] !== value[1] && value.every((id) => allowed.includes(id));
+      result[opt.id] = ok ? [...value] : [...opt.default];
+    } else if (opt.type === 'level-choice' || opt.type === 'strum-pattern') {
+      const choices = opt.byLevel[level];
+      result[opt.id] = choices.includes(value) ? value : choices[0];
+    } else if (opt.type === 'tempo') {
+      // Un tempo por nivel: { basico: 65, … }. Si no hay o se sale del rango, el más bajo del nivel.
+      const { min, max } = opt.byLevel[level];
+      const bpm = value?.[level];
+      result[opt.id] = Number.isFinite(bpm) && bpm >= min && bpm <= max ? bpm : min;
+    } else if (opt.type === 'choice') {
+      result[opt.id] = opt.choices.some((c) => c.value === value) ? value : opt.default;
     } else if (opt.type === 'metronome') {
-      const s = saved[opt.id] ?? {};
+      const s = value ?? {};
       result[opt.id] = {
         on: typeof s.on === 'boolean' ? s.on : opt.default.on,
         bpm: normalizeMetronome({ bpm: Number.isFinite(s.bpm) ? s.bpm : opt.default.bpm }).bpm,
@@ -41,7 +62,7 @@ export function exerciseSetup(exercise) {
   const duration = exercise.duration
     ? normalizeDuration(saved.duration, { unlimited: exercise.duration.unlimited, fallback: exercise.duration.default })
     : null;
-  return { level, tuning, allowed, duration, options: exerciseOptions(exercise, saved.options) };
+  return { level, tuning, allowed, duration, options: exerciseOptions(exercise, saved.options, level), savedOptions: saved.options ?? {} };
 }
 
 export function saveSetup(exercise, patch) {

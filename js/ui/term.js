@@ -5,7 +5,8 @@
 import { parseRichText } from '../core/glossary.js';
 import { getTuning } from '../data/tunings.js';
 import { h } from './components.js';
-import { NoteLabel } from './note-label.js';
+import { NoteLabel, ChordLabel } from './note-label.js';
+import { getChord } from '../data/chords.js';
 import { openConceptSheet } from './help-sheet.js';
 
 /** Nombre de una afinación: "Sol abierto" con la nota en doble notación, o su texto fijo. */
@@ -48,6 +49,7 @@ export function richText(text, { tag = 'p', className } = {}) {
       case 'note': el.append(NoteLabel(part.pc, { spelling: part.spelling })); break;
       case 'tuning': el.append(TuningNotes(getTuning(part.id))); break;
       case 'tuningName': el.append(TuningName(getTuning(part.id))); break;
+      case 'chord': el.append(ChordLabel(getChord(part.id))); break;
       default: break;
     }
   }

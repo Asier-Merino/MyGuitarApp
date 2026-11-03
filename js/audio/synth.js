@@ -121,3 +121,149 @@ export function playSequence(midis, { gap = 0.6, onStep, onEnd } = {}) {
 
 /** true si hay sonido disponible y activado (para avisar al usuario si no). */
 export const soundEnabled = () => settings.get('sound');
+
+/* ----- Rasgueo continuo (ejercicio "Rasgueo") ----- */
+
+/** Cuerdas que suenan en un golpe hacia arriba: las 4 más agudas (el golpe arriba suele ser más corto). */
+const UP_STRINGS = 4;
+const DAMP_S = 0.03;
+
+/**
+ * Rasgueador para tocar un patrón: cada golpe apaga el anterior un instante antes, como la
+ * mano que vuelve a la cuerda. hit(midis, 'down' | 'up', { when, accent }).
+ */
+export function createStrummer() {
+  let ringing = [];
+  return {
+    hit(midis, direction, { when, accent = false } = {}) {
+      const ctx = ready();
+      if (!ctx || !midis.length) return false;
+      const start = when ?? ctx.currentTime + 0.01;
+      for (const v of ringing) {
+        v.gain.gain.setTargetAtTime(0, Math.max(ctx.currentTime, start - 0.005), DAMP_S / 3);
+        v.source.stop(Math.max(ctx.currentTime, start) + DAMP_S * 4);
+      }
+      const notes = direction === 'up' ? midis.slice(-UP_STRINGS).reverse() : midis;
+      const level = CHORD_GAIN * (accent ? 1.5 : 1) * (direction === 'up' ? 0.75 : 1);
+      ringing = notes.map((midi, i) => {
+        const source = ctx.createBufferSource();
+        source.buffer = bufferFor(ctx, midi);
+        const gain = ctx.createGain();
+        gain.gain.value = level;
+        source.connect(gain).connect(output);
+        source.start(start + i * (STRUM_SPACING * 0.6));
+        return { source, gain };
+      });
+      return true;
+    },
+    stop() {
+      const ctx = ready();
+      for (const v of ringing) {
+        try {
+          if (ctx) v.gain.gain.setTargetAtTime(0, ctx.currentTime, DAMP_S / 3);
+          v.source.stop((ctx?.currentTime ?? 0) + DAMP_S * 4);
+        } catch { /* ya parada */ }
+      }
+      ringing = [];
+    },
+  };
+}
+
+/* ----- Notas con técnica (tablatura, BUILD_PLAN 6.7) ----- */
+
+const RELEASE_S = 0.06;
+const PALM_MUTE_HZ = 900;
+const PALM_MUTE_S = 0.22;
+
+/**
+ * Una nota pulsada con su curva de altura (semitonos respecto a `midi`, repartidos de `when`
+ * a `when + dur`). La altura cambia sin volver a pulsar (ligados, deslizamientos,
+ * estiramientos, vibrato). Opciones: gain, palmMute (decaimiento corto y apagado), letRing
+ * (sigue sonando después de su duración), fadeOut (se apaga al final, al salir deslizando).
+ * Devuelve una función que la para, o null si no suena.
+ */
+export function playPluck({ midi, when, dur, curve, gain = 1, palmMute = false, letRing = false, fadeOut = false }) {
+  const ctx = ready();
+  if (!ctx) return null;
+  const start = Math.max(when, ctx.currentTime);
+  const source = ctx.createBufferSource();
+  source.buffer = bufferFor(ctx, midi);
+  if (curve?.some((v) => v !== 0)) {
+    const ratios = Float32Array.from(curve, (semis) => 2 ** (semis / 12));
+    source.playbackRate.setValueCurveAtTime(ratios, start, Math.max(0.01, dur));
+  }
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(gain, start);
+  let node = source;
+  if (palmMute) {
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = PALM_MUTE_HZ;
+    node = node.connect(lp);
+    env.gain.setTargetAtTime(0.0001, start + 0.02, PALM_MUTE_S / 3);
+  }
+  node.connect(env).connect(output);
+  source.start(start);
+  const end = start + dur;
+  if (fadeOut) env.gain.setTargetAtTime(0.0001, start + dur * 0.5, dur / 6);
+  if (!letRing) {
+    env.gain.setTargetAtTime(0.0001, end, RELEASE_S / 3);
+    source.stop(end + RELEASE_S * 2);
+  }
+  return () => { try { env.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.01); source.stop(ctx.currentTime + 0.05); } catch { /* ya parada */ } };
+}
+
+/**
+ * Armónico: un timbre más puro que la cuerda pulsada (seno con un poco de su octava) y un
+ * decaimiento largo. Es una aproximación: suena parecido a una campana, más limpio que en una guitarra.
+ */
+export function playHarmonic({ midi, when, dur, letRing = true }) {
+  const ctx = ready();
+  if (!ctx) return null;
+  const start = Math.max(when, ctx.currentTime);
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0.0001, start);
+  env.gain.exponentialRampToValueAtTime(0.5, start + 0.005);
+  env.gain.setTargetAtTime(0.0001, start + 0.01, letRing ? 0.6 : Math.min(0.6, dur / 2));
+  env.connect(output);
+  const oscs = [[1, 1], [2, 0.12]].map(([mult, level]) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = midiToFreq(midi) * mult;
+    const g = ctx.createGain();
+    g.gain.value = level;
+    osc.connect(g).connect(env);
+    osc.start(start);
+    osc.stop(start + 3);
+    return osc;
+  });
+  return () => oscs.forEach((o) => { try { o.stop(); } catch { /* ya parada */ } });
+}
+
+/** Nota muerta (x): un golpe corto sin altura, ruido filtrado de 40 ms. */
+export function playDeadNote({ when }) {
+  const ctx = ready();
+  if (!ctx) return null;
+  const start = Math.max(when, ctx.currentTime);
+  const length = Math.round(ctx.sampleRate * 0.04);
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 2;
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 1500;
+  bp.Q.value = 0.8;
+  const g = ctx.createGain();
+  g.gain.value = 0.6;
+  source.connect(bp).connect(g).connect(output);
+  source.start(start);
+  return () => { try { source.stop(); } catch { /* ya parada */ } };
+}
+
+/** Reloj del audio (para programar) o null si no hay sonido. */
+export function audioNow() {
+  const ctx = ready();
+  return ctx ? ctx.currentTime : null;
+}

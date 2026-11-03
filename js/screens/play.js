@@ -7,6 +7,12 @@ import { takePendingRound } from '../engine/rounds.js';
 import { runQuiz } from '../engine/quiz-runner.js';
 import { runPractice } from '../engine/practice-runner.js';
 import { runFill } from '../engine/fill-runner.js';
+import { runChords } from '../engine/chord-runner.js';
+import { runMinute } from '../engine/minute-runner.js';
+import { runWarmup } from '../engine/warmup-runner.js';
+
+/** Motores propios de algunos ejercicios (exercise.runner). */
+const RUNNERS = { fill: runFill, chords: runChords, minute: runMinute, warmup: runWarmup };
 import { primeSpeech } from '../engine/speech.js';
 
 export function renderPlay(view, params, nav) {
@@ -20,7 +26,7 @@ export function renderPlay(view, params, nav) {
   const start = () => {
     cleanup?.();
     let run = exercise.section === 'teoria' ? runQuiz : runPractice;
-    if (exercise.runner === 'fill') run = runFill;
+    if (exercise.runner) run = RUNNERS[exercise.runner];
     cleanup = run(view, {
       exercise,
       level: round.level,

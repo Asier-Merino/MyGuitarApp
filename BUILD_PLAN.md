@@ -112,7 +112,10 @@
 │   │   ├── stats.js           # estadísticas por clave y pesos de repetición (7.4)
 │   │   ├── rhythm.js          # tempo, compás, subdivisión y "marcar el tempo tocando"
 │   │   ├── session.js         # duración elegible, entrada del registro, récords, resumen
-│   │   └── diagrams.js        # puntos de los esquemas del glosario, calculados
+│   │   ├── diagrams.js        # puntos de los esquemas del glosario, calculados
+│   │   ├── progressions.js    # progresiones por grados y "Mis progresiones" (Fase 3)
+│   │   ├── tab.js             # tablatura: símbolos, texto plano, colocación, ritmo y curvas de altura
+│   │   └── warmup.js          # calentamiento: ida y vuelta, araña y subida de tempo
 │   ├── data/
 │   │   ├── modules.js         # secciones, módulos, niveles y ejercicios previstos
 │   │   ├── tunings.js         # las 7 afinaciones (4.2)
@@ -122,12 +125,14 @@
 │   │   ├── blues.js           # progresiones de 12 compases
 │   │   ├── licks.js           # licks transportables, con técnica, estilo y nivel (5.5)
 │   │   ├── strum-patterns.js  # patrones de rasgueo
+│   │   ├── progressions.js    # progresiones predefinidas (grados y tonalidad)
 │   │   └── concepts.js        # conceptos: glosario, ayudas "?" y palabras pulsables
 │   ├── ui/
 │   │   ├── fretboard.js       # render SVG del mástil (vertical/horizontal)
 │   │   ├── chord-diagram.js   # render SVG de diagramas de acorde
 │   │   ├── note-label.js      # componente de doble notación
 │   │   ├── tab.js             # tablatura completa (6.7)
+│   │   ├── strum.js           # patrón de rasgueo (8 casillas) y su esquema
 │   │   ├── help-sheet.js      # panel de ayuda "?" y "¿Por qué?"
 │   │   ├── term.js            # palabras pulsables [[id|texto]] y textos con marcado
 │   │   ├── icons.js           # iconos SVG y logo
@@ -142,25 +147,31 @@
 │   │   ├── synth.js           # Karplus-Strong, notas, rasgueos, arpegios
 │   │   ├── scheduler.js       # reloj con lookahead
 │   │   ├── metronome.js       # 30–240 BPM, compás, subdivisión y subida automática de tempo
+│   │   ├── strum-player.js    # toca un patrón de rasgueo con un acorde
+│   │   ├── tab-player.js      # toca una tablatura con sus técnicas y la velocidad elegida
 │   │   └── backing.js         # base de blues (bajo, acordes, percusión)
-│   ├── screens/               # Inicio, Sección, Módulo, Preparación, Aprender (lesson.js), Ejercicio (play.js), Próximamente
+│   ├── screens/               # Inicio, Sección, Módulo, Preparación (setup.js y setup-options.js), Aprender (lesson.js), Ejercicio (play.js), Próximamente
 │   ├── engine/
 │   │   ├── exercise-registry.js
 │   │   ├── quiz-runner.js     # motor de ejercicios de Teoría
 │   │   ├── practice-runner.js # motor de ejercicios de Práctica (duración, temporizador, voz, wake lock)
 │   │   ├── fill-runner.js     # motor de "Rellena el mástil" (puzle con teclado de 12 notas)
+│   │   ├── chord-runner.js    # pantalla de práctica de acordes: Cambios de acordes y Rasgueo (6.6.12)
+│   │   ├── minute-runner.js   # Cambios en un minuto
+│   │   ├── warmup-runner.js   # Calentamiento con tablatura y subida de tempo
+│   │   ├── practice-common.js # cabecera, pausa y resumen de esos motores
 │   │   ├── rounds.js          # preparación, arranque, registro de sesiones, estadísticas y récords
 │   │   ├── countdown.js       # temporizador que se puede pausar
 │   │   ├── wake-lock.js       # pantalla encendida
 │   │   └── speech.js
 │   └── modules/
 │       ├── notes/             # common.js, theory-exercises.js, practice-exercises.js, reference-view.js
-│       ├── chords/
+│       ├── chords/            # common.js, theory-exercises.js, practice-exercises.js, reference-view.js
 │       ├── ear/
 │       ├── theory/            # Escala y tonalidad
 │       ├── blues/             # Blues y slide
 │       ├── caged/
-│       ├── warmup/            # Calentamiento
+│       ├── warmup/            # Calentamiento (exercises.js)
 │       ├── tunings/           # pantalla Afinaciones
 │       ├── glossary/
 │       ├── tools/             # Herramientas: metronome-view.js (pantalla Metrónomo, 6.6.18)
@@ -176,6 +187,10 @@
     ├── scales.test.js
     ├── blues.test.js
     ├── strum-patterns.test.js
+    ├── progressions.test.js   # progresiones por grados y Mis progresiones
+    ├── tab.test.js            # cada símbolo de la tablatura, ritmo y sonido
+    ├── warmup.test.js         # calentamiento: un dedo por traste, espejo, araña y tempo
+    ├── chords-exercises.test.js # ejercicios de Acordes y Calentamiento, y lo que dicen sus fichas
     ├── concepts.test.js
     ├── random.test.js
     ├── pluck.test.js          # la cuerda sintetizada suena afinada (< 2 cents)
@@ -447,7 +462,8 @@ El compás se divide en 8 casillas (corcheas: 1 y 2 y 3 y 4 y). Cada casilla val
 | Intermedio | ↓ · ↓ ↑ · ↑ ↓ ↑ | el patrón pop/folk más típico |
 | Intermedio | ↓ ↑ ↓ ↑ ↓ ↑ ↓ ↑ | corcheas seguidas |
 | Avanzado | ↓ · · ↑ · ↑ ↓ ↑ | con más huecos |
-| Avanzado | patrones con acento o con swing | (proponer al usuario antes de fijarlos) |
+| Avanzado | ↓ · ↓ ↑ · ↑ ↓ ↑ con acento en 2 y 4 | pop con acento (aprobado en la Fase 3) |
+| Avanzado | ↓ · ↓ ↑ ↓ · ↓ ↑ con swing (2:1) | abajo, abajo-arriba con swing (aprobado en la Fase 3) |
 
 - Tempo: Básico 60–70, Intermedio 70–90, Avanzado 90–110 BPM.
 - **Test** (`tests/strum-patterns.test.js`): 8 casillas con valores `D`, `U` o `-`; `D` solo en posiciones pares y `U` solo en impares.
@@ -971,7 +987,7 @@ Un recordatorio rápido, en contexto, de la teoría que trabaja cada ejercicio. 
     related: ['octave', 'unison'],
   }
   ```
-- **Esquema obligatorio**: todo concepto lleva `diagram` (`type`: `fretboard`, `chord`, `tab` o `beats`). `beats` es el **esquema de pulsos**: un punto por tiempo del compás, el primero en ámbar, que se iluminan al ritmo al pulsarlo (como el indicador del Metrónomo, 6.6.18); se usa para conceptos de ritmo como "Metrónomo, tempo y BPM". Solo si un esquema no tiene sentido se omite, y entonces el concepto lleva `noDiagramReason` con el motivo. Los puntos del esquema se calculan con `js/core/` (nunca se escriben a mano notas ni trastes que se puedan calcular) y suenan al tocarlos.
+- **Esquema obligatorio**: todo concepto lleva `diagram` (`type`: `fretboard`, `chord`, `tab`, `beats` o `strum`; `strum` es el patrón de rasgueo de 8 casillas, que suena al pulsarlo, desde la Fase 3). `beats` es el **esquema de pulsos**: un punto por tiempo del compás, el primero en ámbar, que se iluminan al ritmo al pulsarlo (como el indicador del Metrónomo, 6.6.18); se usa para conceptos de ritmo como "Metrónomo, tempo y BPM". Solo si un esquema no tiene sentido se omite, y entonces el concepto lleva `noDiagramReason` con el motivo. Los puntos del esquema se calculan con `js/core/` (nunca se escriben a mano notas ni trastes que se puedan calcular) y suenan al tocarlos.
 - **Marcado de palabras pulsables**: `[[id-del-concepto|texto visible]]`, por ejemplo `la [[blue-note|blue note]]`.
 - **Campos nuevos en cada ejercicio** (7.1): `howTo` (cómo se juega), `concepts` (ids, al menos uno) y `check()` devuelve también `why` (explicación del error concreto).
 - **Componentes**: `ui/help-sheet.js` (panel) y `ui/term.js` (palabra pulsable y parser).
@@ -1205,9 +1221,9 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 
 ### Fase 3 — Módulo Acordes abiertos y Calentamiento
 **Teoría**
-- [ ] Aprender: qué es una tríada, fundamental, 3ª y 5ª, y por qué la 3ª decide si el acorde es mayor o menor (comparar Mi y Mim, La y Lam).
-- [ ] Consulta: biblioteca de acordes (5.1) con diagrama, notas que suenan (coloreadas por función), botón para escucharlo rasgueado y arpegiado, y un conmutador para ver el acorde en el mástil.
-- [ ] Ejercicios:
+- [x] Aprender: qué es una tríada, fundamental, 3ª y 5ª, y por qué la 3ª decide si el acorde es mayor o menor (comparar Mi y Mim, La y Lam).
+- [x] Consulta: biblioteca de acordes (5.1) con diagrama, notas que suenan (coloreadas por función), botón para escucharlo rasgueado y arpegiado, y un conmutador para ver el acorde en el mástil.
+- [x] Ejercicios:
   - "¿Qué acorde es?": diagrama, 4 opciones.
   - "Constrúyelo": se marcan los trastes en un diagrama vacío.
   - "¿Qué notas tiene?": elegir las 3 notas del acorde.
@@ -1215,12 +1231,12 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
   - "¿Qué nota falta?": un diagrama con una cuerda sin marcar.
 
 **Práctica**
-- [ ] Progresiones predefinidas (5.7) y **Mis progresiones** (6.6.11), con su test.
-- [ ] Pantalla de práctica de acordes con diagramas (6.6.12) y el conmutador "Mostrar diagramas".
-- [ ] "Cambios de acordes": la app muestra el acorde actual en grande y el siguiente en pequeño, y cambia cada N tiempos con metrónomo, con la progresión elegida, durante la **duración** elegida (6.6.6).
-- [ ] "Cambios en un minuto": se elige una pareja de acordes, se cambia entre ellos durante 60 s, y al final se anota cuántos cambios has hecho (se guarda como récord por pareja). Sin selector de duración: siempre 60 s, para que el récord sea comparable.
-- [ ] "Acorde cantado": la app dice un acorde al azar y tú lo tocas.
-- [ ] **"Rasgueo"**:
+- [x] Progresiones predefinidas (5.7) y **Mis progresiones** (6.6.11), con su test.
+- [x] Pantalla de práctica de acordes con diagramas (6.6.12) y el conmutador "Mostrar diagramas".
+- [x] "Cambios de acordes": la app muestra el acorde actual en grande y el siguiente en pequeño, y cambia cada N tiempos con metrónomo, con la progresión elegida, durante la **duración** elegida (6.6.6).
+- [x] "Cambios en un minuto": se elige una pareja de acordes, se cambia entre ellos durante 60 s, y al final se anota cuántos cambios has hecho (se guarda como récord por pareja). Sin selector de duración: siempre 60 s, para que el récord sea comparable.
+- [x] "Acorde cantado": la app dice un acorde al azar y tú lo tocas.
+- [x] **"Rasgueo"**:
   - El compás se dibuja como 8 casillas con **↓**, **↑** o **·** (5.6). La casilla actual se ilumina.
   - La app puede tocar el patrón para escucharlo antes, y contar en voz alta "1 y 2 y…" si se activa.
   - Usa las progresiones de 6.6.11 y la pantalla de 6.6.12 (el patrón entre el diagrama y el siguiente acorde).
@@ -1236,13 +1252,13 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 | Tempo de rasgueo | 60–70 BPM | 70–90 BPM | 90–110 BPM |
 
 **Calentamiento** (nuevo módulo de Práctica)
-- [ ] Componente de **tablatura** completo (6.7), con el selector de velocidad 50 % · 75 % · 100 % y el bloque Tablatura del glosario.
-- [ ] Un dedo por traste, de la 6ª cuerda a la 1ª y vuelta, en una posición elegida (traste 1 o 5), con la **tablatura** en pantalla y metrónomo.
-- [ ] Variantes: 1-2-3-4, 4-3-2-1, 1-3-2-4 y "araña" (dedos alternos en dos cuerdas).
-- [ ] **Subida automática de tempo**: +4 BPM cada 2 vueltas completas. "Bajar" resta 8 BPM y detiene la subida. Se guarda el tempo máximo por variante como récord. Se implementa como función del metrónomo. Solo la usa el Calentamiento (la propuesta P5 de llevarla a otros ejercicios queda sustituida por la duración elegible, sección 12).
-- [ ] Duración elegible con el selector común (6.6.6): 30 s · 1 min · 2 min 30 · 5 min · 10 min. La subida automática de tempo se mantiene con cualquier duración.
-- [ ] Botón para escuchar el patrón en la tablatura, con el selector de velocidad (6.7).
-- [ ] Concepto: "Calentamiento cromático" (bloque Ritmo y técnica).
+- [x] Componente de **tablatura** completo (6.7), con el selector de velocidad 50 % · 75 % · 100 % y el bloque Tablatura del glosario.
+- [x] Un dedo por traste, de la 6ª cuerda a la 1ª y vuelta, en una posición elegida (traste 1 o 5), con la **tablatura** en pantalla y metrónomo.
+- [x] Variantes: 1-2-3-4, 4-3-2-1, 1-3-2-4 y "araña" (dedos alternos en dos cuerdas).
+- [x] **Subida automática de tempo**: +4 BPM cada 2 vueltas completas. "Bajar" resta 8 BPM y detiene la subida. Se guarda el tempo máximo por variante como récord. Se implementa como función del metrónomo. Solo la usa el Calentamiento (la propuesta P5 de llevarla a otros ejercicios queda sustituida por la duración elegible, sección 12).
+- [x] Duración elegible con el selector común (6.6.6): 30 s · 1 min · 2 min 30 · 5 min · 10 min. La subida automática de tempo se mantiene con cualquier duración.
+- [x] Botón para escuchar el patrón en la tablatura, con el selector de velocidad (6.7).
+- [x] Concepto: "Calentamiento cromático" (bloque Ritmo y técnica).
 
 | | Básico | Intermedio | Avanzado |
 |---|---|---|---|
@@ -1250,7 +1266,22 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 | Variantes | 1-2-3-4 | + 4-3-2-1 y 1-3-2-4 | + araña |
 | Tempo inicial | 60 BPM | 70 BPM | 80 BPM |
 
-- [ ] Conceptos de los bloques Acordes, Ritmo y técnica y Tablatura en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
+- [x] Conceptos de los bloques Acordes, Ritmo y técnica y Tablatura en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
+
+**Decisiones de la Fase 3** (aprobadas por el usuario antes de empezar):
+- **Una sola sesión** para toda la fase (se propuso dividirla en 3A y 3B; el usuario prefirió hacerla entera).
+- **"¿Qué notas tiene?"**: se eligen todas las notas del acorde (3 en las tríadas y 4 en las séptimas); el enunciado dice cuántas.
+- **"¿Mayor o menor?"**: desde Intermedio hay una tercera opción, "Séptima de dominante".
+- **"¿Qué nota falta?"**: a una cuerda pisada le falta el punto (sale un «?») y se elige la nota entre 4 botones.
+- **"Constrúyelo"**: vale solo la forma exacta de la biblioteca (puntos y o/× de cada cuerda); no se piden los dedos.
+- **Progresiones**: se ven siempre todas las predefinidas; el nivel solo cambia el tempo y cada cuántos tiempos se cambia. Do–Fa–Sol y Do–Sol–Lam–Fa usan el Fa mini.
+- **"Acorde cantado"**: 12 acordes, con 12, 8 y 5 s por nivel, y el diagrama 3 s al acabar (desde el principio si "Mostrar diagramas" está activado).
+- **"Cambios en un minuto"**: la pareja se elige en la preparación entre los acordes del nivel; al acabar se anotan los cambios con − y +; récord por pareja, sin importar el orden; 3 s para prepararse antes del minuto.
+- **Rasgueo**: sin "contar en voz alta" (la voz del sistema no llega a tiempo, sobre todo en el iPhone); el conteo se ve escrito y lo marca el metrónomo. Cambio de acorde cada 2 compases en Básico y cada compás en el resto. Tempo elegible dentro del rango del nivel, empezando en el más bajo. Cada nivel ofrece sus patrones de 5.6.
+- **Patrones de Avanzado** (5.6): el pop `↓ · ↓ ↑ · ↑ ↓ ↑` con acento en los tiempos 2 y 4, y `↓ · ↓ ↑ ↓ · ↓ ↑` con swing (2:1).
+- **Calentamiento**: la vuelta va en espejo (la ida al revés: 1-2-3-4 vuelve en 4-3-2-1); la araña alterna dos cuerdas vecinas (dedos 1 y 3 en una, 2 y 4 en la otra). La subida de tempo es de +4 BPM en cada vuelta en Básico (una vuelta dura unos 48 s) y cada 2 vueltas en el resto. El récord es el tempo más alto al que se termina una vuelta entera, por variante y nivel. Admite cualquier afinación.
+- **Tiempo por pregunta** (criterio de 7.5): sin límite en Básico; 15 y 8 s para reconocer un acorde y 30 y 20 s para construirlo o nombrar sus notas.
+- **Esquema de rasgueo**: nuevo tipo de esquema `strum` (6.8) para las fichas de ritmo (rasgueo, acento, swing).
 
 **Hecho cuando**: todos los ejercicios funcionan, los datos de acordes pasan los tests de 5.1, las progresiones y los patrones de rasgueo pasan sus tests, la tablatura dibuja todos los símbolos de 6.7 y el calentamiento sube el tempo solo.
 
@@ -1447,6 +1478,7 @@ El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide 
 | `v0.1.0` | 1A | `0625545` (Fase 1A: navegación, estilo GuitarSeo, Afinaciones, Glosario y Ajustes) |
 | `v0.1.1` | 1B | commit "Fase 1B: mástil, sonido, metrónomo y motores de ejercicio" |
 | `v0.2.0` | 2 | commit "Fase 2: módulo Notas del mástil" |
+| `v0.3.0` | 3 | commit "Fase 3: Acordes abiertos, rasgueo, tablatura y Calentamiento" |
 
 ---
 
@@ -1485,3 +1517,4 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 | 2026-11-02 | Plan | **Metrónomo como herramienta**: fila Herramientas en el Inicio (1, 6.6.1), rama en la navegación (6.4), pantalla nueva 6.6.18 y `modules/tools/` (3); en la Fase 1B, `audio/metronome.js` pasa a 30–240 BPM con tiempos por compás (2–7) y subdivisión, tarea "Herramienta Metrónomo", Wake Lock también en el Metrónomo y nuevo "Hecho cuando". Nuevo tipo de esquema `beats` (pulsos) en 6.8 para el concepto "Metrónomo, tempo y BPM". **Futuras updates**: `docs/FUTURAS_UPDATES.md` añadido (no forma parte del plan); la sección 11 remite a él (CAGED de séptima, *rhythm changes* y Capacitor copiados a "Ideas sin decidir"; el resto ya estaba); P2, P3, P4, P6 y P7 movidas allí con su nombre, y la sección 12 queda sin propuestas pendientes. | Esquema de pulsos elegido por el usuario. Queda resuelta la duda de la descripción de P2–P7. |
 | 2026-11-02 | 1B | Mástil SVG (vertical y horizontal, automático o forzado, cuerdas graduadas, cejuela, marcas, doble notación en los puntos, zonas táctiles de 58×50) y diagrama de acorde (dedos, o, ×, cejilla); `data/chords.js` con la tabla 5.1 y su test (adelantado de la Fase 3, solo datos); audio: contexto creado en el primer toque, `audioSession = playback` o `<audio>` silencioso en bucle en iPhones antiguos, Karplus-Strong con filtro paso bajo, rasgueo (25 ms) y arpegio; planificador con lookahead (25 ms / 100 ms, sin ráfagas al volver de segundo plano); metrónomo 30–240 BPM, 2–7 tiempos, negras/corcheas/tresillos; herramienta **Metrónomo** con −/+ (pulsación larga), deslizador, marcar el tempo tocando (media de 4 intervalos, se reinicia tras 2 s), Wake Lock y ajustes recordados; fila Herramientas en Inicio; concepto «Metrónomo, tempo y BPM» con esquema de pulsos; esquemas calculados en las 14 fichas de la 1A (leyenda escrita en todo lo resaltado con color); voz es-ES/en-US; registro de ejercicios validado; motores de Teoría y de Práctica (pausa con el «?», cuenta atrás, guía de ritmo, posiciones 3 s, duración con «Sin límite», metrónomo opcional); preparación con duración, metrónomo y «Preguntar antes de cada ejercicio»; resumen con frase según el porcentaje, fallos con «¿Por qué?» y confeti; registro de sesiones, estadísticas, récords, racha y «Continuar»; Perfil con racha; página de prueba `#/dev` con dos ejercicios de prueba. Cambios al plan: esquema de datos v3 (`tools`), colores de función del tema claro algo más oscuros (4.5), CAGED en la fase 8 y sesión mezclada en la 9 (`modules.js`), estructura de carpetas (3). | Aceptadas todas las propuestas de la 1B (ejercicios de prueba en `#/dev` que cuentan en Perfil, adelantar `chords.js`, esquemas de las fichas, comportamientos sin definir). Pendiente de comprobar en el iPhone: sonido real, modo silencio, voz, Wake Lock y pulso del metrónomo. |
 | 2026-11-02 | 2 | Módulo **Notas del mástil**: componente de lección por tarjetas (6.6.4: barra segmentada, Anterior/Siguiente, deslizar, "Ir a los ejercicios" y lección completada) con la lección de Notas en 6 tarjetas con esquema interactivo; Consulta con el mástil 0–12 y filtro por nota; 7 ejercicios de Teoría ("¿Qué nota es?", "Encuéntrala", "Todas en una cuerda", "Octavas", "Unísonos", "Rellena el mástil" con su motor y teclado de 12 notas, "Contrarreloj" de 60 s con récord) y 4 de Práctica ("Nota por todas las cuerdas", "Cuerda a cuerda", "Paseo de octavas" y "Unísonos", que hace sonar los dos puntos al enseñar la solución); estadísticas `note:s{cuerda}f{traste}`; récords de Contrarreloj y Rellena; conceptos nuevos "Unísono", "Regla de los 5 trastes (4 entre la 3ª y la 2ª)" y "Formas de octava", con esquemas calculados; motor de Teoría con respuesta tocando el mástil, consigna por pregunta y ronda por tiempo; opciones de elección en la preparación (Cuerdas, Cuerda); mástil `compact` y `dense` (6.3); se quitan los ejercicios de prueba de `#/dev`. Tests contra la teoría (MIDI, formas de octava de 4.3, regla de los 5 trastes) en las 7 afinaciones. Cambios al plan: decisiones de la Fase 2, ejemplo de Unísonos de Teoría corregido para que coincida con su tabla, estructura de carpetas (3), tamaños del mástil (6.3). | Aceptadas todas las propuestas de la Fase 2 (afinaciones, opción de cuerdas, toques múltiples, Octavas, Rellena, Contrarreloj, Práctica de 12 consignas, Consulta 0–12, quitar los ejercicios de prueba). |
+| 2026-11-03 | 3 | Módulo **Acordes abiertos**: lección en 5 tarjetas con diagramas coloreados por función (comparando Mi/Mim, La/Lam y La/La7); Consulta con la biblioteca, notas por función, rasgueado, arpegiado y "Ver en el mástil"; 5 ejercicios de Teoría ("¿Qué acorde es?", "Constrúyelo" con un diagrama editable, "¿Qué notas tiene?" con teclado de varias notas, "¿Mayor o menor?" y "¿Qué nota falta?"); progresiones predefinidas calculadas por grados y **Mis progresiones** (crear, editar y borrar, en la exportación); pantalla de práctica de acordes (6.6.12) con "Mostrar diagramas"; "Cambios de acordes", "Cambios en un minuto" (récord por pareja), "Acorde cantado" y **Rasgueo** (patrones de 5.6 con "Escuchar el patrón", acento y swing). **Calentamiento**: "Un dedo por traste" con tablatura, 4 variantes, subida automática de tempo (función del metrónomo), "Bajar" y récord. **Tablatura** completa (6.7): todos los símbolos, ritmo, partición en líneas, cursor, reproductor a 50/75/100 % y "Ver en el mástil", con sonido de cada técnica (curva de altura sobre la cuerda sintetizada). Glosario: 31 conceptos nuevos (Acordes, Ritmo y técnica, y Tablatura) con esquemas que suenan; marcado `{{chord:id}}`; deletreo por letra de las notas de un acorde. Tests contra la teoría (grados, fórmulas, MIDI, armónicos). Cambios al plan: decisiones de la Fase 3, patrones de Avanzado (5.6), esquema `strum` (6.8), estructura de carpetas (3). | Aceptadas todas las propuestas (una sola sesión; ejercicios de Teoría; progresiones; Acorde cantado; Cambios en un minuto; rasgueo sin voz; patrones con acento y swing; vuelta en espejo y araña; subida cada vuelta en Básico). |

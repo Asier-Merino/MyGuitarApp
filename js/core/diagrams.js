@@ -21,13 +21,17 @@
 //     que da nombre a la afinación)
 //   showStringNumbers, showFretNumbers · caption (texto con marcado, opcional)
 // diagram (type 'beats'): { beatsPerBar, bpm }  esquema de pulsos
+// diagram (type 'chord'): { chord: id, compare?: id o lista (acordes al lado), colorBy?: 'function' }
+// diagram (type 'strum'): { pattern: id de strum-patterns.js, chord?: id }  patrón de rasgueo
+// diagram (type 'tab'): { tab (formato de js/core/tab.js), bpm? }
 
 import { mod12, noteFunction } from './theory.js';
 import { LETTER_PC } from './notation.js';
 import { STRINGS, STANDARD_TUNING, midiAt, unisonsOf, octavesOf } from './fretboard-model.js';
 import { getTuning } from '../data/tunings.js';
+import { getChord } from '../data/chords.js';
 
-export const DIAGRAM_TYPES = Object.freeze(['fretboard', 'chord', 'tab', 'beats']);
+export const DIAGRAM_TYPES = Object.freeze(['fretboard', 'chord', 'tab', 'beats', 'strum']);
 
 /** Cuerdas de la 6ª (grave) a la 1ª (aguda). */
 const LOW_TO_HIGH = Object.freeze([...STRINGS].reverse());
@@ -120,4 +124,18 @@ export function fretboardDiagramPoints(concept) {
     return { string, fret, midi, pc, color, root };
   });
   return { tuning, points };
+}
+
+/**
+ * Funciones (R, 3, 5, 7) de las notas que suenan en un esquema de acorde, para su leyenda.
+ * Lanza un error si el acorde no existe (lo detectan los tests).
+ */
+export function chordDiagramFunctions(diagram) {
+  const ids = [diagram.chord, ...[].concat(diagram.compare ?? [])];
+  return ids.flatMap((id) => {
+    const chord = getChord(id);
+    if (!chord) throw new Error(`Acorde desconocido: ${id}`);
+    return chord.frets.map((fret, i) => (fret === null ? null : noteFunction(chord.root, midiAt(6 - i, fret))))
+      .filter(Boolean);
+  });
 }

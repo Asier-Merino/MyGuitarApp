@@ -89,8 +89,8 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | 1A | Navegación por pantallas, estilo GuitarSeo, Afinaciones, Glosario, Ajustes y nombre e icono nuevos | ✅ Hecha (v0.1.0) |
 | 1B | Mástil, sonido, voz, metrónomo, motores de ejercicios, ayuda «?», esquemas del glosario y registro de sesiones | ✅ Hecha (v0.1.1) |
 | 2 | Notas del mástil | ✅ Hecha (v0.2.0) |
-| 3 | Acordes abiertos y Calentamiento | ⏳ Siguiente |
-| 4 | Oído | Pendiente |
+| 3 | Acordes abiertos y Calentamiento | ✅ Hecha (v0.3.0) |
+| 4 | Oído | ⏳ Siguiente |
 | 5 | Escala y tonalidad | Pendiente |
 | 6 | Blues y slide: el blues | Pendiente |
 | 7 | Blues y slide: el slide | Pendiente |
@@ -99,7 +99,7 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 
 Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`…), para poder volver a ella si algo sale mal.
 
-### Qué funciona ya (v0.2.0)
+### Qué funciona ya (v0.3.0)
 
 - **Inicio** con Teoría, Práctica, Afinaciones y Glosario, los iconos de Perfil y Ajustes, la **racha** y **Continuar** (abre el último ejercicio hecho).
 - **Metrónomo** (fila Herramientas del Inicio): 30–240 BPM con − y + (mantén pulsado para ir rápido), deslizador, «Marcar el tempo tocando aquí», de 2 a 7 tiempos por compás con el primero acentuado, negras, corcheas o tresillos. Mantiene la pantalla encendida mientras suena y recuerda tus ajustes.
@@ -111,7 +111,14 @@ Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`
   - **Teoría**: «¿Qué nota es?», «Encuéntrala», «Todas en una cuerda», «Octavas», «Unísonos», «Rellena el mástil» y «Contrarreloj» (60 s, con récord), en 3 niveles.
   - **Práctica**: «Nota por todas las cuerdas», «Cuerda a cuerda», «Paseo de octavas» y «Unísonos», manos libres con voz.
   - Casi todos admiten cualquiera de las 7 afinaciones (salvo los de octavas, que usan las formas de la estándar).
-- **Glosario**: 19 conceptos de Notas, Afinaciones y Ritmo, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil que suena al tocar sus puntos, o el pulso del metrónomo) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
+- **Acordes abiertos**, el segundo módulo:
+  - **Aprender**: lección en 5 tarjetas (qué es un acorde, la fundamental, la 3ª que decide si es mayor o menor, comparando Mi con Mim y La con Lam, y la 5ª y la 7ª).
+  - **Consulta**: los 14 acordes de la biblioteca, con diagrama, notas coloreadas por función, rasgueado, arpegiado y «Ver en el mástil».
+  - **Teoría**: «¿Qué acorde es?», «Constrúyelo» (en un diagrama vacío), «¿Qué notas tiene?», «¿Mayor o menor?» y «¿Qué nota falta?», en 3 niveles.
+  - **Práctica**: «Cambios de acordes» y «Rasgueo» con metrónomo y la progresión que elijas (predefinidas, calculadas por grados, o **Mis progresiones**), «Cambios en un minuto» con récord por pareja y «Acorde cantado».
+- **Calentamiento**: un dedo por traste con la **tablatura** en pantalla, 4 variantes (también la araña), subida automática de tempo, botón «Bajar» y récord de tempo por variante y nivel.
+- **Tablatura**: todos los símbolos habituales (ligados, deslizamientos, estiramientos, vibrato, armónicos, PM, let ring…), con reproductor a 50, 75 y 100 % y «Ver en el mástil».
+- **Glosario**: 50 conceptos de Notas, Acordes, Afinaciones, Ritmo y Tablatura, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil, un diagrama de acorde, una tablatura, un patrón de rasgueo o el pulso del metrónomo, que suenan al tocarlos) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
 - **Ajustes** completos: notación, alteraciones, tema (oscuro por defecto, claro o automático), mástil, sonido, volumen, voz, afinación por defecto y copia de tus datos.
 - **Perfil** provisional con racha, días practicados y tiempo total, y **Acerca de**.
 - **Página de prueba** (Ajustes → App): mástil en vertical u horizontal, diagramas de los 14 acordes, rasgueo y arpegio, voz y pulso.

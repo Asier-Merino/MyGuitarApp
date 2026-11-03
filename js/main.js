@@ -17,6 +17,7 @@ import { renderSetup } from './screens/setup.js';
 import { renderSoon } from './screens/soon.js';
 import { renderLesson } from './screens/lesson.js';
 import { renderNotesReference } from './modules/notes/reference-view.js';
+import { renderChordsReference } from './modules/chords/reference-view.js';
 import { renderTunings } from './modules/tunings/tunings-view.js';
 import { renderMetronome } from './modules/tools/metronome-view.js';
 import { renderDev } from './modules/dev/dev-view.js';
@@ -55,6 +56,7 @@ function pageTitle({ name, params }) {
 /** Pantalla de Consulta de cada módulo construido. */
 const REFERENCES = {
   notas: renderNotesReference,
+  acordes: renderChordsReference,
 };
 
 const VIEWS = {
