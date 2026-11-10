@@ -11,7 +11,7 @@ import { parseRichText, searchConcepts, normalizeText, plainText, parseNoteToken
 import { LETTER_PC, LETTERS, spellingPc } from '../js/core/notation.js';
 import { midiAt, pcAt, STRINGS } from '../js/core/fretboard-model.js';
 import { mod12 } from '../js/core/theory.js';
-import { fretboardDiagramPoints, naturalSemitonePcs, DIAGRAM_TYPES, chordDiagramFunctions } from '../js/core/diagrams.js';
+import { fretboardDiagramPoints, naturalSemitonePcs, DIAGRAM_TYPES, chordDiagramFunctions, keyDiagram } from '../js/core/diagrams.js';
 import { secondsPerBeat } from '../js/core/rhythm.js';
 import { fillTemplate } from '../js/core/glossary.js';
 
@@ -156,7 +156,9 @@ test('bloques: conteo y bloques con conceptos', () => {
   assert.ok(blockConcepts('rhythm-technique').some((c) => c.id === 'metronome'));
   assert.ok(blockConcepts('chords').length >= 7);
   assert.ok(blockConcepts('tablature').length >= 16);
-  assert.deepEqual(nonEmptyBlocks().map((b) => b.id), ['notes', 'chords', 'intervals', 'tunings', 'rhythm-technique', 'tablature']);
+  assert.ok(blockConcepts('intervals').length >= 10);
+  assert.ok(blockConcepts('scales-keys').length >= 8);
+  assert.deepEqual(nonEmptyBlocks().map((b) => b.id), ['notes', 'chords', 'intervals', 'scales-keys', 'tunings', 'rhythm-technique', 'tablature']);
 });
 
 /* ----- Buscador ----- */
@@ -400,6 +402,10 @@ test('lecciones: de 3 a 6 tarjetas con título, texto de 2 a 4 frases y esquema 
       if (card.diagram.highlight) assert.ok(card.diagram.caption, `${card.id}: falta la leyenda`);
       if (card.diagram.type === 'chord') {
         assert.ok(chordDiagramFunctions(card.diagram).length > 0, card.id);
+        continue;
+      }
+      if (card.diagram.type === 'key') {
+        assert.equal(keyDiagram(card.diagram).chords.length, 7, card.id);
         continue;
       }
       const { points, tuning } = fretboardDiagramPoints(card);

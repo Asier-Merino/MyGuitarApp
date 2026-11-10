@@ -23,11 +23,12 @@ export function noteNames(pc, { spelling, notation, accidentals } = {}) {
 
 /**
  * Nombre de un acorde con doble notación: **Lam** Am. El sufijo (m, 7) se añade a las dos,
- * y la variante (mini, cejilla) va detrás en pequeño. chord: { root, quality, variant? }
+ * y la variante (mini, cejilla) va detrás en pequeño. chord: { root, quality, variant?, spelling? }
+ * Los acordes de una tonalidad traen el deletreo de su fundamental (Si♭ en Fa mayor).
  */
 export function ChordLabel(chord, opts = {}) {
   const suffix = CHORD_SUFFIX[chord.quality] ?? '';
-  const { primary, secondary, spoken } = noteNames(chord.root, opts);
+  const { primary, secondary, spoken } = noteNames(chord.root, { spelling: chord.spelling, ...opts });
   const lang = (opts.notation ?? settings.get('notation')) === 'en' ? 'en' : 'es';
   return h('span', { class: ['note-label', 'chord-label', opts.className].filter(Boolean).join(' ') },
     h('span', { class: 'nl-main', 'aria-hidden': 'true' }, primary + suffix),

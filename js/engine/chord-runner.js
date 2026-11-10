@@ -4,10 +4,14 @@
 // Rasgueo, el patrón con la casilla que toca iluminada. La progresión se repite en bucle con
 // el metrónomo hasta que acaba la duración elegida. Pausa (con el "?") y pantalla encendida.
 // El pulso va sobre el reloj del audio con el planificador con lookahead, como el metrónomo.
+// También toca los acordes de una tonalidad ("Progresión de la tonalidad", Fase 5): llevan su
+// grado y su forma abierta (open) o, si no la tienen, sus notas y el aviso de la cejilla.
 
 import { h, render } from '../ui/components.js';
 import { icon } from '../ui/icons.js';
-import { ChordLabel } from '../ui/note-label.js';
+import { ChordLabel, NoteLabel } from '../ui/note-label.js';
+import { richText } from '../ui/term.js';
+import { spellingPc } from '../core/notation.js';
 import { ChordDiagram } from '../ui/chord-diagram.js';
 import { StrumCells } from '../ui/strum.js';
 import { onSheetChange, confirmSheet } from '../ui/help-sheet.js';
@@ -32,7 +36,7 @@ const START_DELAY_S = 0.6;
 
 export function runChords(view, { exercise, level, duration, options = {}, nav, onRepeat }) {
   const params = exercise.levels[level];
-  const plan = exercise.generate(params, createRng(), { options, progressions: store.data.progressions, level });
+  const plan = exercise.generate(params, createRng(), { options, progressions: store.data.progressions, level, accidentals: settings.get('accidentals') });
   const { chords, bpm, beatsPerChange, pattern, showDiagrams } = plan;
   const strumMode = Boolean(pattern);
   const spb = secondsPerBeat(bpm);
@@ -72,19 +76,32 @@ export function runChords(view, { exercise, level, duration, options = {}, nav, 
   const pauseIcon = h('span', { class: 'practice__btn-icon' }, icon('pause'));
   const pauseBtn = h('button', { type: 'button', class: 'btn btn--grey practice__btn', onClick: () => setPaused('user', !pauses.has('user')) }, pauseIcon, pauseLabel);
   render(view, top.header, h('div', { class: 'screen practice chords' },
+    plan.heading && richText(plan.heading, { className: 'chords__heading' }),
     currentEl, dotsEl, cells, nextEl, pausedEl,
     h('div', { class: 'practice__actions practice__actions--one' }, pauseBtn)));
+
+  /** Diagrama de un acorde: el de la biblioteca o su forma abierta; si no tiene, sus notas. */
+  function diagramOf(chord, size) {
+    const shape = chord.frets ? chord : chord.open;
+    if (shape) return ChordDiagram(shape, { size, playOnTap: size !== 'mini' });
+    if (size === 'mini') return null;
+    return h('div', { class: 'chords__no-open' },
+      h('span', { class: 'chords__tones' }, chord.tones.flatMap((t, i) => [i ? ' ' : null, NoteLabel(spellingPc(t), { spelling: t })])),
+      h('span', { class: 'chords__no-open-text' }, UI_TEXTS.keys.noOpen));
+  }
 
   function showChord(index) {
     const chord = chords[index % chords.length];
     const next = chords[(index + 1) % chords.length];
     render(currentEl,
+      chord.roman && h('span', { class: 'chords__roman' }, chord.roman),
       ChordLabel(chord, { className: 'note-label--huge' }),
-      showDiagrams && ChordDiagram(chord, { size: 'large' }));
+      showDiagrams && diagramOf(chord, 'large'));
     render(nextEl,
       h('span', { class: 'chords__next-label' }, `${UI_TEXTS.chordPractice.next}:`),
+      next.roman && h('span', { class: 'chords__roman chords__roman--small' }, next.roman),
       ChordLabel(next),
-      showDiagrams && ChordDiagram(next, { size: 'mini', playOnTap: false }));
+      showDiagrams && diagramOf(next, 'mini'));
     if (settings.get('voice') && beatsPerChange * spb >= SPEAK_MIN_S && !pauses.size) {
       speak(exercise.speech(chord, { notation: settings.get('notation') }), { notation: settings.get('notation') });
     }

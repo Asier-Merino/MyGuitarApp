@@ -6,7 +6,7 @@
 
 import { h, render, button, segmented, toggle, settingRow, iconButton, listRow } from '../ui/components.js';
 import { icon } from '../ui/icons.js';
-import { ChordLabel } from '../ui/note-label.js';
+import { ChordLabel, NoteLabel } from '../ui/note-label.js';
 import { ChordDiagram } from '../ui/chord-diagram.js';
 import { StrumCells } from '../ui/strum.js';
 import { Tab } from '../ui/tab.js';
@@ -20,7 +20,8 @@ import { getTuning } from '../data/tunings.js';
 import { LEVELS } from '../data/modules.js';
 import { SCREEN_HELP, UI_TEXTS } from '../data/concepts.js';
 import { playStrumPattern } from '../audio/strum-player.js';
-import { store } from '../state.js';
+import { store, settings } from '../state.js';
+import { keyRootSpelling } from '../core/keys.js';
 
 const T = UI_TEXTS.chordPractice;
 
@@ -206,6 +207,25 @@ function strumOption({ opt, level, value, onChange, options }) {
   ];
 }
 
+/* ----- Tonalidad (Fase 5) ----- */
+
+/** Las tonalidades del nivel (con el deletreo de la tonalidad) y, si se puede, «Al azar». */
+function keyOption({ opt, level, value, options, onChange }) {
+  const accidentals = settings.get('accidentals');
+  const chip = (v, content) => h('button', {
+    type: 'button',
+    class: 'chip',
+    'aria-pressed': String(v === value),
+    onClick: () => { if (v !== value) onChange(v); },
+  }, content);
+  return [
+    h('h2', { class: 'section-title' }, opt.label),
+    h('div', { class: 'chips key-chips', role: 'group', 'aria-label': opt.label },
+      opt.keysFor(level, options).map((k) => chip(String(k), NoteLabel(k, { spelling: keyRootSpelling(k, { accidentals }) }))),
+      opt.random && chip('random', UI_TEXTS.keys.random)),
+  ];
+}
+
 /* ----- Pareja de acordes ----- */
 
 function pairOption({ opt, exercise, level, value, onChange }) {
@@ -257,6 +277,8 @@ export function renderOption(opt, ctx) {
     }
     case 'chord-pair':
       return pairOption({ ...ctx, opt });
+    case 'key':
+      return keyOption({ ...ctx, opt });
     case 'level-choice':
       return [
         h('h2', { class: 'section-title' }, opt.label),
@@ -272,12 +294,19 @@ export function stopSetupSound() {
   stopPreview?.();
 }
 
-/** Escuchar el patrón del Calentamiento (la ida) con el selector de velocidad (6.7). */
+/**
+ * Escuchar el patrón del Calentamiento (la ida) o la subida de la escala, con el selector de
+ * velocidad (6.7). Si la tonalidad es «Al azar», se enseña la primera del nivel.
+ */
 export function warmupPreview(exercise, setup) {
-  const plan = exercise.generate(exercise.levels[setup.level], null, { options: setup.options, level: setup.level });
-  const ida = { ...plan.tab, events: plan.tab.events.slice(0, plan.tab.events.length / 2) };
+  const plan = exercise.generate(exercise.levels[setup.level], null, { options: setup.options, level: setup.level, accidentals: settings.get('accidentals') });
+  const preview = plan.preview ?? {
+    title: 'Patrón',
+    label: 'Tablatura de la ida',
+    tab: { ...plan.tab, events: plan.tab.events.slice(0, plan.tab.events.length / 2) },
+  };
   return [
-    h('h2', { class: 'section-title' }, 'Patrón'),
-    h('div', { class: 'card setup__tab' }, Tab(ida, { tuning: getTuning(setup.tuning), bpm: plan.startBpm, player: true, fretboardToggle: true, label: 'Tablatura de la ida' })),
+    h('h2', { class: 'section-title' }, preview.title),
+    h('div', { class: 'card setup__tab' }, Tab(preview.tab, { tuning: getTuning(setup.tuning), bpm: plan.startBpm, player: true, fretboardToggle: true, label: preview.label })),
   ];
 }

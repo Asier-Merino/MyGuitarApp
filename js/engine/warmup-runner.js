@@ -2,6 +2,8 @@
 // con la nota que toca en ámbar, al ritmo del metrónomo (un clic por nota, acento en cada
 // tiempo de compás). El tempo sube solo con la función de subida del metrónomo; "Bajar" resta
 // 8 BPM y detiene la subida. Récord: el tempo más alto al que se termina una vuelta entera.
+// También juega "Escala con metrónomo" (Fase 5): sin subida automática (plan.rampEveryLaps
+// null), con − y + para cambiar el tempo dentro del rango del nivel y la tonalidad arriba.
 
 import { h, render } from '../ui/components.js';
 import { icon } from '../ui/icons.js';
@@ -17,11 +19,14 @@ import { formatClock, UNLIMITED } from '../core/session.js';
 import { lapBeats, SLOW_DOWN_STEP } from '../core/warmup.js';
 import { clampBpm } from '../core/rhythm.js';
 import { getTuning } from '../data/tunings.js';
+import { richText } from '../ui/term.js';
+import { settings } from '../state.js';
 import { UI_TEXTS } from '../data/concepts.js';
 import { createMetronome } from '../audio/metronome.js';
 
 export function runWarmup(view, { exercise, level, tuningId, duration, options = {}, nav, onRepeat }) {
-  const plan = exercise.generate(exercise.levels[level], createRng(), { options, level });
+  const plan = exercise.generate(exercise.levels[level], createRng(), { options, level, accidentals: settings.get('accidentals') });
+  const ramps = Boolean(plan.rampEveryLaps);
   const tuning = getTuning(tuningId);
   const lapLength = plan.tab.events.length;
   const roundMs = duration === UNLIMITED ? null : duration * 1000;
@@ -38,17 +43,24 @@ export function runWarmup(view, { exercise, level, tuningId, duration, options =
   const bpmEl = h('span', { class: 'metro__bpm' }, String(bpm));
   const rampEl = h('p', { class: 'warmup__ramp' });
   const lapsEl = h('p', { class: 'warmup__laps' });
-  const tab = Tab(plan.tab, { tuning, label: 'Tablatura del ejercicio: una vuelta, ida y vuelta' });
+  const tab = Tab(plan.tab, { tuning, label: plan.tabLabel ?? 'Tablatura del ejercicio: una vuelta, ida y vuelta' });
   const pausedEl = pausedPanel(exercise);
   const pauseLabel = h('span', {}, 'Pausa');
   const pauseIcon = h('span', { class: 'practice__btn-icon' }, icon('pause'));
   const pauseBtn = h('button', { type: 'button', class: 'btn btn--grey practice__btn', onClick: () => setPaused('user', !pauses.has('user')) }, pauseIcon, pauseLabel);
-  const slowBtn = h('button', { type: 'button', class: 'btn btn--grey practice__btn', onClick: () => slowDown() }, icon('minus'), h('span', {}, `${UI_TEXTS.chordPractice.slowDown} ${SLOW_DOWN_STEP}`));
+  const tempoBtn = (sign) => {
+    const step = ramps ? SLOW_DOWN_STEP : plan.tempoStep;
+    const text = sign < 0 ? UI_TEXTS.chordPractice.slowDown : UI_TEXTS.chordPractice.speedUp;
+    return h('button', { type: 'button', class: 'btn btn--grey practice__btn', onClick: () => (ramps ? slowDown() : changeTempo(sign * step)) },
+      icon(sign < 0 ? 'minus' : 'plus'), h('span', {}, `${text} ${step}`));
+  };
+  const buttons = ramps ? [pauseBtn, tempoBtn(-1)] : [pauseBtn, tempoBtn(-1), tempoBtn(1)];
   render(view, top.header, h('div', { class: 'screen practice warmup' },
     tuningTag(tuning),
+    plan.heading && richText(plan.heading, { className: 'warmup__heading' }),
     h('div', { class: 'warmup__tempo' }, bpmEl, h('span', { class: 'metro__unit' }, 'BPM')),
-    rampEl, tab, lapsEl, pausedEl,
-    h('div', { class: 'practice__actions' }, pauseBtn, slowBtn)));
+    ramps && rampEl, tab, lapsEl, pausedEl,
+    h('div', { class: ['practice__actions', !ramps && 'practice__actions--three'].filter(Boolean).join(' ') }, buttons)));
 
   const drawRamp = () => {
     rampEl.textContent = metro.ramping
@@ -80,10 +92,19 @@ export function runWarmup(view, { exercise, level, tuningId, duration, options =
     bpm: plan.startBpm,
     beatsPerBar: 4,
     perBeat: plan.notesPerBeat,
-    ramp: { everyBeats: plan.rampEveryLaps * lapBeats(plan.variant, plan.notesPerBeat), step: plan.rampStep },
+    ...(ramps ? { ramp: { everyBeats: plan.rampEveryLaps * lapBeats(plan.variant, plan.notesPerBeat), step: plan.rampStep } } : {}),
   });
-  drawRamp();
+  if (ramps) drawRamp();
   drawLaps();
+
+  /** Sin subida automática: − y + cambian el tempo dentro del rango del nivel. */
+  function changeTempo(delta) {
+    const { min, max } = plan.tempoRange;
+    bpm = Math.min(max, Math.max(min, bpm + delta));
+    lapBpm = Math.min(lapBpm, bpm);
+    metro.set({ bpm });
+    bpmEl.textContent = String(bpm);
+  }
 
   function slowDown() {
     bpm = clampBpm(bpm - SLOW_DOWN_STEP);

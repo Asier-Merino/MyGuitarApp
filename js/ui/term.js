@@ -7,6 +7,9 @@ import { getTuning } from '../data/tunings.js';
 import { h } from './components.js';
 import { NoteLabel, ChordLabel } from './note-label.js';
 import { getChord } from '../data/chords.js';
+import { keyRootSpelling, keyChord } from '../core/keys.js';
+import { spellingPc } from '../core/notation.js';
+import { settings } from '../state.js';
 import { openConceptSheet } from './help-sheet.js';
 
 /** Nombre de una afinación: "Sol abierto" con la nota en doble notación, o su texto fijo. */
@@ -50,6 +53,13 @@ export function richText(text, { tag = 'p', className } = {}) {
       case 'tuning': el.append(TuningNotes(getTuning(part.id))); break;
       case 'tuningName': el.append(TuningName(getTuning(part.id))); break;
       case 'chord': el.append(ChordLabel(getChord(part.id))); break;
+      case 'keyChord': el.append(ChordLabel({ root: spellingPc(part.spelling), quality: part.quality, spelling: part.spelling })); break;
+      case 'key': {
+        const spelling = keyRootSpelling(part.key, { accidentals: settings.get('accidentals') });
+        el.append(NoteLabel(part.key, { spelling }));
+        break;
+      }
+      case 'degree': el.append(ChordLabel(keyChord(part.key, part.roman, { accidentals: settings.get('accidentals') }))); break;
       default: break;
     }
   }

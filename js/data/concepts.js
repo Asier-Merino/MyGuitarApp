@@ -37,6 +37,7 @@ const STRUM_SETUP = '#/practica/acordes/rasgueo';
 const WARMUP_SETUP = '#/practica/calentamiento/cromatico';
 const INTERVAL_SETUP = '#/teoria/oido/que-intervalo';
 const PITCH_SETUP = '#/teoria/oido/agudo-grave';
+const KEYS_LESSON = '#/teoria/tonalidad/aprender';
 
 const c = (concept) => Object.freeze({ aliases: [], related: [], ...concept });
 
@@ -336,6 +337,222 @@ export const CONCEPTS = Object.freeze([
     },
     lesson: INTERVAL_SETUP,
     related: ['interval', 'perfect-fifth', 'octave'],
+  }),
+
+  // ----- Intervalos (Fase 5: el resto de la tabla 4.3 y las formas entre cuerdas) -----
+  c({
+    id: 'second-interval',
+    block: 'intervals',
+    title: '2ª menor y 2ª mayor',
+    aliases: ['segunda', 'segundas', '2ª menor', '2ª mayor', 'segunda menor', 'segunda mayor', 'second', 'minor second', 'major second'],
+    short: 'Intervalos de 1 y 2 semitonos: uno y dos trastes.',
+    summary: 'La 2ª menor es un [[semitone-tone|semitono]] y la 2ª mayor, un tono (2 semitonos): en una cuerda, 1 y 2 [[fret|trastes]]. '
+      + 'Son los pasos con los que se construyen las [[scale|escalas]]. '
+      + 'La 2ª menor suena muy tensa, con las dos notas casi pegadas.',
+    sound: { midi: [48, 49, 50] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 7, points: { select: 'sound', string: 5 }, highlight: 'start',
+      caption: 'En la 5ª cuerda, desde el punto ámbar: un traste más es una 2ª menor y dos trastes, una 2ª mayor.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['semitone-tone', 'interval', 'major-scale'],
+  }),
+  c({
+    id: 'perfect-fourth',
+    block: 'intervals',
+    title: '4ª justa',
+    aliases: ['cuarta', 'cuarta justa', '4ª', 'perfect fourth', 'fourth'],
+    short: 'Un intervalo de 5 semitonos.',
+    summary: 'La 4ª justa son 5 [[semitone-tone|semitonos]]: en una cuerda, 5 [[fret|trastes]]. '
+      + 'En la [[standard-tuning|afinación estándar]], casi todas las cuerdas al aire están a una 4ª justa de la de al lado: por eso funciona la [[five-fret-rule|regla de los 5 trastes]]. '
+      + 'Es la [[perfect-fifth|5ª justa]] dada la vuelta: una 4ª justa hacia arriba y una 5ª justa más llegan a la [[octave|octava]].',
+    sound: { midi: [40, 45] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 7, points: { select: 'sound', string: 6 }, highlight: 'start',
+      caption: 'En la 6ª cuerda, del punto ámbar (al aire) al gris hay 5 trastes: una 4ª justa. Suena igual que la 5ª cuerda al aire.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['five-fret-rule', 'perfect-fifth', 'interval'],
+  }),
+  c({
+    id: 'sixth-interval',
+    block: 'intervals',
+    title: '6ª menor y 6ª mayor',
+    aliases: ['sexta', 'sextas', '6ª menor', '6ª mayor', 'sexta menor', 'sexta mayor', 'sixth', 'minor sixth', 'major sixth'],
+    short: 'Intervalos de 8 y 9 semitonos.',
+    summary: 'La 6ª menor son 8 [[semitone-tone|semitonos]] y la 6ª mayor, 9: en una cuerda, 8 y 9 [[fret|trastes]]. '
+      + 'Es más cómodo buscarlas en otra cuerda: en la [[standard-tuning|afinación estándar]], la 6ª mayor de una nota de la 6ª o la 5ª cuerda está dos cuerdas más aguda, un traste más atrás. '
+      + 'Si se cruza la 2ª cuerda, la 6ª mayor queda en el mismo traste.',
+    sound: { midi: [43, 51, 52] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 12, labels: 'intervals',
+      points: { select: 'intervals', string: 6, fret: 3, intervals: [{ semitones: 8 }, { semitones: 9 }, { semitones: 9, string: 4 }] },
+      caption: 'Desde R (6ª cuerda, traste 3): la 6ª menor (b6) y la 6ª mayor (6) en la misma cuerda, y otra vez la 6ª mayor dos cuerdas más aguda, un traste más atrás.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['interval', 'interval-shapes', 'third-interval'],
+  }),
+  c({
+    id: 'seventh-interval',
+    block: 'intervals',
+    title: '7ª menor y 7ª mayor',
+    aliases: ['séptima', 'septima', 'séptimas', '7ª menor', '7ª mayor', 'séptima menor', 'séptima mayor', 'seventh', 'minor seventh', 'major seventh'],
+    short: 'Intervalos de 10 y 11 semitonos, justo antes de la octava.',
+    summary: 'La 7ª menor son 10 [[semitone-tone|semitonos]] y la 7ª mayor, 11: en una cuerda, 10 y 11 [[fret|trastes]]. '
+      + 'La 7ª mayor está a un solo semitono de la [[octave|octava]], y la 7ª menor, a un tono. '
+      + 'La 7ª menor es la que lleva el acorde de [[dominant-seventh|séptima de dominante]].',
+    sound: { midi: [45, 55, 56, 57] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 12, labels: 'intervals',
+      points: { select: 'intervals', string: 5, fret: 0, intervals: [{ semitones: 10 }, { semitones: 11 }, { semitones: 12 }] },
+      caption: 'En la 5ª cuerda, desde la cuerda al aire (R): a 10 trastes, la 7ª menor (b7); a 11, la 7ª mayor (7); a 12, la octava (8).',
+    },
+    lesson: KEYS_LESSON,
+    related: ['interval', 'dominant-seventh', 'octave'],
+  }),
+  c({
+    id: 'interval-shapes',
+    block: 'intervals',
+    title: 'Intervalos entre cuerdas',
+    aliases: ['formas de los intervalos', 'intervalos en el mástil', 'intervalos entre cuerdas', 'interval shapes'],
+    short: 'En la afinación estándar, cada intervalo tiene una forma fija entre cuerdas vecinas.',
+    summary: 'Un [[interval|intervalo]] no tiene por qué tocarse en una sola cuerda. '
+      + 'En la [[standard-tuning|afinación estándar]], desde una nota de la 6ª cuerda, su [[third-interval|3ª mayor]] está en la 5ª un traste más atrás, su [[perfect-fifth|5ª justa]] en la 5ª dos trastes más allá y su [[octave|octava]] en la 4ª, dos trastes más allá. '
+      + 'Al cruzar de la 3ª cuerda a la 2ª, todo se corre un traste hacia el cuerpo de la guitarra, por la [[five-fret-rule|regla de los 5 trastes]].',
+    sound: { midi: [43, 47, 50, 55] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 7, labels: 'intervals',
+      points: { select: 'intervals', string: 6, fret: 3, intervals: [{ semitones: 4, string: 5 }, { semitones: 7, string: 5 }, { semitones: 12, string: 4 }] },
+      caption: 'Desde R (6ª cuerda, traste 3): la 3ª mayor (3) y la 5ª justa (5) en la 5ª cuerda, y la octava (8) en la 4ª.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['interval', 'five-fret-rule', 'octave-shapes'],
+  }),
+
+  // ----- Escalas y tonalidad (Fase 5) -----
+  c({
+    id: 'scale',
+    block: 'scales-keys',
+    title: 'Escala',
+    aliases: ['escala', 'escalas', 'scale', 'scales'],
+    short: 'Una serie de notas ordenadas desde una fundamental, con un patrón fijo de distancias.',
+    summary: 'Una escala es una serie de notas, de grave a agudo, que empieza y acaba en su [[root|fundamental]]. '
+      + 'Lo que la define es el patrón de distancias entre nota y nota, en [[semitone-tone|tonos y semitonos]]: con el mismo patrón, la escala suena igual empiece donde empiece. '
+      + 'La más importante es la [[major-scale|escala mayor]].',
+    sound: { midi: [45, 47, 49, 50, 52, 54, 56, 57] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 12, colorBy: 'scale', points: { select: 'scale', key: 9, string: 5 },
+      caption: 'La escala de {{key:9}} mayor en la 5ª cuerda.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['major-scale', 'root', 'semitone-tone'],
+  }),
+  c({
+    id: 'major-scale',
+    block: 'scales-keys',
+    title: 'Escala mayor',
+    aliases: ['escala mayor', 'escala diatónica', 'modo jónico', 'jónica', 'T T S T T T S', 'major scale', 'ionian'],
+    short: 'Siete notas con el patrón T T S T T T S.',
+    summary: 'La escala mayor tiene siete notas y sigue siempre el mismo patrón: tono, tono, semitono, tono, tono, tono, semitono (T T S T T T S). '
+      + 'En una cuerda, un [[semitone-tone|tono]] son dos [[fret|trastes]] y un semitono, uno. '
+      + 'Empezando en {{C}} salen las siete [[natural-notes|notas naturales]]; empezando en otra nota hacen falta [[sharp-flat|sostenidos o bemoles]] para respetar el patrón.',
+    sound: { midi: [48, 50, 52, 53, 55, 57, 59, 60] },
+    diagram: {
+      type: 'fretboard', fromFret: 3, toFret: 15, colorBy: 'scale', points: { select: 'scale', key: 0, string: 5 },
+      caption: 'La escala de {{key:0}} mayor en la 5ª cuerda: dos trastes en cada tono y uno en cada semitono.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['scale', 'key-spelling', 'scale-position'],
+  }),
+  c({
+    id: 'key',
+    block: 'scales-keys',
+    title: 'Tonalidad',
+    aliases: ['tonalidad', 'tonalidades', 'tonalidad mayor', 'key', 'major key'],
+    short: 'Las notas y los acordes que giran alrededor de una fundamental.',
+    summary: 'Una tonalidad es el conjunto de notas de una [[scale|escala]] y de los acordes que se forman con ellas. '
+      + 'Su [[root|fundamental]] es la nota que suena a «casa», donde la música descansa. '
+      + 'Una canción en {{key:7}} mayor usa sobre todo las notas de la [[major-scale|escala mayor]] de {{key:7}} y sus [[diatonic-chords|acordes]].',
+    diagram: { type: 'key', key: 7, caption: 'Los 7 acordes de {{key:7}} mayor: toca uno para oírlo.' },
+    lesson: KEYS_LESSON,
+    related: ['major-scale', 'diatonic-chords', 'scale-degree'],
+  }),
+  c({
+    id: 'scale-degree',
+    block: 'scales-keys',
+    title: 'Grado',
+    aliases: ['grado', 'grados', 'números romanos', 'cifrado por grados', 'degree', 'scale degree', 'roman numerals'],
+    short: 'El lugar de una nota o de un acorde dentro de la escala.',
+    summary: 'Cada nota de la escala es un grado: la [[root|fundamental]] es el 1º, la siguiente el 2º, y así hasta el 7º. '
+      + 'Los acordes que se forman sobre cada grado se escriben con números romanos: en mayúscula los mayores (I, IV, V), en minúscula los menores (ii, iii, vi) y con «°» el [[diminished-chord|disminuido]] (vii°). '
+      + 'Así una [[progression|progresión]] se escribe sin decir la tonalidad: I–IV–V es la misma progresión en cualquiera.',
+    diagram: { type: 'key', key: 0, caption: 'Los grados de {{key:0}} mayor, cada uno con su acorde.' },
+    lesson: KEYS_LESSON,
+    related: ['diatonic-chords', 'key', 'progression'],
+  }),
+  c({
+    id: 'key-spelling',
+    block: 'scales-keys',
+    title: 'Una letra por grado',
+    aliases: ['deletreo', 'letra por grado', 'alteraciones de la tonalidad', 'armadura', 'spelling', 'key signature'],
+    short: 'En una escala, cada grado usa la letra siguiente, con la alteración que haga falta.',
+    summary: 'Al escribir una escala, cada grado usa la letra siguiente, sin saltarse ninguna ni repetirla. '
+      + 'Por eso en {{key:5}} mayor el 4º grado es {{Bb}} y no {{A#}}: suenan igual, pero después de {{A}} toca la letra {{B}}. '
+      + 'Así cada tonalidad usa solo [[sharp-flat|sostenidos o solo bemoles]]: {{key:2}} mayor lleva {{F#}} y {{C#}}, y {{key:5}} mayor, {{Bb}}.',
+    diagram: {
+      type: 'fretboard', fromFret: 1, toFret: 13, colorBy: 'scale', points: { select: 'scale', key: 5, string: 6 },
+      caption: 'La escala de {{key:5}} mayor en la 6ª cuerda: el 4º grado es {{Bb}}.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['major-scale', 'enharmonic', 'sharp-flat'],
+  }),
+  c({
+    id: 'diatonic-chords',
+    block: 'scales-keys',
+    title: 'Acordes de la tonalidad',
+    aliases: ['acordes de la tonalidad', 'acordes diatónicos', 'armonización de la escala', 'diatonic chords', 'chords of the key'],
+    short: 'Los 7 acordes que salen de la escala: I ii iii IV V vi vii°.',
+    summary: 'Sobre cada [[scale-degree|grado]] de la [[major-scale|escala mayor]] se forma una [[triad|tríada]] con notas de la escala, tomando una sí y una no. '
+      + 'Salen siempre igual: mayores el I, el IV y el V; menores el ii, el iii y el vi; y [[diminished-chord|disminuido]] el vii°. '
+      + 'En {{key:0}} mayor son {{deg:0:I}}, {{deg:0:ii}}, {{deg:0:iii}}, {{deg:0:IV}}, {{deg:0:V}}, {{deg:0:vi}} y {{deg:0:vii°}}.',
+    diagram: { type: 'key', key: 0, progressions: [['I', 'V', 'vi', 'IV']], caption: 'Toca un acorde para oírlo, o escucha la progresión.' },
+    lesson: KEYS_LESSON,
+    related: ['scale-degree', 'triad', 'progression'],
+  }),
+  c({
+    id: 'diminished-chord',
+    block: 'scales-keys',
+    title: 'Acorde disminuido',
+    aliases: ['disminuido', 'acorde disminuido', 'dim', 'diminished', 'diminished chord'],
+    short: 'Una tríada con 3ª menor y 5ª disminuida: el vii° de la tonalidad.',
+    summary: 'El acorde disminuido es una [[triad|tríada]] con [[third-interval|3ª menor]] y 5ª disminuida: 3 y 6 [[semitone-tone|semitonos]] desde la [[root|fundamental]]. '
+      + 'Su 5ª está a un [[tritone|tritono]] de la fundamental, y por eso suena tenso e inestable. '
+      + 'En una tonalidad mayor es el acorde del 7º grado: en {{key:0}} mayor, {{deg:0:vii°}}, con {{B}}, {{D}} y {{F}}. '
+      + 'Se escribe con «°» y, en inglés, también con «dim».',
+    sound: { midi: [47, 50, 53] },
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 5, labels: 'intervals',
+      points: { select: 'intervals', string: 5, fret: 2, intervals: [{ semitones: 3, string: 4 }, { semitones: 6, string: 4 }] },
+      caption: 'Desde la fundamental (R) en la 5ª cuerda: la 3ª menor (b3) y la 5ª disminuida (b5) en la 4ª.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['diatonic-chords', 'tritone', 'triad'],
+  }),
+  c({
+    id: 'scale-position',
+    block: 'scales-keys',
+    title: 'Posición de la escala',
+    aliases: ['posición', 'posición de la escala', 'digitación', 'un dedo por traste', 'forma de mi', 'scale position', 'scale shape'],
+    short: 'La escala tocada en una zona de 4 trastes, sin mover la mano.',
+    summary: 'En lugar de recorrer una cuerda, la escala se puede tocar en una posición: una zona de pocos [[fret|trastes]] en la que caben dos [[octave|octavas]] sin mover la mano, con un dedo por traste. '
+      + 'La de la app empieza con la [[root|fundamental]] en la 6ª cuerda y ocupa 4 trastes; lo más habitual es llamarla «forma de {{E}}», por el sistema CAGED. '
+      + 'Es la misma en todas las tonalidades, así que basta con moverla: en {{key:7}} mayor, la fundamental está en el traste 3.',
+    diagram: {
+      type: 'fretboard', fromFret: 0, toFret: 7, colorBy: 'scale', points: { select: 'scale-position', key: 7 },
+      caption: 'La posición de {{key:7}} mayor, del traste 2 al 5.',
+    },
+    lesson: KEYS_LESSON,
+    related: ['major-scale', 'chromatic-warmup', 'octave-shapes'],
   }),
 
   // ----- Acordes (Fase 3) -----
@@ -994,6 +1211,13 @@ export const SCREEN_HELP = Object.freeze({
       + 'Toca un punto para oír esa nota.',
     concepts: ['chord', 'chord-diagram', 'chord-third'],
   },
+  referenceKeys: {
+    title: 'Consulta',
+    text: 'Elige una [[key|tonalidad]] arriba para ver su [[major-scale|escala mayor]], con cada nota bien escrita ([[key-spelling|una letra por grado]]), y sus 7 [[diatonic-chords|acordes]], con el [[scale-degree|grado]] de cada uno. '
+      + 'Toca un acorde para oírlo; si tiene forma abierta, verás su diagrama. '
+      + 'Abajo, las notas de la escala en el mástil: en todo el mástil o en la [[scale-position|posición]] de dos octavas.',
+    concepts: ['key', 'major-scale', 'diatonic-chords'],
+  },
   progressions: {
     title: 'Mis progresiones',
     text: 'Una [[progression|progresión]] es una serie de acordes que se repite. Las predefinidas se calculan por grados. '
@@ -1356,6 +1580,115 @@ export const EXERCISE_TEXTS = Object.freeze({
     instruction: 'Tócalo en tu guitarra',
   }),
 
+  // ----- Escala y tonalidad (Fase 5) -----
+  // En los niveles, las tonalidades se escriben con {{key:N}}; un test comprueba que son las de KEY_LEVELS.
+  'tonalidad.teoria.construye-escala': Object.freeze({
+    howTo: 'Ves la [[root|fundamental]] de una [[key|tonalidad]] mayor y construyes su [[major-scale|escala]] grado a grado: elige la nota siguiente entre 4 botones. '
+      + 'Recuerda las dos reglas: cada grado usa la letra siguiente ([[key-spelling|una letra por grado]]) y las distancias siguen la fórmula T T S T T T S. '
+      + 'El primer fallo termina la pregunta. '
+      + 'Básico: {{key:0}}, {{key:7}} y {{key:2}} mayor, con la fórmula a la vista, sin tiempo. '
+      + 'Intermedio: además {{key:9}}, {{key:4}} y {{key:5}} mayor, con la fórmula a la vista, 60 segundos. '
+      + 'Avanzado: las 12 tonalidades mayores, sin la fórmula, 45 segundos.',
+    prompt: 'Construye la escala de %key% mayor',
+    missLabel: 'Escala de %key% mayor',
+    feedbackWrong: 'No es %chosen%: el %degree%º grado de %key% mayor es %answer%.',
+    feedbackTimeout: 'Se acabó el tiempo. La escala de %key% mayor es %scale%.',
+    whySameSound: '%chosen% suena igual que %answer%, pero en una escala cada grado usa la letra siguiente: después de %prev% va la letra %letter%, así que se escribe %answer%.',
+    whyOtherLetter: 'En una escala cada grado usa la letra siguiente: después de %prev% va la letra %letter%, así que no puede ser %chosen%. Es %answer%.',
+    whyStep: 'Del %degreeBefore%º al %degree%º grado de la escala mayor hay %step%: de %prev% a %answer% hay %semis%.',
+    whyChosenSemis: ' De %prev% a %chosen% hay %chosenSemis%.',
+    whyChosenSame: ' %chosen% suena igual que %prev%.',
+    whyTimeout: 'La escala mayor usa una letra por grado y sigue la fórmula T T S T T T S. Desde %key%, sale %scale%.',
+    whyFormula: ' La fórmula completa es T T S T T T S.',
+    stepTone: 'un tono',
+    stepSemitone: 'un semitono',
+  }),
+  'tonalidad.teoria.que-grado': Object.freeze({
+    howTo: 'Ves un acorde y una [[key|tonalidad]] mayor, y eliges qué [[scale-degree|grado]] es ese acorde en esa tonalidad, en números romanos. '
+      + 'Busca en qué lugar de la escala está su fundamental, contando desde la de la tonalidad, que es el I. '
+      + 'Los [[diatonic-chords|acordes de la tonalidad]] siguen siempre el patrón I ii iii IV V vi vii°. '
+      + 'Básico: {{key:0}}, {{key:7}} y {{key:2}} mayor, 4 opciones, sin tiempo. '
+      + 'Intermedio: además {{key:9}}, {{key:4}} y {{key:5}} mayor, los 7 grados, 15 segundos. '
+      + 'Avanzado: las 12 tonalidades mayores, los 7 grados, 10 segundos.',
+    prompt: '¿Qué grado es %chord% en %key% mayor?',
+    missLabel: '%chord% en %key% mayor',
+    feedbackWrong: 'No es el %chosen%: %chord% es el %answer% de %key% mayor.',
+    feedbackTimeout: 'Se acabó el tiempo: %chord% es el %answer% de %key% mayor.',
+    why: 'La escala de %key% mayor es %scale%. %root% es su %degree%º grado, y sobre él se forma %chord%, un acorde %quality%: por eso es el %answer%.',
+    whyChosen: ' El %chosen% de %key% mayor es %chosenChord%.',
+  }),
+  'tonalidad.teoria.que-acordes': Object.freeze({
+    howTo: 'Ves una [[key|tonalidad]] mayor y marcas sus 7 [[diatonic-chords|acordes]] entre los botones; después pulsa «Comprobar». '
+      + 'Los que sobran tienen la misma fundamental que uno de la tonalidad, pero otra calidad. '
+      + 'Recuerda el patrón: mayores el I, el IV y el V; menores el ii, el iii y el vi; y [[diminished-chord|disminuido]] el vii°. '
+      + 'Básico: {{key:0}}, {{key:7}} y {{key:2}} mayor, 10 botones, sin tiempo. '
+      + 'Intermedio: además {{key:9}}, {{key:4}} y {{key:5}} mayor, 10 botones, 30 segundos. '
+      + 'Avanzado: las 12 tonalidades mayores, 12 botones, 20 segundos.',
+    prompt: 'Marca los 7 acordes de %key% mayor',
+    missLabel: 'Acordes de %key% mayor',
+    feedbackWrong: 'Los acordes de %key% mayor son %chords%.',
+    feedbackTimeout: 'Se acabó el tiempo. Los acordes de %key% mayor son %chords%.',
+    why: 'Sobre cada grado de la escala de %key% mayor (%scale%) se forma una tríada con notas de la escala, y salen siempre con el patrón I ii iii IV V vi vii°.',
+    whyExtra: ' %chosen% no es de la tonalidad: sobre %root% se forma %correct%, el %roman%.',
+    whyMissingOne: ' Te faltó %list%.',
+    whyMissingMany: ' Te faltaron %list%.',
+  }),
+  'tonalidad.teoria.que-intervalo': Object.freeze({
+    howTo: 'Ves dos puntos en el mástil, 1 y 2, y eliges el [[interval|intervalo]] que hay entre ellos; el 2 es siempre la nota más aguda. '
+      + 'Cuenta los [[semitone-tone|semitonos]]: en una misma cuerda, cada [[fret|traste]] es uno; entre cuerdas, piensa en las [[interval-shapes|formas de los intervalos]]. '
+      + 'Básico: [[second-interval|2ª menor y mayor]], [[third-interval|3ª menor y mayor]], [[perfect-fifth|5ª justa]] y [[octave|octava]], en la misma cuerda, sin tiempo. '
+      + 'Intermedio: además, [[perfect-fourth|4ª justa]] y [[sixth-interval|6ª menor y mayor]], también en cuerdas vecinas, 15 segundos. '
+      + 'Avanzado: todos, con el [[tritone|tritono]] y las [[seventh-interval|7ªs]], en cualquier cuerda, 10 segundos.',
+    prompt: '¿Qué intervalo hay del punto 1 al 2?',
+    missLabel: '%from% → %to%',
+    position: '%string%ª cuerda, traste %fret%',
+    feedbackWrong: 'No es %chosen%: es %answer%.',
+    feedbackTimeout: 'Se acabó el tiempo: es %answer%.',
+    whySame: 'Del punto 1 al 2 hay %frets% en la misma cuerda: %semis%, que son %answer%.',
+    whyOther: 'Del punto 1 al 2 hay %semis%, que son %answer%. En la cuerda del punto 1, el punto 2 estaría en el traste %eqFret%: %frets% más allá.',
+    whyExample: ' Escrito con notas: desde %from%, %name% es %to%.',
+    whyTritoneBoth: ' Escrito con notas, el tritono tiene dos nombres: desde %from%, %to% es la 4ª aumentada y %to2%, la 5ª disminuida. Suenan igual.',
+    whyChosen: ' Tú elegiste %chosen%: %chosenSemis%.',
+  }),
+  'tonalidad.teoria.completa-progresion': Object.freeze({
+    howTo: 'Ves una [[progression|progresión]] por [[scale-degree|grados]] en una [[key|tonalidad]] mayor, con un acorde que falta («?»), y eliges cuál va ahí. '
+      + 'El grado que falta se ve siempre: busca esa nota en la escala y recuerda si en ese grado el acorde es mayor, menor o disminuido. '
+      + 'Las progresiones son I–IV–V, I–V–vi–IV, I–vi–IV–V, vi–IV–I–V y ii–V–I. '
+      + 'Básico: {{key:0}}, {{key:7}} y {{key:2}} mayor, sin tiempo. '
+      + 'Intermedio: además {{key:9}}, {{key:4}} y {{key:5}} mayor, 15 segundos. '
+      + 'Avanzado: las 12 tonalidades mayores, 10 segundos.',
+    prompt: 'Completa la progresión en %key% mayor',
+    missLabel: '%degrees% en %key% mayor',
+    feedbackWrong: 'No es %chosen%: el %roman% de %key% mayor es %answer%.',
+    feedbackTimeout: 'Se acabó el tiempo: el %roman% de %key% mayor es %answer%.',
+    why: 'El %roman% es el acorde del %degree%º grado. En %key% mayor, el %degree%º grado es %root%, y en ese grado el acorde es siempre %quality%: %answer%.',
+    whyChosenIn: ' %chosen% es el %chosenRoman% de la tonalidad.',
+    whyChosenOut: ' %chosen% no es de la tonalidad.',
+  }),
+  'tonalidad.practica.escala': Object.freeze({
+    howTo: 'Tocas la [[major-scale|escala mayor]] en una [[scale-position|posición]] de dos octavas, con la fundamental en la 6ª cuerda, subiendo y bajando al ritmo del [[metronome|metrónomo]]. '
+      + 'La [[tablature|tablatura]] enseña una vuelta, y la nota que toca se ilumina en ámbar; en la preparación puedes escuchar la subida a la velocidad que quieras. '
+      + 'Usa un dedo por traste, con el índice en el primer traste de la posición. Cambia el tempo con − y + cuando quieras. '
+      + 'Tu récord es el tempo más alto al que terminas una vuelta entera, en cada nivel. '
+      + 'Básico: {{key:0}}, {{key:7}} y {{key:2}} mayor, en negras, de 50 a 80 BPM. '
+      + 'Intermedio: además {{key:9}}, {{key:4}} y {{key:5}} mayor, en corcheas, de 60 a 100 BPM. '
+      + 'Avanzado: las 12 tonalidades mayores, en corcheas, de 80 a 120 BPM.',
+    heading: '%key% mayor · traste %fret%',
+    tabLabel: 'Tablatura de una vuelta de la escala: sube dos octavas y baja',
+    previewLabel: 'Tablatura de la subida',
+    preview: 'Escala',
+  }),
+  'tonalidad.practica.progresion': Object.freeze({
+    howTo: 'Eliges una [[progression|progresión]] por [[scale-degree|grados]] y una [[key|tonalidad]] (o «Al azar»). '
+      + 'La app enseña el acorde actual en grande, con su grado y su diagrama, y el siguiente en pequeño. '
+      + 'Toca cada acorde al ritmo del [[metronome|metrónomo]] y cambia cuando toque: el último tiempo antes del cambio se marca en ámbar. '
+      + 'Si un acorde no tiene forma abierta, verás sus notas: se toca con [[barre-chord|cejilla]]. '
+      + 'Básico: {{key:0}}, {{key:7}} y {{key:2}} mayor, solo las progresiones que se tocan enteras con acordes abiertos, 60 BPM y cambio cada 8 tiempos. '
+      + 'Intermedio: además {{key:9}}, {{key:4}} y {{key:5}} mayor, 80 BPM y cambio cada 4. '
+      + 'Avanzado: las 12 tonalidades mayores, 100 BPM y cambio cada 2.',
+    heading: '%degrees% · %key% mayor',
+  }),
+
   // ----- Calentamiento -----
   'calentamiento.practica.cromatico': Object.freeze({
     howTo: 'Un dedo por traste, de la 6ª cuerda a la 1ª y vuelta, en la posición que elijas (desde el traste 1 o desde el 5), con la [[tablature|tablatura]] en pantalla y [[metronome|metrónomo]]. '
@@ -1487,6 +1820,70 @@ export const LESSONS = Object.freeze({
       }),
     ]),
   }),
+  tonalidad: Object.freeze({
+    cards: Object.freeze([
+      Object.freeze({
+        id: 'tonos-semitonos',
+        title: 'Tonos y semitonos',
+        text: 'La distancia más pequeña entre dos notas es el [[semitone-tone|semitono]]: en la guitarra, un [[fret|traste]]. '
+          + 'Un tono son dos semitonos, es decir, dos trastes. '
+          + 'Con estas dos medidas se construyen todas las [[scale|escalas]].',
+        diagram: {
+          type: 'fretboard', fromFret: 0, toFret: 7, highlight: 'start',
+          points: { select: 'intervals', string: 5, fret: 3, intervals: [{ semitones: 1 }, { semitones: 2 }] },
+          caption: 'Desde el punto ámbar, un traste más es un semitono y dos trastes, un tono.',
+        },
+      }),
+      Object.freeze({
+        id: 'intervalos-cuerda',
+        title: 'Intervalos en una cuerda',
+        text: 'Un [[interval|intervalo]] es la distancia entre dos notas, contada en semitonos. '
+          + 'Cada distancia tiene su nombre: 3 semitonos son una [[third-interval|3ª menor]], 4 una 3ª mayor, 7 una [[perfect-fifth|5ª justa]] y 12 una [[octave|octava]]. '
+          + 'Toca los puntos para oírlos desde la nota de partida (R).',
+        diagram: {
+          type: 'fretboard', fromFret: 0, toFret: 12, labels: 'intervals',
+          points: { select: 'intervals', string: 5, fret: 0, intervals: [{ semitones: 3 }, { semitones: 4 }, { semitones: 7 }, { semitones: 12 }] },
+          caption: 'En la 5ª cuerda, desde la cuerda al aire (R): la 3ª menor (b3), la 3ª mayor (3), la 5ª justa (5) y la octava (8).',
+        },
+      }),
+      Object.freeze({
+        id: 'intervalos-cuerdas',
+        title: 'Intervalos entre cuerdas',
+        text: 'El mismo intervalo se puede tocar en otra cuerda: en la [[standard-tuning|afinación estándar]], cada uno tiene su [[interval-shapes|forma]]. '
+          + 'Desde la 6ª cuerda, la 3ª mayor está en la 5ª un traste más atrás, la 5ª justa en la 5ª dos trastes más allá y la octava en la 4ª, también dos trastes más allá. '
+          + 'Al cruzar de la 3ª cuerda a la 2ª, todo se corre un traste hacia el cuerpo de la guitarra.',
+        diagram: {
+          type: 'fretboard', fromFret: 0, toFret: 7, labels: 'intervals',
+          points: { select: 'intervals', string: 6, fret: 3, intervals: [{ semitones: 4, string: 5 }, { semitones: 7, string: 5 }, { semitones: 12, string: 4 }] },
+          caption: 'Desde R (6ª cuerda, traste 3): la 3ª mayor (3) y la 5ª justa (5) en la 5ª cuerda, y la octava (8) en la 4ª.',
+        },
+      }),
+      Object.freeze({
+        id: 'escala-cuerda',
+        title: 'La escala mayor en una cuerda',
+        text: 'La [[major-scale|escala mayor]] sigue siempre el patrón T T S T T T S: tono, tono, semitono, tono, tono, tono, semitono. '
+          + 'En una cuerda, eso son 2, 2, 1, 2, 2, 2 y 1 trastes. '
+          + 'Aquí tienes la escala de {{key:9}} mayor en la 5ª cuerda, de la cuerda al aire al traste 12.',
+        diagram: { type: 'fretboard', fromFret: 0, toFret: 12, colorBy: 'scale', points: { select: 'scale', key: 9, string: 5 } },
+      }),
+      Object.freeze({
+        id: 'escala-posicion',
+        title: 'La escala en una posición',
+        text: 'Para no mover la mano, la escala se toca en una [[scale-position|posición]] de 4 trastes, con un dedo por traste. '
+          + 'Esta empieza con la [[root|fundamental]] en la 6ª cuerda y sube dos [[octave|octavas]], hasta la 1ª. '
+          + 'Es la misma en todas las tonalidades: aquí está en {{key:7}} mayor, del traste 2 al 5.',
+        diagram: { type: 'fretboard', fromFret: 0, toFret: 7, colorBy: 'scale', points: { select: 'scale-position', key: 7 } },
+      }),
+      Object.freeze({
+        id: 'acordes-tonalidad',
+        title: 'Los acordes de la tonalidad',
+        text: 'Sobre cada [[scale-degree|grado]] de la escala se forma un acorde: I, ii, iii, IV, V, vi y vii° (los [[diatonic-chords|acordes de la tonalidad]]). '
+          + 'Las [[progression|progresiones]] famosas se escriben por grados, así que sirven en cualquier [[key|tonalidad]]. '
+          + 'Aquí están en {{key:0}} mayor: toca un acorde o escucha cada progresión.',
+        diagram: { type: 'key', key: 0, progressions: [['I', 'V', 'vi', 'IV'], ['I', 'IV', 'V'], ['ii', 'V', 'I']] },
+      }),
+    ]),
+  }),
 });
 
 /** Textos fijos de la interfaz que explican algo (BUILD_PLAN 6.9). */
@@ -1545,6 +1942,26 @@ export const UI_TEXTS = Object.freeze({
   }),
   // Acordes (Fase 3).
   chordQualities: Object.freeze({ major: 'Mayor', minor: 'Menor', dom7: 'Séptima de dominante' }),
+  // Escala y tonalidad (Fase 5).
+  keys: Object.freeze({
+    qualities: Object.freeze({ major: 'mayor', minor: 'menor', diminished: 'disminuido' }),
+    major: 'mayor',
+    noOpen: 'Sin forma abierta: se toca con cejilla.',
+    notes: 'Notas',
+    random: 'Al azar',
+    key: 'Tonalidad',
+    progression: 'Progresión',
+    scale: 'Escala',
+    chords: 'Acordes de la tonalidad',
+    onBoard: 'En el mástil',
+    wholeNeck: 'Todo el mástil',
+    position: 'Posición',
+    positionHint: 'Dos octavas desde la 6ª cuerda, del traste %from% al %to%.',
+    wholeHint: 'Todas las notas de la escala, del traste 0 al 12.',
+    stepsLabel: 'Fórmula',
+    pairLegend: 'En ámbar (1), la primera nota; en gris (2), la segunda, más aguda.',
+    scaleLegend: 'Toca un acorde para oírlo.',
+  }),
   chordFunctions: Object.freeze({ root: 'la fundamental', third: 'la 3ª', fifth: 'la 5ª', seventh: 'la 7ª' }),
   chordPractice: Object.freeze({
     next: 'Siguiente',
@@ -1552,6 +1969,7 @@ export const UI_TEXTS = Object.freeze({
     showDiagramsHint: 'Desactivado, solo ves los nombres.',
     check: 'Comprobar',
     slowDown: 'Bajar',
+    speedUp: 'Subir',
     rampStopped: 'Subida de tempo detenida',
     listenPattern: 'Escuchar el patrón',
     stopPattern: 'Parar',

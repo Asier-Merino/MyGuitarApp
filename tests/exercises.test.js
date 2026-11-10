@@ -35,7 +35,7 @@ function sameMidi(midi, tuning, toFret) {
 /* ===== Registro ===== */
 
 test('todos los ejercicios están bien declarados (howTo, concepts, tunings, niveles, why)', () => {
-  assert.equal(EXERCISES.length, 26); // 11 de Notas, 9 de Acordes, 1 de Calentamiento y 5 de Oído
+  assert.equal(EXERCISES.length, 33); // 11 de Notas, 9 de Acordes, 1 de Calentamiento, 5 de Oído y 7 de Escala y tonalidad
   for (const ex of EXERCISES) {
     assert.deepEqual(validateExercise(ex), [], ex.id);
     assert.ok(ex.howTo && ex.concepts.length >= 1, ex.id);

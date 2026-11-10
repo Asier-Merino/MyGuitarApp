@@ -8,7 +8,8 @@
 // compact: trastes más cortos (46 en lugar de 58), para que quepan del 0 al 12 en la
 // pantalla del móvil cuando hay que tocar el mástil para responder. dense: aún más cortos
 // (32), solo para mástiles que se miran sin tocarlos (sin onTap ni playOnTap).
-// markers: [{ string, fret, pc?, text?, color?, root?, state?: 'correct'|'wrong', hollow?, midi? }]
+// markers: [{ string, fret, pc?, spelling?, text?, color?, root?, state?: 'correct'|'wrong', hollow?, midi? }]
+//   spelling: deletreo de la nota en una tonalidad (Si♭ en Fa mayor), si no, la preferencia ♯/♭.
 //   color: 'neutral' | 'amber' | 'root' | 'third' | 'fifth' | 'seventh' | 'blue' | 'other'
 //   (si falta y hay `root`, se calcula la función de la nota). Etiqueta: `text`, o la nota
 //   (doble notación) o el intervalo respecto a `root`, según "Mostrar en los puntos".
@@ -75,7 +76,7 @@ function markerLabel(marker, accidentals) {
     const semis = interval(marker.root, marker.pc);
     return { main: semis === 0 ? 'R' : intervalInfo(semis).abbr };
   }
-  const names = noteNames(marker.pc, { accidentals });
+  const names = noteNames(marker.pc, { accidentals, spelling: marker.spelling });
   return { main: names.primary, alt: names.secondary, spoken: names.spoken };
 }
 

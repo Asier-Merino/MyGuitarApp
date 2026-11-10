@@ -10,7 +10,9 @@ import { Tab } from './tab.js';
 import { StrumDiagram } from './strum.js';
 import { getStrumPattern } from '../data/strum-patterns.js';
 import { ChordLabel } from './note-label.js';
-import { fretboardDiagramPoints, chordDiagramFunctions } from '../core/diagrams.js';
+import { fretboardDiagramPoints, chordDiagramFunctions, keyDiagram } from '../core/diagrams.js';
+import { KeyChords } from './key-chords.js';
+import { settings } from '../state.js';
 import { getTuning } from '../data/tunings.js';
 import { getChord } from '../data/chords.js';
 import { UI_TEXTS } from '../data/concepts.js';
@@ -32,8 +34,8 @@ export function ConceptDiagram(concept, { compact = false } = {}) {
   let figure = null;
   let legend = null;
   if (d.type === 'fretboard') {
-    const { tuning, points } = fretboardDiagramPoints(concept);
-    if (d.colorBy === 'function') legend = FunctionLegend(points.map((p) => p.color));
+    const { tuning, points } = fretboardDiagramPoints(concept, { accidentals: settings.get('accidentals') });
+    if (d.colorBy === 'function' || d.colorBy === 'scale') legend = FunctionLegend(points.map((p) => p.color));
     figure = Fretboard({
       fromFret: d.fromFret,
       toFret: d.toFret,
@@ -60,6 +62,8 @@ export function ConceptDiagram(concept, { compact = false } = {}) {
     figure = Tab(d.tab, { bpm: d.bpm ?? 70, player: true, label: `Tablatura de «${concept.title}»` });
   } else if (d.type === 'strum') {
     figure = StrumDiagram(getStrumPattern(d.pattern), { chord: d.chord, bpm: d.bpm });
+  } else if (d.type === 'key') {
+    figure = KeyChords(keyDiagram(d, { accidentals: settings.get('accidentals') }));
   } else if (d.type === 'beats') {
     figure = BeatsDiagram({ beatsPerBar: d.beatsPerBar, bpm: d.bpm });
   }

@@ -29,7 +29,9 @@ import { mod12 } from '../core/theory.js';
 import { getTuning, DEFAULT_TUNING_ID } from '../data/tunings.js';
 import { LEVELS } from '../data/modules.js';
 import { UI_TEXTS } from '../data/concepts.js';
-import { store } from '../state.js';
+import { store, settings } from '../state.js';
+import { KeyChords, ProgressionSlots } from '../ui/key-chords.js';
+import { ScaleBuilder } from '../ui/scale-builder.js';
 import { playSequence, strum, playEvents } from '../audio/synth.js';
 import { icon } from '../ui/icons.js';
 
@@ -57,6 +59,12 @@ export function exerciseCtx(tuning, extra = {}) {
     pcAt: (string, fret) => mod12(midiAt(string, fret, tuning.midi)),
     chordDiagram: (chord, opts) => ChordDiagram(chord, opts),
     chordLabel: (chord, opts) => ChordLabel(chord, opts),
+    /** Los acordes de una tonalidad con su grado (y progresiones), que suenan al tocarlos. */
+    keyChords: (data) => KeyChords(data),
+    /** Casillas de una progresión con el acorde que falta («?»). */
+    progressionSlots: (chords, missing) => ProgressionSlots(chords, missing),
+    /** Las casillas de «Construye la escala» con sus opciones (ui/scale-builder.js). */
+    scaleBuilder: (opts) => ScaleBuilder(opts),
     ...extra,
   };
 }
@@ -223,6 +231,46 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     },
   });
 
+  /**
+   * Botones que se marcan y desmarcan con cualquier contenido (p. ej. acordes).
+   * list: [{ value, content }] · wrongText: lo que lee el lector de pantalla en una elegida que sobra.
+   * Devuelve { selected(), reveal(correctas, elegidas) }.
+   */
+  ctx.choiceToggles = (list, { wrongText = ', elegida, no es correcta' } = {}) => {
+    const chosen = new Set();
+    const keys = list.map((o) => {
+      const btn = h('button', { type: 'button', class: 'btn btn--grey answer answer--toggle', 'aria-pressed': 'false' },
+        o.content,
+        h('span', { class: 'answer__mark', 'aria-hidden': 'true' }),
+        h('span', { class: 'sr-only answer__sr' }));
+      btn.addEventListener('click', () => {
+        if (chosen.has(o.value)) chosen.delete(o.value); else chosen.add(o.value);
+        btn.setAttribute('aria-pressed', String(chosen.has(o.value)));
+      });
+      return { btn, value: o.value };
+    });
+    render(answersEl, keys.map((k) => k.btn));
+    return {
+      selected: () => list.map((o) => o.value).filter((v) => chosen.has(v)),
+      reveal(correct, picked) {
+        for (const { btn, value } of keys) {
+          btn.disabled = true;
+          const mark = btn.querySelector('.answer__mark');
+          const sr = btn.querySelector('.answer__sr');
+          if (correct.includes(value)) {
+            btn.classList.add('answer--correct');
+            mark.textContent = '✓';
+            sr.textContent = picked.includes(value) ? ', correcta y elegida' : ', correcta';
+          } else if (picked.includes(value)) {
+            btn.classList.add('answer--wrong');
+            mark.textContent = '✗';
+            sr.textContent = wrongText;
+          }
+        }
+      },
+    };
+  };
+
   /* ----- Pantalla ----- */
   const fill = h('div', { class: 'quiz-progress__fill' });
   const count = h('span', { class: 'quiz-progress__count' });
@@ -306,6 +354,7 @@ export function runQuiz(view, { exercise, level, tuningId, options = {}, nav, on
     index += 1;
     item = exercise.generate(params, rng, {
       stats: store.data.stats, previousKey: item?.key ?? null, tuning: tuning.midi, tuningId, options, round, now: Date.now(),
+      accidentals: settings.get('accidentals'),
     });
     setProgress(index - 1);
     render(promptEl, richText(typeof exercise.prompt === 'function' ? exercise.prompt(item) : exercise.prompt, { tag: 'span' }));

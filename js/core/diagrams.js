@@ -15,24 +15,36 @@
 //     { select: 'octaves', string, fret }      el punto y, hacia agudos, sus formas de octava
 //     { select: 'five-fret-rule' }             de la 6ª a la 2ª: el traste que suena como la
 //                                              cuerda siguiente al aire, y esa cuerda al aire
+//     { select: 'scale', key, strings? }       las notas de la escala mayor de esa tonalidad en el
+//                                              rango, con su deletreo (Si♭ en Fa mayor)
+//     { select: 'scale-position', key }        la posición de dos octavas de la escala (keys.js)
+//     { select: 'intervals', string, fret, intervals: [{ semitones, string? }] }
+//                                              un punto de partida y las notas a esos semitonos
+//                                              por encima, en su cuerda o en la indicada
 //   highlight (opcional): 'natural-semitones' (Mi–Fa y Si–Do) · 'changed' (cuerdas que cambian
 //     respecto a la estándar) · 'accidentals' (notas con sostenido o bemol) · 'start' (el
 //     punto de partida de 'unison', 'octaves' o 'sound') · 'gap' (en 'five-fret-rule', las parejas
 //     que no están a 5 trastes) · colorBy: 'function' (colores de R, 3 y 5 respecto a la nota
-//     que da nombre a la afinación)
+//     que da nombre a la afinación) · colorBy: 'scale' (fundamental de la tonalidad en coral y
+//     el resto de la escala en gris, 4.5) · labels: 'intervals' (cada punto lleva su intervalo
+//     desde el de partida: R, 2, b3, 3… 8)
 //   showStringNumbers, showFretNumbers · caption (texto con marcado, opcional)
 // diagram (type 'beats'): { beatsPerBar, bpm }  esquema de pulsos
 // diagram (type 'chord'): { chord: id, compare?: id o lista (acordes al lado), colorBy?: 'function' }
 // diagram (type 'strum'): { pattern: id de strum-patterns.js, chord?: id }  patrón de rasgueo
 // diagram (type 'tab'): { tab (formato de js/core/tab.js), bpm? }
+// diagram (type 'key'): { key, progressions?: [[grados]] }  los 7 acordes de la tonalidad con su
+//   grado y, debajo, progresiones por grados que se pueden escuchar (keyDiagram)
 
-import { mod12, noteFunction } from './theory.js';
+import { mod12, noteFunction, intervalInfo } from './theory.js';
 import { LETTER_PC } from './notation.js';
 import { STRINGS, STANDARD_TUNING, midiAt, unisonsOf, octavesOf } from './fretboard-model.js';
 import { getTuning } from '../data/tunings.js';
 import { getChord } from '../data/chords.js';
+import { keyScale, keyChords, majorScalePosition } from './keys.js';
+import { keyProgression } from './progressions.js';
 
-export const DIAGRAM_TYPES = Object.freeze(['fretboard', 'chord', 'tab', 'beats', 'strum']);
+export const DIAGRAM_TYPES = Object.freeze(['fretboard', 'chord', 'tab', 'beats', 'strum', 'key']);
 
 /** Cuerdas de la 6ª (grave) a la 1ª (aguda). */
 const LOW_TO_HIGH = Object.freeze([...STRINGS].reverse());
@@ -51,7 +63,7 @@ export function naturalSemitonePcs() {
   });
 }
 
-function selectPositions(diagram, concept, tuning) {
+function selectPositions(diagram, concept, tuning, opts) {
   const { fromFret, toFret, points } = diagram;
   const frets = [];
   for (let f = fromFret; f <= toFret; f++) frets.push(f);
@@ -91,6 +103,22 @@ function selectPositions(diagram, concept, tuning) {
         const gap = tuning[string - 1] - tuning[string];
         return [{ string, fret: gap, gap }, { string: string - 1, fret: 0, gap }];
       });
+    case 'scale': {
+      const scale = keyScale(points.key, opts);
+      return strings.flatMap((string) => frets.flatMap((fret) => {
+        const note = scale.find((n) => n.pc === mod12(midiAt(string, fret, tuning)));
+        return note ? [{ string, fret, spelling: note.spelling, start: note.degree === 1 }] : [];
+      }));
+    }
+    case 'scale-position':
+      return majorScalePosition(points.key, opts).notes.map((n) => ({ string: n.string, fret: n.fret, spelling: n.spelling, start: n.degree === 1 }));
+    case 'intervals': {
+      const startMidi = midiAt(points.string, points.fret, tuning);
+      return [
+        { string: points.string, fret: points.fret, start: true, semitones: 0 },
+        ...points.intervals.map(({ semitones, string = points.string }) => ({ string, fret: startMidi + semitones - tuning[string], semitones })),
+      ];
+    }
     default:
       throw new Error(`Selección de puntos desconocida: ${points.select}`);
   }
@@ -101,7 +129,7 @@ function selectPositions(diagram, concept, tuning) {
  * color: 'neutral' | 'amber' | 'root' | 'third' | 'fifth' | … (tokens de 4.5).
  * Lanza un error si algún punto queda fuera del rango del esquema (lo detectan los tests).
  */
-export function fretboardDiagramPoints(concept) {
+export function fretboardDiagramPoints(concept, opts = {}) {
   const diagram = concept.diagram;
   const tuningData = getTuning(diagram.tuning ?? 'standard');
   if (!tuningData) throw new Error(`${concept.id}: afinación ${diagram.tuning}`);
@@ -110,7 +138,7 @@ export function fretboardDiagramPoints(concept) {
   const root = diagram.colorBy === 'function' ? tuningData.name.root : undefined;
   if (diagram.colorBy === 'function' && root === undefined) throw new Error(`${concept.id}: la afinación no tiene nota de nombre`);
 
-  const points = selectPositions(diagram, concept, tuning).map(({ string, fret, start, gap }) => {
+  const points = selectPositions(diagram, concept, tuning, opts).map(({ string, fret, start, gap, spelling, semitones }) => {
     if (!Number.isInteger(fret) || fret < diagram.fromFret || fret > diagram.toFret) {
       throw new RangeError(`${concept.id}: cuerda ${string}, traste ${fret} fuera del esquema`);
     }
@@ -123,7 +151,11 @@ export function fretboardDiagramPoints(concept) {
     if (diagram.highlight === 'start' && start) color = 'amber';
     if (diagram.highlight === 'gap' && gap !== undefined && gap !== RULE_GAP) color = 'amber';
     if (root !== undefined) color = noteFunction(root, pc);
-    return { string, fret, midi, pc, color, root };
+    if (diagram.colorBy === 'scale') color = start ? 'root' : 'other';
+    const point = { string, fret, midi, pc, color, root };
+    if (spelling) point.spelling = spelling;
+    if (diagram.labels === 'intervals') point.text = semitones === 0 ? 'R' : intervalInfo(semitones).abbr;
+    return point;
   });
   return { tuning, points };
 }
@@ -140,4 +172,14 @@ export function chordDiagramFunctions(diagram) {
     return chord.frets.map((fret, i) => (fret === null ? null : noteFunction(chord.root, midiAt(6 - i, fret))))
       .filter(Boolean);
   });
+}
+
+/**
+ * Esquema de una tonalidad (type 'key'): { chords: los 7 acordes con su grado y su forma
+ * abierta (o null), progressions: [{ degrees, chords }] }. Lanza un error si un grado no existe.
+ */
+export function keyDiagram(diagram, opts = {}) {
+  const chords = keyProgression(diagram.key, keyChords(diagram.key, opts).map((c) => c.roman), opts);
+  const progressions = (diagram.progressions ?? []).map((degrees) => ({ degrees, chords: keyProgression(diagram.key, degrees, opts) }));
+  return { chords, progressions };
 }

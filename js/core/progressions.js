@@ -1,8 +1,10 @@
 // Progresiones de acordes (BUILD_PLAN 5.7 y 6.6.11), sin DOM: las predefinidas se calculan
 // por grados con la teoría y se buscan en la biblioteca; "Mis progresiones" se validan aquí.
 
-import { diatonicChords } from './theory.js';
-import { CHORDS, getChord } from '../data/chords.js';
+import { diatonicChords, CHORD_FORMULAS } from './theory.js';
+import { keyChord } from './keys.js';
+import { chordSound } from './ear.js';
+import { CHORDS, getChord, chordMidis } from '../data/chords.js';
 import { LEVEL_IDS } from '../data/modules.js';
 import { PRESET_PROGRESSIONS, CUSTOM_PROGRESSION_SIZES, CUSTOM_NAME_MAX } from '../data/progressions.js';
 
@@ -79,4 +81,43 @@ export function newCustomId(saved = [], now = Date.now()) {
  */
 export function resolveProgressionChoice(value, saved = []) {
   return [...PRESETS, ...customProgressions(saved)].find((x) => x.id === value) ?? PRESETS[0];
+}
+
+/* ----- Progresiones de una tonalidad (Fase 5) ----- */
+
+/**
+ * Los acordes de una progresión por grados en una tonalidad mayor, con el deletreo de la
+ * tonalidad (js/core/keys.js) y su forma abierta de la biblioteca (`open`), o null si no la
+ * tiene (Sim, Fa♯m, Si♭…: se tocan con cejilla).
+ */
+export function keyProgression(key, degrees, opts) {
+  return degrees.map((roman) => {
+    const chord = keyChord(key, roman, opts);
+    return Object.freeze({ ...chord, open: libraryChord(chord.root, chord.quality) });
+  });
+}
+
+/** true si todos los acordes tienen forma abierta en la biblioteca. */
+export const allOpen = (chords) => chords.every((c) => c.open);
+
+/** Registro de las tríadas sin forma abierta: fundamental entre Do3 (48) y Si3 (59). */
+export const TRIAD_LOW = 48;
+
+/**
+ * Notas MIDI con las que suena un acorde de la tonalidad: las de su forma abierta, de grave a
+ * aguda, o, si no la tiene, la tríada cerrada (fundamental, 3ª y 5ª) desde Do3 hacia arriba.
+ */
+export function keyChordMidis(chord) {
+  if (chord.open) return chordMidis(chord.open);
+  const root = TRIAD_LOW + chord.root;
+  return CHORD_FORMULAS[chord.quality].map((s) => root + s);
+}
+
+/** Segundos entre acorde y acorde al escuchar una progresión. */
+export const PROGRESSION_GAP = 1.4;
+
+/** Plan de sonido de una progresión (js/core/ear.js): cada acorde rasgueado, uno tras otro. */
+export function progressionSound(chords, gap = PROGRESSION_GAP) {
+  const events = chords.flatMap((chord, i) => chordSound(keyChordMidis(chord), 'strum').events.map((e) => ({ ...e, at: e.at + i * gap })));
+  return { events, seconds: (chords.length - 1) * gap + chordSound(keyChordMidis(chords.at(-1)), 'strum').seconds };
 }

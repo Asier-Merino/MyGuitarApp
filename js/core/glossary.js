@@ -8,9 +8,20 @@
 //   {{tuning:id}}   las notas de las cuerdas al aire de una afinación, de la 6ª a la 1ª
 //   {{tname:id}}    el nombre de una afinación ("Sol abierto")
 //   {{chord:id}}    el nombre de un acorde de la biblioteca ("Lam"), con doble notación
+//   {{ch:F#:minor}} un acorde por su fundamental deletreada y su calidad (major, minor,
+//                   diminished, dom7): "Fa♯m", "Si°" (acordes de una tonalidad)
+//   {{key:7}}       la fundamental de una tonalidad mayor con su deletreo ("Sol"; en la 6,
+//                   Fa♯ o Sol♭ según la preferencia del usuario)
+//   {{deg:7:vi}}    el acorde de un grado de una tonalidad mayor, calculado ("Mim" en Sol)
 //   *texto*         cursiva (términos en inglés)
 
 import { LETTER_PC } from './notation.js';
+
+/** Calidades que admite el marcado {{ch:…}}. */
+export const CHORD_QUALITIES = Object.freeze(['major', 'minor', 'diminished', 'dom7']);
+/** Grados que admite el marcado {{deg:…}}. */
+export const DEGREE_ROMANS = Object.freeze(['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°']);
+const PC_RE = /^(\d|1[01])$/;
 
 /** Minúsculas y sin tildes, para buscar "afinacion" y encontrar "Afinación". */
 export function normalizeText(text) {
@@ -54,6 +65,7 @@ const TOKEN_RE = /\[\[([a-z0-9-]+)\|([^\]]+)\]\]|\{\{([^}]+)\}\}|\*([^*]+)\*/g;
  * Convierte un texto con marcado en una lista de piezas:
  * { type: 'text', text } · { type: 'term', id, text } · { type: 'note', spelling, pc } (spelling null con {{pc:N}})
  * { type: 'tuning', id } · { type: 'tuningName', id } · { type: 'chord', id } · { type: 'em', text }
+ * { type: 'keyChord', spelling, quality } · { type: 'key', key } · { type: 'degree', key, roman }
  * Lanza un error si encuentra un {{…}} que no entiende, para detectarlo en los tests.
  */
 export function parseRichText(text) {
@@ -65,8 +77,18 @@ export function parseRichText(text) {
     if (m[1]) { parts.push({ type: 'term', id: m[1], text: m[2] }); continue; }
     if (m[4]) { parts.push({ type: 'em', text: m[4] }); continue; }
     const inner = m[3].trim();
-    const [kind, arg] = inner.includes(':') ? inner.split(':') : [null, inner];
-    if (kind === 'tuning') parts.push({ type: 'tuning', id: arg });
+    const [kind, arg, extra] = inner.includes(':') ? inner.split(':') : [null, inner];
+    if (kind === 'ch') {
+      const spelling = parseNoteToken(arg ?? '');
+      if (!spelling || !CHORD_QUALITIES.includes(extra)) throw new Error(`Marcado desconocido: ${m[0]}`);
+      parts.push({ type: 'keyChord', spelling, quality: extra });
+    } else if (kind === 'key') {
+      if (!PC_RE.test(arg ?? '')) throw new Error(`Marcado desconocido: ${m[0]}`);
+      parts.push({ type: 'key', key: Number(arg) });
+    } else if (kind === 'deg') {
+      if (!PC_RE.test(arg ?? '') || !DEGREE_ROMANS.includes(extra)) throw new Error(`Marcado desconocido: ${m[0]}`);
+      parts.push({ type: 'degree', key: Number(arg), roman: extra });
+    } else if (kind === 'tuning') parts.push({ type: 'tuning', id: arg });
     else if (kind === 'pc') {
       if (!/^(\d|1[01])$/.test(arg)) throw new Error(`Marcado desconocido: ${m[0]}`);
       parts.push({ type: 'note', spelling: null, pc: Number(arg) });
@@ -94,6 +116,9 @@ export function plainText(text, { noteName = (p) => (p.spelling ? p.spelling.let
       case 'tuning': return `[${p.id}]`;
       case 'tuningName': return tuningName(p.id);
       case 'chord': return `[${p.id}]`;
+      case 'keyChord': return `[${p.spelling.letter}:${p.quality}]`;
+      case 'key': return `[key ${p.key}]`;
+      case 'degree': return `[${p.roman} ${p.key}]`;
       default: return p.text;
     }
   }).join('');

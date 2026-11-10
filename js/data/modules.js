@@ -70,6 +70,13 @@ export const PLANNED_EXERCISES = Object.freeze([
   x('oido', 'teoria', 'que-intervalo', '¿Qué intervalo es?', 'Suenan dos notas, una detrás de otra, y eliges el intervalo que hay entre ellas.', { phase: 4 }),
   x('oido', 'practica', 'encuentra-la-nota', 'Encuentra la nota', 'Suena una nota y la buscas en tu guitarra.', { tunings: 'any', phase: 4 }),
   x('oido', 'practica', 'imita-el-acorde', 'Imita el acorde', 'Suena un acorde abierto y lo tocas en tu guitarra.', { phase: 4 }),
+  x('tonalidad', 'teoria', 'construye-escala', 'Construye la escala', 'Ves la fundamental de una tonalidad y eliges, una a una, las notas de su escala mayor.', { phase: 5 }),
+  x('tonalidad', 'teoria', 'que-grado', '¿Qué grado es?', 'Ves un acorde y una tonalidad, y eliges su grado en números romanos.', { phase: 5 }),
+  x('tonalidad', 'teoria', 'que-acordes', '¿Qué acordes tiene la tonalidad?', 'Ves una tonalidad y marcas sus 7 acordes entre varios.', { phase: 5 }),
+  x('tonalidad', 'teoria', 'que-intervalo', '¿Qué intervalo hay?', 'Ves dos puntos en el mástil y eliges el intervalo que hay entre ellos.', { phase: 5 }),
+  x('tonalidad', 'teoria', 'completa-progresion', 'Completa la progresión', 'A una progresión por grados le falta un acorde y eliges cuál va.', { phase: 5 }),
+  x('tonalidad', 'practica', 'escala', 'Escala con metrónomo', 'Tocas la escala mayor en una posición, subiendo y bajando, con tablatura y metrónomo.', { phase: 5 }),
+  x('tonalidad', 'practica', 'progresion', 'Progresión de la tonalidad', 'Tocas una progresión por grados en una tonalidad, con metrónomo.', { phase: 5 }),
   x('calentamiento', 'practica', 'cromatico', 'Un dedo por traste', 'Recorres las 6 cuerdas con un dedo por traste, con tablatura y metrónomo, y el tempo sube solo.', { tunings: 'any', phase: 3 }),
 ]);
 
@@ -94,6 +101,6 @@ export function getPlannedExercise(section, slug, exerciseSlug) {
 }
 
 /** Última fase construida: lo de fases posteriores se muestra como "Próximamente". */
-export const BUILT_THROUGH_PHASE = 4;
+export const BUILT_THROUGH_PHASE = 5;
 
 export const isAvailable = (item) => item.phase <= BUILT_THROUGH_PHASE;

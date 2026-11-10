@@ -12,19 +12,22 @@ import { CHORDS_PRACTICE_EXERCISES } from '../modules/chords/practice-exercises.
 import { WARMUP_EXERCISES } from '../modules/warmup/exercises.js';
 import { EAR_THEORY_EXERCISES } from '../modules/ear/theory-exercises.js';
 import { EAR_PRACTICE_EXERCISES } from '../modules/ear/practice-exercises.js';
+import { KEYS_THEORY_EXERCISES } from '../modules/theory/theory-exercises.js';
+import { KEYS_PRACTICE_EXERCISES } from '../modules/theory/practice-exercises.js';
 
 const DEFINITIONS = [
   ...NOTES_THEORY_EXERCISES, ...NOTES_PRACTICE_EXERCISES,
   ...CHORDS_THEORY_EXERCISES, ...CHORDS_PRACTICE_EXERCISES, ...WARMUP_EXERCISES,
   ...EAR_THEORY_EXERCISES, ...EAR_PRACTICE_EXERCISES,
+  ...KEYS_THEORY_EXERCISES, ...KEYS_PRACTICE_EXERCISES,
 ];
 
 /**
  * Tipos de opción propia de la preparación (6.6.6): metrónomo, elección entre varias,
  * interruptor, progresión (6.6.11), patrón de rasgueo, tempo dentro de un rango, pareja de
- * acordes y elección que depende del nivel (byLevel).
+ * acordes, elección que depende del nivel (byLevel) y tonalidad (con «Al azar» si lleva random).
  */
-export const OPTION_TYPES = Object.freeze(['metronome', 'choice', 'toggle', 'progression', 'strum-pattern', 'tempo', 'chord-pair', 'level-choice']);
+export const OPTION_TYPES = Object.freeze(['metronome', 'choice', 'toggle', 'progression', 'strum-pattern', 'tempo', 'chord-pair', 'level-choice', 'key']);
 
 /** Motores propios: Rellena el mástil (Teoría) y, en Práctica, acordes, un minuto y calentamiento. */
 const THEORY_RUNNERS = ['fill'];
@@ -57,6 +60,7 @@ export function validateExercise(def) {
     need(OPTION_TYPES.includes(opt.type) && typeof opt.id === 'string' && opt.label, `opción ${opt.id}`);
     if (opt.type === 'choice') need(opt.choices?.some((c) => c.value === opt.default), `opción ${opt.id}: valor por defecto`);
     if (opt.type === 'toggle') need(typeof opt.default === 'boolean', `opción ${opt.id}: valor por defecto`);
+    if (opt.type === 'key') need(typeof opt.keysFor === 'function', `opción ${opt.id}: keysFor`);
     if (['level-choice', 'strum-pattern', 'tempo'].includes(opt.type)) need(LEVEL_IDS.every((l) => opt.byLevel?.[l]), `opción ${opt.id}: valores de cada nivel`);
   }
   if (def.section === 'teoria') {

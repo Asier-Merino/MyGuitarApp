@@ -91,15 +91,15 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | 2 | Notas del mástil | ✅ Hecha (v0.2.0) |
 | 3 | Acordes abiertos y Calentamiento | ✅ Hecha (v0.3.0) |
 | 4 | Oído | ✅ Hecha (v0.4.0) |
-| 5 | Escala y tonalidad | ⏳ Siguiente |
-| 6 | Blues y slide: el blues | Pendiente |
+| 5 | Escala y tonalidad | ✅ Hecha (v0.5.0) |
+| 6 | Blues y slide: el blues | ⏳ Siguiente |
 | 7 | Blues y slide: el slide | Pendiente |
 | 8 | CAGED | Pendiente |
 | 9 | Perfil completo y sesión mezclada (primera versión completa, v1.0.0) | Pendiente |
 
 Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`…), para poder volver a ella si algo sale mal.
 
-### Qué funciona ya (v0.4.0)
+### Qué funciona ya (v0.5.0)
 
 - **Inicio** con Teoría, Práctica, Afinaciones y Glosario, los iconos de Perfil y Ajustes, la **racha** y **Continuar** (abre el último ejercicio hecho).
 - **Metrónomo** (fila Herramientas del Inicio): 30–240 BPM con − y + (mantén pulsado para ir rápido), deslizador, «Marcar el tempo tocando aquí», de 2 a 7 tiempos por compás con el primero acentuado, negras, corcheas o tresillos. Mantiene la pantalla encendida mientras suena y recuerda tus ajustes.
@@ -121,9 +121,14 @@ Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`
   - **Práctica**: «Encuentra la nota» (suena una nota y la buscas en tu guitarra; la solución enseña todos los sitios donde suena esa nota exacta, en cualquiera de las 7 afinaciones) e «Imita el acorde» (suena un acorde y lo tocas; al final ves su nombre y su diagrama).
   - La pregunta suena sola al aparecer, el tiempo empieza cuando acaba de sonar y siempre hay un botón **Repetir sonido**. En Práctica no hay voz, para no decirte la respuesta: el sonido se repite a mitad del tiempo y al enseñar la solución.
   - Si el sonido está desactivado en Ajustes, la preparación te avisa.
+- **Escala y tonalidad**, el cuarto módulo:
+  - **Aprender**: lección en 6 tarjetas (tonos y semitonos, intervalos en una cuerda y entre cuerdas, la escala mayor en una cuerda y en una posición, y los acordes de la tonalidad con progresiones que se pueden escuchar).
+  - **Consulta**: eliges una de las 12 tonalidades mayores y ves su escala bien escrita (una letra por grado: Fa mayor con Si♭, nunca La♯), sus 7 acordes con el grado y su diagrama si tienen forma abierta, y la escala en el mástil (entero o en la posición de dos octavas).
+  - **Teoría**: «Construye la escala» (grado a grado, eligiendo la nota con la letra correcta), «¿Qué grado es?», «¿Qué acordes tiene la tonalidad?», «¿Qué intervalo hay?» (entre dos puntos del mástil, con el tritono y sus dos nombres) y «Completa la progresión», en 3 niveles.
+  - **Práctica**: «Escala con metrónomo» (posición de dos octavas con tablatura, − y + para el tempo y récord de tempo) y «Progresión de la tonalidad» (I–IV–V, I–V–vi–IV, I–vi–IV–V, vi–IV–I–V y ii–V–I en la tonalidad que elijas, con el grado de cada acorde; si no tiene forma abierta, ves sus notas).
 - **Calentamiento**: un dedo por traste con la **tablatura** en pantalla, 4 variantes (también la araña), subida automática de tempo, botón «Bajar» y récord de tempo por variante y nivel.
 - **Tablatura**: todos los símbolos habituales (ligados, deslizamientos, estiramientos, vibrato, armónicos, PM, let ring…), con reproductor a 50, 75 y 100 % y «Ver en el mástil».
-- **Glosario**: 55 conceptos de Notas, Acordes, Intervalos, Afinaciones, Ritmo y Tablatura, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil, un diagrama de acorde, una tablatura, un patrón de rasgueo o el pulso del metrónomo, que suenan al tocarlos) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
+- **Glosario**: 68 conceptos de Notas, Acordes, Intervalos, Escalas y tonalidad, Afinaciones, Ritmo y Tablatura, con buscador en español y en inglés (sin importar tildes). Cada ficha tiene su **esquema** (un trozo de mástil, un diagrama de acorde, una tablatura, un patrón de rasgueo o el pulso del metrónomo, que suenan al tocarlos) y **Escuchar**. Solo «Nombres de las notas» no lleva esquema: es una equivalencia de nombres, no un lugar del mástil. Las palabras subrayadas con puntos abren su ficha en un panel.
 - **Ajustes** completos: notación, alteraciones, tema (oscuro por defecto, claro o automático), mástil, sonido, volumen, voz, afinación por defecto y copia de tus datos.
 - **Perfil** provisional con racha, días practicados y tiempo total, y **Acerca de**.
 - **Página de prueba** (Ajustes → App): mástil en vertical u horizontal, diagramas de los 14 acordes, rasgueo y arpegio, voz y pulso.

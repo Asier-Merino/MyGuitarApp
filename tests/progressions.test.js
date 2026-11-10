@@ -3,11 +3,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PRESETS, libraryChord, degreeChord, resolvePreset, customProgressions, isValidCustom, newCustomId,
-  resolveProgressionChoice, cleanName,
+  resolveProgressionChoice, cleanName, keyProgression, allOpen,
 } from '../js/core/progressions.js';
-import { PRESET_PROGRESSIONS } from '../js/data/progressions.js';
+import { PRESET_PROGRESSIONS, KEY_PROGRESSIONS, getKeyProgression } from '../js/data/progressions.js';
+import { ALL_KEYS } from '../js/core/keys.js';
 import { CHORDS, getChord } from '../js/data/chords.js';
-import { scalePcs, CHORD_FORMULAS, interval } from '../js/core/theory.js';
+import { scalePcs, CHORD_FORMULAS, interval, diatonicChords, MAJOR_KEY_DEGREES } from '../js/core/theory.js';
 import { LETTER_PC } from '../js/core/notation.js';
 
 const ids = (prog) => prog.chords.map((c) => c.id);
@@ -91,4 +92,44 @@ test('ids nuevos distintos de los guardados', () => {
 
 test('todos los acordes de la biblioteca se pueden usar en Mis progresiones', () => {
   for (const c of CHORDS) assert.ok(isValidCustom({ id: 'x', name: 'x', chords: [c.id, c.id, c.id] }), c.id);
+});
+
+/* ----- Progresiones de una tonalidad (Fase 5) ----- */
+
+test('progresiones de la tonalidad: las 4 de 5.7 y ii–V–I, con grados válidos', () => {
+  assert.deepEqual(KEY_PROGRESSIONS.map((p) => p.id), ['I-IV-V', 'I-V-vi-IV', 'I-vi-IV-V', 'vi-IV-I-V', 'ii-V-I']);
+  for (const p of KEY_PROGRESSIONS) for (const d of p.degrees) assert.ok(MAJOR_KEY_DEGREES.some((x) => x.roman === d), d);
+  // Las de 5.7 están todas.
+  for (const preset of PRESET_PROGRESSIONS) assert.ok(KEY_PROGRESSIONS.some((p) => p.degrees.join('-') === preset.degrees.join('-')));
+});
+
+test('progresiones de la tonalidad: cada acorde es el de su grado en las 12 tonalidades', () => {
+  for (const key of ALL_KEYS) {
+    const diatonic = diatonicChords(key);
+    for (const p of KEY_PROGRESSIONS) {
+      const chords = keyProgression(key, p.degrees);
+      chords.forEach((c, i) => {
+        const d = diatonic.find((x) => x.roman === p.degrees[i]);
+        assert.equal(c.root, d.root, `${key} ${p.id}`);
+        assert.equal(c.quality, d.quality);
+        assert.equal(c.roman, p.degrees[i]);
+        if (c.open) {
+          assert.equal(c.open.root, c.root);
+          assert.equal(c.open.quality, c.quality);
+        }
+      });
+    }
+  }
+});
+
+test('progresiones de la tonalidad: cuáles se tocan enteras con acordes abiertos', () => {
+  const open = (key, id) => allOpen(keyProgression(key, getKeyProgression(id).degrees));
+  // En Do y en Sol, todas (en Do con el Fa mini).
+  for (const p of KEY_PROGRESSIONS) { assert.ok(open(0, p.id)); assert.ok(open(7, p.id)); }
+  assert.equal(keyProgression(0, ['IV'])[0].open.id, 'F-mini');
+  // En Re, solo I–IV–V y ii–V–I (Sim no tiene forma abierta).
+  assert.deepEqual(KEY_PROGRESSIONS.filter((p) => open(2, p.id)).map((p) => p.id), ['I-IV-V', 'ii-V-I']);
+  assert.equal(keyProgression(2, ['vi'])[0].open, null);
+  // Fa: Si♭ no tiene forma abierta.
+  assert.equal(keyProgression(5, ['IV'])[0].open, null);
 });

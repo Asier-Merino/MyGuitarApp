@@ -36,6 +36,11 @@ export function exerciseOptions(exercise, saved = {}, level = LEVEL_IDS[0]) {
       result[opt.id] = Number.isFinite(bpm) && bpm >= min && bpm <= max ? bpm : min;
     } else if (opt.type === 'choice') {
       result[opt.id] = opt.choices.some((c) => c.value === value) ? value : opt.default;
+    } else if (opt.type === 'key') {
+      // Tonalidad: el pitch class en texto ('7') o 'random'; las válidas dependen del nivel
+      // (y de las opciones anteriores, p. ej. la progresión). Por defecto, la primera.
+      const keys = opt.keysFor(level, result).map(String);
+      result[opt.id] = keys.includes(value) || (opt.random && value === 'random') ? value : keys[0];
     } else if (opt.type === 'metronome') {
       const s = value ?? {};
       result[opt.id] = {

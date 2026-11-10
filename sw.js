@@ -1,6 +1,6 @@
 // Service worker: guarda la app para usarla sin conexión.
 // Incrementa CACHE_VERSION en cada despliegue que cambie archivos de la app.
-const CACHE_VERSION = 8;
+const CACHE_VERSION = 9;
 const CACHE_PREFIX = 'myguitarapp-';
 const CACHE_NAME = `${CACHE_PREFIX}v${CACHE_VERSION}`;
 
@@ -27,6 +27,7 @@ const ASSETS = [
   './js/core/fretboard-model.js',
   './js/core/glossary.js',
   './js/core/history.js',
+  './js/core/keys.js',
   './js/core/notation.js',
   './js/core/progressions.js',
   './js/core/random.js',
@@ -69,6 +70,10 @@ const ASSETS = [
   './js/modules/notes/reference-view.js',
   './js/modules/notes/theory-exercises.js',
   './js/modules/profile/profile-view.js',
+  './js/modules/theory/common.js',
+  './js/modules/theory/practice-exercises.js',
+  './js/modules/theory/reference-view.js',
+  './js/modules/theory/theory-exercises.js',
   './js/modules/tools/metronome-view.js',
   './js/modules/tunings/tunings-view.js',
   './js/modules/warmup/exercises.js',
@@ -96,7 +101,9 @@ const ASSETS = [
   './js/ui/fretboard.js',
   './js/ui/help-sheet.js',
   './js/ui/icons.js',
+  './js/ui/key-chords.js',
   './js/ui/note-label.js',
+  './js/ui/scale-builder.js',
   './js/ui/strum.js',
   './js/ui/tab.js',
   './js/ui/term.js',

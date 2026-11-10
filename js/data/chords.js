@@ -9,13 +9,13 @@ import { spellChordTones, majorKeyRootSpelling } from '../core/notation.js';
 import { shapeNotes } from '../core/fretboard-model.js';
 import { LEVEL_IDS } from './modules.js';
 
-/** Sufijo del cifrado según la calidad: Do, Lam, La7. */
-export const CHORD_SUFFIX = Object.freeze({ major: '', minor: 'm', dom7: '7' });
+/** Sufijo del cifrado según la calidad: Do, Lam, La7 y, en las tonalidades, Si° (disminuido). */
+export const CHORD_SUFFIX = Object.freeze({ major: '', minor: 'm', dom7: '7', diminished: '°' });
 
-/** Cómo se dice la calidad en voz alta: "La menor", "A minor", "Mi siete". */
+/** Cómo se dice la calidad en voz alta: "La menor", "A minor", "Mi siete", "Si disminuido". */
 export const CHORD_SPOKEN = Object.freeze({
-  es: Object.freeze({ major: '', minor: ' menor', dom7: ' siete' }),
-  en: Object.freeze({ major: '', minor: ' minor', dom7: ' seven' }),
+  es: Object.freeze({ major: '', minor: ' menor', dom7: ' siete', diminished: ' disminuido' }),
+  en: Object.freeze({ major: '', minor: ' minor', dom7: ' seven', diminished: ' diminished' }),
 });
 
 const x = null;

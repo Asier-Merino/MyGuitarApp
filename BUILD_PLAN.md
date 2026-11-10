@@ -116,7 +116,8 @@
 │   │   ├── progressions.js    # progresiones por grados y "Mis progresiones" (Fase 3)
 │   │   ├── tab.js             # tablatura: símbolos, texto plano, colocación, ritmo y curvas de altura
 │   │   ├── warmup.js          # calentamiento: ida y vuelta, araña y subida de tempo
-│   │   └── ear.js             # oído: parejas de notas, intervalos, notas exactas y plan de lo que suena (Fase 4)
+│   │   ├── ear.js             # oído: parejas de notas, intervalos, notas exactas y plan de lo que suena (Fase 4)
+│   │   └── keys.js            # tonalidades: escala deletreada, acordes de cada grado, intervalos con nombre y posición de la escala (Fase 5)
 │   ├── data/
 │   │   ├── modules.js         # secciones, módulos, niveles y ejercicios previstos
 │   │   ├── tunings.js         # las 7 afinaciones (4.2)
@@ -132,6 +133,8 @@
 │   │   ├── fretboard.js       # render SVG del mástil (vertical/horizontal)
 │   │   ├── chord-diagram.js   # render SVG de diagramas de acorde
 │   │   ├── note-label.js      # componente de doble notación
+│   │   ├── key-chords.js      # acordes de una tonalidad con su grado, progresiones que suenan y casillas de progresión (Fase 5)
+│   │   ├── scale-builder.js   # casillas de «Construye la escala» (Fase 5)
 │   │   ├── tab.js             # tablatura completa (6.7)
 │   │   ├── strum.js           # patrón de rasgueo (8 casillas) y su esquema
 │   │   ├── help-sheet.js      # panel de ayuda "?" y "¿Por qué?"
@@ -169,7 +172,7 @@
 │       ├── notes/             # common.js, theory-exercises.js, practice-exercises.js, reference-view.js
 │       ├── chords/            # common.js, theory-exercises.js, practice-exercises.js, reference-view.js
 │       ├── ear/               # Oído: common.js, theory-exercises.js, practice-exercises.js
-│       ├── theory/            # Escala y tonalidad
+│       ├── theory/            # Escala y tonalidad: common.js, theory-exercises.js, practice-exercises.js, reference-view.js
 │       ├── blues/             # Blues y slide
 │       ├── caged/
 │       ├── warmup/            # Calentamiento (exercises.js)
@@ -193,6 +196,8 @@
     ├── warmup.test.js         # calentamiento: un dedo por traste, espejo, araña y tempo
     ├── chords-exercises.test.js # ejercicios de Acordes y Calentamiento, y lo que dicen sus fichas
     ├── ear.test.js            # ejercicios de Oído, lo que suena y lo que dicen sus fichas (Fase 4)
+    ├── keys.test.js           # las 12 tonalidades: escalas, acordes, intervalos y posición de la escala (Fase 5)
+    ├── keys-exercises.test.js # ejercicios de Escala y tonalidad y lo que dicen sus fichas y su lección (Fase 5)
     ├── concepts.test.js
     ├── random.test.js
     ├── pluck.test.js          # la cuerda sintetizada suena afinada (< 2 cents)
@@ -1327,13 +1332,13 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 
 ### Fase 5 — Módulo Escala y tonalidad
 **Teoría**
-- [ ] Aprender:
+- [x] Aprender:
   - Tonos y semitonos en el mástil (1 traste = 1 semitono).
   - Intervalos (4.3), vistos en una cuerda y entre cuerdas, con sonido.
   - Escala mayor: fórmula T T S T T T S, primero sobre una sola cuerda y luego en una posición.
   - Acordes de la tonalidad: I ii iii IV V vi vii°, con ejemplos de progresiones famosas por grados (I–V–vi–IV, I–IV–V, ii–V–I) que se pueden escuchar.
-- [ ] Consulta: selector de tonalidad que muestra escala, acordes de cada grado (con diagrama si existe en abierto) y las notas de la escala en el mástil.
-- [ ] Ejercicios:
+- [x] Consulta: selector de tonalidad que muestra escala, acordes de cada grado (con diagrama si existe en abierto) y las notas de la escala en el mástil.
+- [x] Ejercicios:
   - "Construye la escala": se elige el siguiente grado.
   - "¿Qué grado es?": por ejemplo, ¿qué grado es Mim en Re mayor?
   - "¿Qué acordes tiene la tonalidad?".
@@ -1341,8 +1346,8 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
   - "Completa la progresión": I–?–vi–IV en Sol.
 
 **Práctica**
-- [ ] "Escala con metrónomo": la escala mayor en una posición, subiendo y bajando, con tempo ajustable y la tablatura (6.7) en pantalla, con su selector de velocidad para escucharla; tempo máximo como récord. Con selector de **duración** (6.6.6).
-- [ ] "Progresión de la tonalidad": la app muestra una progresión por grados en una tonalidad y la tocas con metrónomo. Con selector de **duración** (6.6.6).
+- [x] "Escala con metrónomo": la escala mayor en una posición, subiendo y bajando, con tempo ajustable y la tablatura (6.7) en pantalla, con su selector de velocidad para escucharla; tempo máximo como récord. Con selector de **duración** (6.6.6).
+- [x] "Progresión de la tonalidad": la app muestra una progresión por grados en una tonalidad y la tocas con metrónomo. Con selector de **duración** (6.6.6).
 
 **Niveles**
 | | Básico | Intermedio | Avanzado |
@@ -1350,8 +1355,22 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 | Tonalidades | Do, Sol, Re | + La, Mi, Fa | las 12 mayores |
 | Intervalos | 2ª, 3ª, 5ª, 8ª | + 4ª, 6ª | todos, incluido el tritono |
 
-- [ ] Tests: escalas bien deletreadas (Fa mayor con Sib, Re mayor con Fa# y Do#) y acordes de la tonalidad (Do: C Dm Em F G Am B°; Sol: G Am Bm C D Em F#°).
-- [ ] Conceptos de los bloques Intervalos y Escalas y tonalidad en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
+- [x] Tests: escalas bien deletreadas (Fa mayor con Sib, Re mayor con Fa# y Do#) y acordes de la tonalidad (Do: C Dm Em F G Am B°; Sol: G Am Bm C D Em F#°).
+- [x] Conceptos de los bloques Intervalos y Escalas y tonalidad en `concepts.js`, con `howTo`, `concepts` y `why` en todos los ejercicios, y lección enlazada con palabras pulsables.
+
+**Decisiones de la Fase 5** (aprobadas por el usuario antes de empezar):
+- **Una sola sesión** para toda la fase (se propuso dividirla en 5A y 5B; el usuario prefirió hacerla entera).
+- **Lógica**: `js/core/keys.js` reúne la tonalidad (escala deletreada, acordes de cada grado, grados, intervalos con nombre y deletreo, posición de la escala) a partir de `core/theory.js` y `core/notation.js`. Tests de las 12 tonalidades.
+- **Deletreo de las tonalidades**: Do, Sol, Re, La, Mi, Si, Fa, Si♭, Mi♭, La♭, Re♭ y, para el pc 6, Fa♯ mayor (con Mi♯) o Sol♭ mayor (con Do♭) según el ajuste ♯/♭. Nunca Do♯ ni Do♭ mayor. Los acordes de la tonalidad se nombran con ese deletreo (Si♭ en Fa mayor, Fa♯m en Re mayor) y el disminuido con «°».
+- **Acordes sin forma abierta** (Sim, Fa♯m, Si♭…): se ve el nombre y sus notas con el aviso «sin forma abierta: se toca con cejilla»; el diagrama, solo si existe en la biblioteca (5.1). En Práctica, en Básico solo salen combinaciones que se tocan enteras con acordes abiertos.
+- **"¿Qué intervalo hay?"**: Básico 2ª menor, 2ª mayor, 3ª menor, 3ª mayor, 5ª justa y octava, en la misma cuerda; Intermedio, además 4ª justa, 6ª menor y 6ª mayor, también en cuerdas vecinas; Avanzado, todos (de la 2ª menor a la octava, con el tritono y las 7ªs), en cualquier cuerda. Siempre subiendo. Los puntos llevan «1» y «2», no el nombre de la nota (de Do a Re♯ hay 3 semitonos, pero escrito así es una 2ª aumentada). El «¿Por qué?» escribe la segunda nota bien deletreada desde la primera, y el tritono da sus dos nombres (4ª aumentada y 5ª disminuida). En los botones, el tritono es «Tritono». Se ve un trozo de mástil alrededor de los dos puntos (6.6.7), en tamaño `dense`, para que los botones quepan debajo.
+- **"Construye la escala"**: se ve la fundamental y se eligen las 6 notas siguientes, una a una, entre 4 botones: la letra siguiente con ♭, sin alteración y con ♯, y la misma nota escrita con otra letra (p. ej. La♯ en lugar de Si♭); Re, Sol y La no se pueden escribir con otra letra con una sola alteración, y entonces la cuarta opción es la letra anterior con ♯ (Do♯ para Re). El primer fallo termina la pregunta. La fórmula T T S T T T S se ve en Básico e Intermedio, no en Avanzado.
+- **"¿Qué grado es?"**: un acorde de la tonalidad y se responde su grado en números romanos; 4 opciones en Básico y los 7 grados en el resto.
+- **"¿Qué acordes tiene la tonalidad?"**: se marcan los 7 acordes de la tonalidad entre 10 botones (12 en Avanzado); los que sobran son la misma nota con otra calidad.
+- **"Completa la progresión"**: siempre se ve el grado que falta (I–V–vi–IV en Sol: Sol – ? – Mim – Do) y se elige el acorde. Progresiones: las 4 de 5.7 y ii–V–I.
+- **"Escala con metrónomo"**: posición de dos octavas con la fundamental en la 6ª cuerda, en 4 trastes, un dedo por traste (lo más habitual es llamarla «forma de Mi» en CAGED), calculada para cada tonalidad con la fundamental entre los trastes 2 y 13; subiendo y bajando, con tablatura. Básico negras 50–80 BPM, Intermedio corcheas 60–100, Avanzado corcheas 80–120. Tempo en la preparación y −/+ durante la ronda; récord: el tempo más alto al que se termina una vuelta entera, por nivel.
+- **"Progresión de la tonalidad"**: la pantalla de acordes de 6.6.12 con el grado junto a cada acorde; en la preparación se eligen la progresión y la tonalidad (o «Al azar»); tempo y cambios como en «Cambios de acordes». En Do sale el Fa mini aunque sea de Intermedio.
+- **Afinación**: solo la estándar en todos los ejercicios de la fase.
 
 **Hecho cuando**: los tests pasan y todos los ejercicios funcionan en los 3 niveles.
 
@@ -1498,6 +1517,7 @@ El módulo es "Blues y slide"; esta fase construye la parte de blues y el slide 
 | `v0.2.0` | 2 | commit "Fase 2: módulo Notas del mástil" |
 | `v0.3.0` | 3 | commit "Fase 3: Acordes abiertos, rasgueo, tablatura y Calentamiento" |
 | `v0.4.0` | 4 | commit "Fase 4: módulo Oído" |
+| `v0.5.0` | 5 | commit "Fase 5: módulo Escala y tonalidad" |
 
 ---
 
@@ -1540,3 +1560,4 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 | 2026-11-03 | 3 (arreglo) | Editor de «Mis progresiones»: el selector de cuántos acordes ocupa todo el ancho y las casillas de los acordes llevan su propio título («Acordes») y más separación, para que no queden pegados. Versión 0.3.1. | Pedido por el usuario al probar la v0.3.0 en el iPhone. Pendiente para otro arreglo: en algunos ejercicios el sonido deja de oírse a partir de la segunda vez. |
 | 2026-11-03 | 3 (arreglo) | Sonido que dejaba de oírse en el iPhone en los ejercicios con voz, a partir de la segunda ronda: la voz se desbloquea una sola vez por sesión (antes, en cada «Empezar»); al acabar o cortar cada locución se vuelve a pedir el modo «playback» y se reanuda el audio; si el audio sigue parado, en el siguiente toque se crea uno nuevo. Test nuevo `tests/speech-audio.test.js`. Versión 0.3.2. | El usuario confirmó que pasa en los ejercicios con voz, con el iPhone en silencio, y que se arregla al cerrar y abrir la app. Pendiente de confirmar en el iPhone. |
 | 2026-11-03 | 4 | Módulo **Oído**: 3 ejercicios de Teoría («¿Mayor o menor?» con acordes de la biblioteca, rasgueado lento, arpegiado o arpegiado y rasgueado según el nivel, y séptima de dominante en Avanzado; «¿Más agudo o más grave?» con 3 niveles por distancia; «¿Qué intervalo es?» de 3 a 12 opciones, subiendo o bajando en Avanzado) y 2 de Práctica («Encuentra la nota», con la nota exacta y todos sus unísonos en la solución y cualquier afinación; «Imita el acorde»). La pregunta suena sola al aparecer y el tiempo empieza al acabar el sonido; botón «Repetir sonido» en todos; en Práctica, sin voz (diría la respuesta), la consigna vuelve a sonar a mitad del tiempo y al enseñar la solución. La misma respuesta no sale 3 veces seguidas. Aviso en la preparación si el sonido está desactivado. Bloque **Intervalos** del glosario: «Intervalo», «Agudo y grave», «3ª mayor y 3ª menor», «5ª justa» y «Tritono», con esquemas calculados que suenan. Lógica en `js/core/ear.js` y test nuevo `tests/ear.test.js` (MIDI, tabla 4.3, fórmulas y lo que dicen las ayudas y las fichas). Cambios al plan: decisiones de la Fase 4, excepciones de sonido y voz de Oído (6.6.7 y 6.6.8), estructura de carpetas (3). Versión 0.4.0. | Aceptadas todas las propuestas de la Fase 4 (sin voz en Oído, sonido automático, niveles, tiempos, número de consignas y conceptos). Pendiente de confirmar en el iPhone: cómo suenan las notas y acordes sintetizados, el modo silencio y el arreglo de la v0.3.2. |
+| 2026-11-10 | 5 | Módulo **Escala y tonalidad**: `js/core/keys.js` con las 12 tonalidades mayores calculadas con `theory.js` y `notation.js` (escala deletreada por letra, acordes de cada grado con «°» para el disminuido, intervalos con su nombre y la segunda nota deletreada, tritono con sus dos nombres, posición de la escala de dos octavas con la fundamental en la 6ª cuerda). Lección en 6 tarjetas con esquemas que suenan (tonos y semitonos, intervalos en una cuerda y entre cuerdas, escala en una cuerda y en una posición, acordes de la tonalidad y progresiones que se escuchan). Consulta con selector de tonalidad, escala con su fórmula, los 7 acordes con grado (diagrama si tienen forma abierta; si no, sus notas y el aviso de la cejilla) y la escala en el mástil (entero o posición). 5 ejercicios de Teoría («Construye la escala», «¿Qué grado es?», «¿Qué acordes tiene la tonalidad?», «¿Qué intervalo hay?» y «Completa la progresión») y 2 de Práctica («Escala con metrónomo», con el motor del Calentamiento sin subida automática, − y + y récord por nivel; «Progresión de la tonalidad», con el motor de acordes, grado de cada acorde y «Al azar»). Glosario: 13 conceptos nuevos (2ª, 4ª, 6ª y 7ª, intervalos entre cuerdas; escala, escala mayor, tonalidad, grado, una letra por grado, acordes de la tonalidad, acorde disminuido y posición de la escala), con el nuevo esquema `key` (acordes de la tonalidad y progresiones) y las selecciones `scale`, `scale-position` e `intervals`. Marcado nuevo `{{ch:…}}`, `{{key:…}}` y `{{deg:…}}` para escribir acordes y tonalidades calculados. Opción de preparación «Tonalidad». Tests nuevos `keys.test.js` y `keys-exercises.test.js` (12 tonalidades, número de alteraciones del círculo de quintas, acordes apilando terceras, intervalos desde las 21 notas, posición en las 12 tonalidades, «¿Por qué?» de cada fallo y lo que dicen fichas y lección). Cambios al plan: decisiones de la Fase 5 y estructura de carpetas (3). Versión 0.5.0. | Aceptadas todas las propuestas de la Fase 5 (A–H); el usuario prefirió hacerla en una sola sesión en lugar de dividirla en 5A y 5B. |
