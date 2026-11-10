@@ -91,7 +91,7 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 | 2 | Notas del mástil | ✅ Hecha (v0.2.0) |
 | 3 | Acordes abiertos y Calentamiento | ✅ Hecha (v0.3.0) |
 | 4 | Oído | ✅ Hecha (v0.4.0) |
-| 5 | Escala y tonalidad | ✅ Hecha (v0.5.0) |
+| 5 | Escala y tonalidad | ✅ Hecha (v0.5.1) |
 | 6 | Blues y slide: el blues | ⏳ Siguiente |
 | 7 | Blues y slide: el slide | Pendiente |
 | 8 | CAGED | Pendiente |
@@ -99,7 +99,7 @@ La app se construye **por fases**. Cada fase se prueba en el iPhone antes de emp
 
 Cada fase terminada tiene su **etiqueta de versión** en git (`v0.0.0`, `v0.1.0`…), para poder volver a ella si algo sale mal.
 
-### Qué funciona ya (v0.5.0)
+### Qué funciona ya (v0.5.1)
 
 - **Inicio** con Teoría, Práctica, Afinaciones y Glosario, los iconos de Perfil y Ajustes, la **racha** y **Continuar** (abre el último ejercicio hecho).
 - **Metrónomo** (fila Herramientas del Inicio): 30–240 BPM con − y + (mantén pulsado para ir rápido), deslizador, «Marcar el tempo tocando aquí», de 2 a 7 tiempos por compás con el primero acentuado, negras, corcheas o tresillos. Mantiene la pantalla encendida mientras suena y recuerda tus ajustes.

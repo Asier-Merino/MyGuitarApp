@@ -1,6 +1,6 @@
 // Service worker: guarda la app para usarla sin conexión.
 // Incrementa CACHE_VERSION en cada despliegue que cambie archivos de la app.
-const CACHE_VERSION = 9;
+const CACHE_VERSION = 10;
 const CACHE_PREFIX = 'myguitarapp-';
 const CACHE_NAME = `${CACHE_PREFIX}v${CACHE_VERSION}`;
 

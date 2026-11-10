@@ -157,7 +157,9 @@ body::before {
 
 body.has-sheet { overflow: hidden; }
 
-a, button, input, select, label, summary { touch-action: manipulation; }
+/* Sin zoom por doble toque en toda la app (en el iPhone, tocar rápido el mástil o el texto ampliaba la pantalla).
+   El zoom con dos dedos se mantiene por accesibilidad. */
+html, body, a, button, input, select, label, summary { touch-action: manipulation; }
 a { color: var(--text); }
 button { font: inherit; color: inherit; }
 
