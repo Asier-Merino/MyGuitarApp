@@ -97,6 +97,19 @@ export function keyProgression(key, degrees, opts) {
   });
 }
 
+/**
+ * Forma de 4 cuerdas de la tríada disminuida, con la fundamental en la 5ª cuerda: trastes
+ * desde el de la fundamental (la del Si° es x 2 3 4 3 x). Cada cuerda lleva un dedo distinto,
+ * así que no hay cejilla. Comprobada en tests/progressions.test.js en las 12 tonalidades.
+ */
+export const DIMINISHED_SHAPE = Object.freeze({ 5: 0, 4: 1, 3: 2, 2: 1 });
+
+/**
+ * Cómo se suele tocar un acorde sin forma abierta (texto en UI_TEXTS.keys.noOpen):
+ * 'diminished' (forma de 4 cuerdas, DIMINISHED_SHAPE) o 'barre' (con cejilla).
+ */
+export const noOpenKind = (chord) => (chord.quality === 'diminished' ? 'diminished' : 'barre');
+
 /** true si todos los acordes tienen forma abierta en la biblioteca. */
 export const allOpen = (chords) => chords.every((c) => c.open);
 

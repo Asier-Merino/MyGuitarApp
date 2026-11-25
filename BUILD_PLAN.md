@@ -328,7 +328,7 @@ Rango normal: trastes 0–12. Para CAGED y pentatónicas el mástil se amplía a
 |---|---|---|
 | Fondo de pantalla | `#262421` | `#F4F1EC` |
 | Botón y tarjeta (superficie) | `#3A3734` | `#FFFFFF` |
-| Borde inferior de botón gris | `#23211F` | `#D8D2C8` |
+| Borde inferior de botón gris | `#161513` | `#D8D2C8` |
 | Texto principal | `#F2EFEA` | `#262421` |
 | Texto secundario | `#B5AFA6` | `#6B645C` |
 | Ámbar mate (botón principal) | `#D4A24C` | `#D4A24C` |
@@ -343,6 +343,7 @@ Rango normal: trastes 0–12. Para CAGED y pentatónicas el mástil se amplía a
 - Los colores de función (R, 3, 5, 7, *blue note*), correcto e incorrecto se eligen en la misma gama apagada, con versión para cada tema (valores en `css/styles.css`, Fase 1A).
 - **Ajustes de contraste (Fase 1A)**: en el tema claro, el ámbar de iconos `#A87B2E` no llega a 4,5:1 como texto (3,4:1), así que el texto en ámbar usa un token aparte, `--amber-text` = `#85601F` (5,1:1); en el oscuro sigue siendo `#D4A24C`. El rojo de peligro es `#EE8B7F` (oscuro) y `#B23A2B` (claro).
 - **Ajustes de contraste (Fase 1B)**: el texto de los puntos del mástil usa `--on-fn` (oscuro `#1E1B18`, claro `#FFFFFF`) y los puntos neutros `--dot-neutral` / `--on-dot-neutral`. Para que el texto blanco llegue a 4,5:1 en el tema claro se oscurecieron un poco: fundamental `#C4553A` → `#C05339`, 3ª `#3B7EBF` → `#3878B5`, 5ª `#2C8C82` → `#298279`, 7ª `#B85C8A` → `#AF5783`, resto `#8A847C` → `#79746D` y correcto `#3D8B3D` → `#3A843A`. El tema oscuro no cambia. Todo lo que se resalta con color en un esquema lleva leyenda escrita.
+- **Ajuste de la revisión (v0.5.2)**: en el tema oscuro, el borde inferior de los botones grises pasa de `#23211F` a `#161513`. El anterior casi no se distinguía del fondo `#262421`, y los botones grandes (Inicio, respuestas) no parecían «físicos».
 - **Barra de estado del iPhone**: con `black-translucent` su texto es siempre blanco, así que detrás va una franja `#262421` también en el tema claro.
 
 ---
@@ -605,7 +606,7 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 ```
  ←  Teoría                          ?
  ┌────────────────────────────────┐
- │ ★ Sesión mezclada              │   ← botón ámbar
+ │ ★ Sesión mezclada              │   ← ámbar desde la Fase 9; antes, gris
  └────────────────────────────────┘
  [icono] Notas del mástil
          7 ejercicios
@@ -628,7 +629,7 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 | CAGED | Blues y slide |
 | | CAGED |
 
-- Hasta la Fase 9, "Sesión mezclada" abre una pantalla "Próximamente".
+- Hasta la Fase 9, "Sesión mezclada" abre una pantalla "Próximamente" y va **en gris**, para que la acción más destacada no lleve a una pantalla vacía. Pasa a ámbar sola al construirla (`MIXED_SESSION_PHASE` en `modules.js`).
 
 #### 6.6.3 Módulo
 **En Teoría** (módulos con lección y consulta):
@@ -656,13 +657,14 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 #### 6.6.4 Aprender (lección por tarjetas)
 - **Pantalla completa**: **X** para cerrar a la izquierda, título del módulo y "?".
 - La lección se divide en **tarjetas cortas** (de 3 a 6), con **una idea por tarjeta**: un título, de 2 a 4 líneas de texto y **siempre un esquema visual** de lo que explica (un trozo de mástil, un diagrama de acorde o un trozo de tablatura), **interactivo: tocar un punto lo hace sonar**.
+- **Orden**: título, texto y, debajo, el esquema, para que el texto se lea sin bajar aunque el esquema sea alto (un mástil del 0 al 11 en vertical no cabe en el iPhone). Anterior y Siguiente quedan **fijos abajo**.
 - Barra de avance segmentada arriba (una raya por tarjeta).
 - Botones **Anterior** y **Siguiente** (Siguiente en ámbar), y también se puede deslizar con el dedo.
 - La última tarjeta muestra **"Ir a los ejercicios"**, y la lección queda marcada como completada (se guarda).
 - Los textos usan las palabras pulsables del glosario (6.8).
 
 #### 6.6.5 Consulta
-- **Pantalla completa** con la cabecera normal. El mástil o los diagramas ocupan todo el espacio disponible, sin otros elementos que estorben.
+- **Pantalla completa** con la cabecera normal, con el **nombre del módulo** como título (como en Aprender). El mástil o los diagramas ocupan todo el espacio disponible, sin otros elementos que estorben.
 
 #### 6.6.6 Preparación del ejercicio
 ```
@@ -684,7 +686,7 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 - Una frase que explica el ejercicio. El "?" abre la ayuda completa (6.8).
 - **Nivel**: tres botones; queda seleccionado el último usado en ese ejercicio.
 - **Afinación**: una fila con la afinación actual. Al tocarla sube un panel con las afinaciones disponibles para ese ejercicio (7.6). Si el ejercicio no admite afinación, la fila no aparece.
-- **Duración** (solo en los ejercicios que van por tiempo): selector **30 s · 1 min · 2 min 30 · 5 min · 10 min**. Se recuerda la última elegida en cada ejercicio.
+- **Duración** (solo en los ejercicios que van por tiempo): selector **30 s · 1 min · 2 min 30 · 5 min · 10 min**, en tres columnas como el de Nivel (con "Sin límite", dos filas completas). Se recuerda la última elegida en cada ejercicio.
   - Ejercicios que la llevan: bases de blues y de slide, improvisar sobre la base, notas objetivo, cambios de acordes, rasgueo, escala con metrónomo, progresión de la tonalidad, recorrer las formas CAGED y Calentamiento.
   - Las **bases para improvisar** (blues y slide) añaden la opción **"Sin límite"**.
   - **"Cambios en un minuto"** no la lleva: se queda en 60 s fijos, para que el récord sea comparable.
@@ -728,7 +730,8 @@ Lista agrupada; cada opción en una fila con su control (selector de opciones o 
 - **Cuenta atrás** en barra y en segundos.
 - **Guía de ritmo**: en los ejercicios que recorren cuerdas, los círculos de las cuerdas (6 a 1) se iluminan uno a uno, repartidos en el tiempo disponible.
 - **Al acabarse el tiempo**: aparece automáticamente un trozo de mástil con las posiciones correctas durante **3 segundos** y después pasa a la siguiente consigna.
-- **Pausa** y **Ver posiciones**: botones grandes abajo. En pausa se puede abrir el "?".
+- **Pausa** y **Ver posiciones**: botones grandes abajo, con el icono encima del texto (así caben en una línea "Ocultar posiciones" y los demás textos largos). En pausa se puede abrir el "?".
+- La consigna, la cuenta atrás y la guía van juntas, centradas en el hueco entre la cabecera y los botones.
 - Si la afinación no es la estándar, se ve la etiqueta "Afinación: …" bajo la cabecera.
 - En los ejercicios con **Duración** (6.6.6), la cabecera muestra el **tiempo restante** de la ronda (qué se muestra con "Sin límite" se propone al usuario en la Fase 6). Al acabarse, va al resumen de ronda (6.6.10).
 
@@ -776,7 +779,7 @@ El aspecto del mástil está en 6.3.
 #### 6.6.11 Progresiones de acordes (Acordes, Práctica)
 En "Cambios de acordes" y "Rasgueo", la preparación permite elegir qué acordes practicar:
 
-- **Predefinidas**: las progresiones de 5.7, calculadas por grados.
+- **Predefinidas**: las progresiones de 5.7, calculadas por grados. En la lista se escriben solo los nombres de los acordes ("Fa", no "Fa mini"): la forma la elige la app y se ve en el diagrama. En "Mis progresiones" sí se indica, porque la ha elegido el usuario.
 - **Personalizada · Mis progresiones**: lista de progresiones guardadas por el usuario y un botón **"+ Nueva"**.
   1. Se elige **cuántos acordes: 3, 4 o 5**.
   2. Aparecen esas casillas en orden; al tocar una se elige el acorde de la biblioteca (5.1), de cualquier nivel.
@@ -855,7 +858,8 @@ La tablatura está en 6.7.
  ┌ Sol abierto … ┐ ┌ Re abierto … ┐ ┌ Mi abierto … ┐
 ```
 - Las **7 afinaciones** de 4.2, agrupadas: Estándar y bajadas (Mi estándar, Medio tono abajo, Re estándar), Drop (Drop D) y Slide (Sol abierto, Re abierto, Mi abierto).
-- En cada ficha, **las cuerdas que cambian respecto a la estándar se resaltan en ámbar**, con la línea de cambios debajo ("6ª ↓ 1 tono").
+- En cada ficha, **las cuerdas que cambian respecto a la estándar se resaltan en ámbar**, con la línea de cambios debajo ("6ª ↓ 1 tono"). Cada cuerda indica su cambio **en tonos**, la misma unidad que esa línea ("↓1", "↓½").
+- Debajo, el tipo de afinación (estándar, bajada, drop o abierta) como palabra pulsable que abre su ficha, seguido de una frase corta sin enlace.
 - Cada nota **suena al tocarla**.
 - Botón **"Tocar todas"**: suena cada cuerda de la 6ª a la 1ª, despacio (≈1,5 s cada una), para afinar de oído. Al volver a pulsarlo se detiene.
 - **Sin botón de copiar.**
@@ -1362,7 +1366,7 @@ Un puzle: una cuerda vacía del 0 al 12 que hay que completar.
 - **Una sola sesión** para toda la fase (se propuso dividirla en 5A y 5B; el usuario prefirió hacerla entera).
 - **Lógica**: `js/core/keys.js` reúne la tonalidad (escala deletreada, acordes de cada grado, grados, intervalos con nombre y deletreo, posición de la escala) a partir de `core/theory.js` y `core/notation.js`. Tests de las 12 tonalidades.
 - **Deletreo de las tonalidades**: Do, Sol, Re, La, Mi, Si, Fa, Si♭, Mi♭, La♭, Re♭ y, para el pc 6, Fa♯ mayor (con Mi♯) o Sol♭ mayor (con Do♭) según el ajuste ♯/♭. Nunca Do♯ ni Do♭ mayor. Los acordes de la tonalidad se nombran con ese deletreo (Si♭ en Fa mayor, Fa♯m en Re mayor) y el disminuido con «°».
-- **Acordes sin forma abierta** (Sim, Fa♯m, Si♭…): se ve el nombre y sus notas con el aviso «sin forma abierta: se toca con cejilla»; el diagrama, solo si existe en la biblioteca (5.1). En Práctica, en Básico solo salen combinaciones que se tocan enteras con acordes abiertos.
+- **Acordes sin forma abierta** (Sim, Fa♯m, Si♭…): se ve el nombre y sus notas con el aviso «sin forma abierta: lo habitual es tocarlo con cejilla». En el disminuido (vii°) el aviso es otro, porque lo más habitual es una forma de 4 cuerdas **sin** cejilla, con la fundamental en la 5ª cuerda (Si°: x 2 3 4 3 x). Un test comprueba esa forma en las 12 tonalidades; el diagrama, solo si existe en la biblioteca (5.1). En Práctica, en Básico solo salen combinaciones que se tocan enteras con acordes abiertos.
 - **"¿Qué intervalo hay?"**: Básico 2ª menor, 2ª mayor, 3ª menor, 3ª mayor, 5ª justa y octava, en la misma cuerda; Intermedio, además 4ª justa, 6ª menor y 6ª mayor, también en cuerdas vecinas; Avanzado, todos (de la 2ª menor a la octava, con el tritono y las 7ªs), en cualquier cuerda. Siempre subiendo. Los puntos llevan «1» y «2», no el nombre de la nota (de Do a Re♯ hay 3 semitonos, pero escrito así es una 2ª aumentada). El «¿Por qué?» escribe la segunda nota bien deletreada desde la primera, y el tritono da sus dos nombres (4ª aumentada y 5ª disminuida). En los botones, el tritono es «Tritono». Se ve un trozo de mástil alrededor de los dos puntos (6.6.7), en tamaño `dense`, para que los botones quepan debajo.
 - **"Construye la escala"**: se ve la fundamental y se eligen las 6 notas siguientes, una a una, entre 4 botones: la letra siguiente con ♭, sin alteración y con ♯, y la misma nota escrita con otra letra (p. ej. La♯ en lugar de Si♭); Re, Sol y La no se pueden escribir con otra letra con una sola alteración, y entonces la cuarta opción es la letra anterior con ♯ (Do♯ para Re). El primer fallo termina la pregunta. La fórmula T T S T T T S se ve en Básico e Intermedio, no en Avanzado.
 - **"¿Qué grado es?"**: un acorde de la tonalidad y se responde su grado en números romanos; 4 opciones en Básico y los 7 grados en el resto.
@@ -1562,3 +1566,16 @@ Propuestas de mejora. Las pendientes se preguntan al usuario al llegar a su fase
 | 2026-11-03 | 4 | Módulo **Oído**: 3 ejercicios de Teoría («¿Mayor o menor?» con acordes de la biblioteca, rasgueado lento, arpegiado o arpegiado y rasgueado según el nivel, y séptima de dominante en Avanzado; «¿Más agudo o más grave?» con 3 niveles por distancia; «¿Qué intervalo es?» de 3 a 12 opciones, subiendo o bajando en Avanzado) y 2 de Práctica («Encuentra la nota», con la nota exacta y todos sus unísonos en la solución y cualquier afinación; «Imita el acorde»). La pregunta suena sola al aparecer y el tiempo empieza al acabar el sonido; botón «Repetir sonido» en todos; en Práctica, sin voz (diría la respuesta), la consigna vuelve a sonar a mitad del tiempo y al enseñar la solución. La misma respuesta no sale 3 veces seguidas. Aviso en la preparación si el sonido está desactivado. Bloque **Intervalos** del glosario: «Intervalo», «Agudo y grave», «3ª mayor y 3ª menor», «5ª justa» y «Tritono», con esquemas calculados que suenan. Lógica en `js/core/ear.js` y test nuevo `tests/ear.test.js` (MIDI, tabla 4.3, fórmulas y lo que dicen las ayudas y las fichas). Cambios al plan: decisiones de la Fase 4, excepciones de sonido y voz de Oído (6.6.7 y 6.6.8), estructura de carpetas (3). Versión 0.4.0. | Aceptadas todas las propuestas de la Fase 4 (sin voz en Oído, sonido automático, niveles, tiempos, número de consignas y conceptos). Pendiente de confirmar en el iPhone: cómo suenan las notas y acordes sintetizados, el modo silencio y el arreglo de la v0.3.2. |
 | 2026-11-10 | 5 | Módulo **Escala y tonalidad**: `js/core/keys.js` con las 12 tonalidades mayores calculadas con `theory.js` y `notation.js` (escala deletreada por letra, acordes de cada grado con «°» para el disminuido, intervalos con su nombre y la segunda nota deletreada, tritono con sus dos nombres, posición de la escala de dos octavas con la fundamental en la 6ª cuerda). Lección en 6 tarjetas con esquemas que suenan (tonos y semitonos, intervalos en una cuerda y entre cuerdas, escala en una cuerda y en una posición, acordes de la tonalidad y progresiones que se escuchan). Consulta con selector de tonalidad, escala con su fórmula, los 7 acordes con grado (diagrama si tienen forma abierta; si no, sus notas y el aviso de la cejilla) y la escala en el mástil (entero o posición). 5 ejercicios de Teoría («Construye la escala», «¿Qué grado es?», «¿Qué acordes tiene la tonalidad?», «¿Qué intervalo hay?» y «Completa la progresión») y 2 de Práctica («Escala con metrónomo», con el motor del Calentamiento sin subida automática, − y + y récord por nivel; «Progresión de la tonalidad», con el motor de acordes, grado de cada acorde y «Al azar»). Glosario: 13 conceptos nuevos (2ª, 4ª, 6ª y 7ª, intervalos entre cuerdas; escala, escala mayor, tonalidad, grado, una letra por grado, acordes de la tonalidad, acorde disminuido y posición de la escala), con el nuevo esquema `key` (acordes de la tonalidad y progresiones) y las selecciones `scale`, `scale-position` e `intervals`. Marcado nuevo `{{ch:…}}`, `{{key:…}}` y `{{deg:…}}` para escribir acordes y tonalidades calculados. Opción de preparación «Tonalidad». Tests nuevos `keys.test.js` y `keys-exercises.test.js` (12 tonalidades, número de alteraciones del círculo de quintas, acordes apilando terceras, intervalos desde las 21 notas, posición en las 12 tonalidades, «¿Por qué?» de cada fallo y lo que dicen fichas y lección). Cambios al plan: decisiones de la Fase 5 y estructura de carpetas (3). Versión 0.5.0. | Aceptadas todas las propuestas de la Fase 5 (A–H); el usuario prefirió hacerla en una sola sesión en lugar de dividirla en 5A y 5B. |
 | 2026-11-10 | 5 (arreglo) | Sin zoom por doble toque en toda la app: `touch-action: manipulation` también en `html` y `body` (antes solo en botones y enlaces, y tocar dos veces el mástil o el texto ampliaba la pantalla en el iPhone). El zoom con dos dedos se mantiene. Versión 0.5.1. | Pedido por el usuario al probar la v0.5.0 en el iPhone. También preguntó por los números romanos en minúscula (ii, iii, vi): se explicó que es la norma habitual (minúscula = acorde menor) y decidió dejarlos como están. |
+| 2026-11-25 | Revisión | Arreglos de la revisión general (capturas en `docs/capturas/revision/`):
+- **Lección:** el texto va antes del esquema y Anterior/Siguiente quedan fijos abajo (6.6.4); antes, en el iPhone había que bajar para leer.
+- **Si° (vii°) en la Consulta:** decía «se toca con cejilla», pero lo habitual es una forma de 4 cuerdas sin cejilla (x 2 3 4 3 x). Ahora el aviso depende del acorde (5), con un test que comprueba la forma en las 12 tonalidades. El aviso de los demás dice «lo habitual es tocarlo con cejilla».
+- **Botones grises en tema oscuro:** borde inferior más oscuro, para que se vea el efecto físico (4.5).
+- **Sesión mezclada:** en gris hasta la Fase 9 (6.6.2).
+- **Afinaciones:** cada cuerda indica su cambio en tonos, igual que la línea de cambios, y solo el tipo de afinación es pulsable (6.6.16).
+- **Progresiones predefinidas:** sin «mini» (6.6.11).
+- **Duración:** en tres columnas, como Nivel (6.6.6).
+- **Consulta:** con el nombre del módulo como título (6.6.5).
+- **Práctica:** la consigna va centrada y los botones de abajo llevan el icono encima del texto, para que «Ocultar posiciones» quepa en una línea (6.6.8).
+- **Ajustes:** «Horizontal» sin abreviar.
+
+Versión 0.5.2. | El usuario eligió arreglar todo menos las zonas táctiles de 40 px (selectores de Ajustes y de la Consulta) y pidió que se buscara la forma correcta de tocar Si°. |

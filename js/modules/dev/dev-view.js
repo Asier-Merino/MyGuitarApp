@@ -43,7 +43,7 @@ export function renderDev(view, params, nav) {
       segmented({
         label: 'Orientación',
         value: state.orientation,
-        options: [{ value: 'auto', label: 'Auto' }, { value: 'vertical', label: 'Vertical' }, { value: 'horizontal', label: 'Horiz.' }],
+        options: [{ value: 'auto', label: 'Auto' }, { value: 'vertical', label: 'Vertical' }, { value: 'horizontal', label: 'Horizontal' }],
         onChange: (v) => { state.orientation = v; drawBoard(); },
       }),
       segmented({

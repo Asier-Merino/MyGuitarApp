@@ -24,6 +24,7 @@ import { createRng } from '../core/random.js';
 import { formatClock } from '../core/session.js';
 import { secondsPerBeat, eighthTime } from '../core/rhythm.js';
 import { STRUM_CELLS } from '../data/strum-patterns.js';
+import { noOpenKind } from '../core/progressions.js';
 import { UI_TEXTS } from '../data/concepts.js';
 import { settings, store } from '../state.js';
 import { getAudio, setMasterVolume } from '../audio/context.js';
@@ -87,7 +88,7 @@ export function runChords(view, { exercise, level, duration, options = {}, nav, 
     if (size === 'mini') return null;
     return h('div', { class: 'chords__no-open' },
       h('span', { class: 'chords__tones' }, chord.tones.flatMap((t, i) => [i ? ' ' : null, NoteLabel(spellingPc(t), { spelling: t })])),
-      h('span', { class: 'chords__no-open-text' }, UI_TEXTS.keys.noOpen));
+      richText(UI_TEXTS.keys.noOpen[noOpenKind(chord)], { tag: 'span', className: 'chords__no-open-text' }));
   }
 
   function showChord(index) {

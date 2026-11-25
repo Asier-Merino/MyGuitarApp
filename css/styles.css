@@ -6,7 +6,7 @@
   color-scheme: dark;
   --bg: #262421;
   --surface: #3A3734;
-  --surface-edge: #23211F;
+  --surface-edge: #161513;  /* bien distinto del fondo, para que se vea el borde "físico" */
   --surface-hover: #45423E;
   --line: #4A4642;
   --text: #F2EFEA;
@@ -902,7 +902,9 @@ p { margin: 0 0 .75em; }
 
 /* ===== Ejercicio de Práctica ===== */
 .practice { display: flex; flex-direction: column; min-height: calc(100dvh - 56px - env(safe-area-inset-top)); }
-.practice__stage { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 34dvh; text-align: center; }
+/* margin-top: auto aquí y en .practice__actions: el hueco libre se reparte arriba y abajo, y la
+   consigna, la cuenta atrás y la guía quedan juntas en el centro de la pantalla. */
+.practice__stage { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 34dvh; margin-top: auto; text-align: center; }
 .note-label--huge { font-size: clamp(4.5rem, 26vw, 8rem); line-height: 1; letter-spacing: -.02em; }
 .note-label--huge .nl-alt { font-size: .38em; }
 .practice__instruction { margin: 12px 0 0; color: var(--text-muted); font-size: 1.2rem; font-weight: 700; }
@@ -931,8 +933,11 @@ p { margin: 0 0 .75em; }
 .practice__paused .btn { background: var(--bg); }
 .practice__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 16px; }
 .practice__btn { min-height: 64px; font-size: 1.05rem; }
+/* Con 2 o 3 botones, el icono va encima del texto: así caben en una línea los textos largos
+   («Ocultar posiciones», «Ocultar diagrama») y todas las pantallas de Práctica se ven igual. */
+.practice__actions:not(.practice__actions--one) .practice__btn { flex-direction: column; gap: 4px; padding-inline: 8px; font-size: 1rem; line-height: 1.2; }
 .practice__actions--three { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.practice__actions--three .practice__btn { flex-direction: column; gap: 4px; padding-inline: 6px; font-size: 0.95rem; line-height: 1.2; }
+.practice__actions.practice__actions--three .practice__btn { padding-inline: 6px; font-size: 0.95rem; }
 
 /* ===== Oído: «Repetir sonido» en las preguntas ===== */
 .quiz__listen { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 8px 0 16px; }
@@ -1017,8 +1022,19 @@ p { margin: 0 0 .75em; }
 .lesson__seg.is-done { background: var(--amber); }
 .lesson__card { flex: 1; }
 .lesson__title { margin: 4px 0 8px; font-size: 1.45rem; font-weight: 800; }
-.lesson__text { font-size: 1.1rem; line-height: 1.5; }
-.lesson__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; padding-bottom: 8px; }
+.lesson__text { margin: 0 0 12px; font-size: 1.1rem; line-height: 1.5; }
+/* Anterior y Siguiente, fijos abajo: siempre al alcance aunque el esquema sea alto. */
+.lesson__actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px calc(-1 * var(--gutter)) 0;
+  padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
 
 /* ===== Consulta de Notas ===== */
 .reference__filter { margin: 8px 0 4px; }

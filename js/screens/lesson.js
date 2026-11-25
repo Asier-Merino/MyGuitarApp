@@ -1,6 +1,7 @@
 // Aprender: lección por tarjetas (BUILD_PLAN 6.6.4). Pantalla completa con X, título del
-// módulo y "?"; barra de avance segmentada; una idea por tarjeta con su esquema interactivo
-// (tocar un punto lo hace sonar); Anterior y Siguiente (ámbar), o deslizar el dedo. La
+// módulo y "?"; barra de avance segmentada; una idea por tarjeta: título, texto y debajo su
+// esquema interactivo (tocar un punto lo hace sonar), para que el texto se lea sin bajar en el
+// móvil; Anterior y Siguiente (ámbar) fijos abajo, o deslizar el dedo. La
 // última tarjeta muestra "Ir a los ejercicios" y la lección queda marcada como completada.
 
 import { h, render, button, screenHeader } from '../ui/components.js';
@@ -40,8 +41,8 @@ export function renderLesson(view, { module: slug }, nav) {
     counter.textContent = `Tarjeta ${index + 1} de ${cards.length}`;
     render(cardEl,
       h('h2', { class: 'lesson__title' }, card.title),
-      ConceptDiagram(card),
-      richText(card.text, { className: 'lesson__text' }));
+      richText(card.text, { className: 'lesson__text' }),
+      ConceptDiagram(card));
     render(actions,
       button({ label: 'Anterior', disabled: index === 0, onClick: () => show(index - 1) }),
       last

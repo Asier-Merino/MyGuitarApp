@@ -9,7 +9,7 @@ import { renderScreen } from '../../screens/screen.js';
 import { TUNINGS, TUNING_GROUPS, tuningNameText } from '../../data/tunings.js';
 import { getConcept, UI_TEXTS } from '../../data/concepts.js';
 import { settings } from '../../state.js';
-import { STANDARD_TUNING, formatTuningChanges } from '../../core/fretboard-model.js';
+import { STANDARD_TUNING, formatTuningChanges, shiftInTones, toneAmountText } from '../../core/fretboard-model.js';
 import { playNote, playSequence, soundEnabled } from '../../audio/synth.js';
 
 const STRING_ORDER = [6, 5, 4, 3, 2, 1];
@@ -22,16 +22,10 @@ function stopAll() {
   stopPlaying = null;
 }
 
-function shiftText(semitones) {
-  if (!semitones) return null;
-  return `${semitones < 0 ? '↓' : '↑'}${Math.abs(semitones)}`;
-}
-
 function tuningCard(tuning) {
   const noteButtons = STRING_ORDER.map((string) => {
     const midi = tuning.midi[string];
     const shift = midi - STANDARD_TUNING[string];
-    const semis = Math.abs(shift) === 1 ? 'semitono' : 'semitonos';
     return h('button', {
       type: 'button',
       class: ['string-btn', shift && 'string-btn--changed'].filter(Boolean).join(' '),
@@ -40,9 +34,9 @@ function tuningCard(tuning) {
     },
     h('span', { class: 'string-btn__num' }, h('span', { class: 'sr-only' }, 'Cuerda '), `${string}ª`),
     NoteLabel(midi % 12, { accidentals: tuning.accidentals, className: 'note-label--stacked' }),
-    h('span', { class: 'string-btn__shift', 'aria-hidden': 'true' }, shiftText(shift) ?? '·'),
+    h('span', { class: 'string-btn__shift', 'aria-hidden': 'true' }, shiftInTones(shift) ?? '·'),
     shift !== 0 && h('span', { class: 'sr-only' },
-      `, ${Math.abs(shift)} ${semis} más ${shift < 0 ? 'grave' : 'aguda'} que en la estándar`));
+      `, ${toneAmountText(shift)} más ${shift < 0 ? 'grave' : 'aguda'} que en la estándar`));
   });
 
   const playLabel = h('span', {}, 'Tocar todas');
@@ -74,7 +68,8 @@ function tuningCard(tuning) {
     h('h3', { class: 'tuning-card__title' }, TuningName(tuning)),
     h('div', { class: 'string-row' }, noteButtons),
     changes !== '—' && h('p', { class: 'tuning-card__changes' }, changes),
-    richText(`[[${concept.id}|${concept.short}]]`, { className: 'tuning-card__desc' }),
+    // Solo el nombre del tipo de afinación es pulsable; la frase que lo explica va sin enlace.
+    richText(`[[${concept.id}|${concept.title}]]. ${concept.short}`, { className: 'tuning-card__desc' }),
     h('div', { class: 'btn-row' }, playBtn),
   );
 }

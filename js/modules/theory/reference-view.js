@@ -12,12 +12,12 @@ import { Fretboard } from '../../ui/fretboard.js';
 import { FunctionLegend } from '../../ui/concept-diagram.js';
 import { richText } from '../../ui/term.js';
 import { KEY_LEVELS, MAJOR_STEPS, ROMANS, keyScale, keyRootSpelling, majorScalePosition } from '../../core/keys.js';
-import { keyProgression, keyChordMidis } from '../../core/progressions.js';
+import { keyProgression, keyChordMidis, noOpenKind } from '../../core/progressions.js';
 import { midiAt } from '../../core/fretboard-model.js';
 import { mod12 } from '../../core/theory.js';
 import { spellingPc } from '../../core/notation.js';
-import { fillTemplate } from '../../core/glossary.js';
-import { LEVELS } from '../../data/modules.js';
+import { fillTemplate, plainText } from '../../core/glossary.js';
+import { LEVELS, getModule } from '../../data/modules.js';
 import { UI_TEXTS } from '../../data/concepts.js';
 import { settings } from '../../state.js';
 import { strum, playSequence } from '../../audio/synth.js';
@@ -81,7 +81,8 @@ export function renderKeysReference(view, params, nav) {
     ChordLabel(c, { className: 'key-card__name' }),
     c.open
       ? ChordDiagram(c.open, { size: 'mini', playOnTap: false })
-      : h('span', { class: 'key-card__no-open' }, T.noOpen),
+      // La tarjeta entera es un botón (suena el acorde): el aviso va sin palabras pulsables dentro.
+      : h('span', { class: 'key-card__no-open' }, plainText(T.noOpen[noOpenKind(c)])),
     h('span', { class: 'key-card__notes' }, c.tones.flatMap((t, i) => [i ? ' ' : null, NoteLabel(spellingPc(t), { spelling: t })]))));
 
     const whole = boardView === 'whole';
@@ -118,7 +119,7 @@ export function renderKeysReference(view, params, nav) {
   };
 
   renderScreen(view, {
-    title: 'Consulta',
+    title: getModule(params.module).title,
     nav,
     help: 'referenceKeys',
     className: 'reference',

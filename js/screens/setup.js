@@ -102,6 +102,7 @@ export function renderSetup(view, params, nav) {
           h('h2', { class: 'section-title' }, 'Duración'),
           segmented({
             label: 'Duración',
+            large: true,
             value: duration,
             options: durationOptions({ unlimited: exercise.duration.unlimited }).map((o) => ({ value: o.value, label: o.label })),
             onChange: (v) => { saveSetup(exercise, { duration: v }); draw(); },

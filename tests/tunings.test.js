@@ -6,6 +6,7 @@ import {
 } from '../js/data/tunings.js';
 import {
   STANDARD_TUNING, STRINGS, isValidTuning, pcAt, midiAt, tuningChanges, formatTuningChanges,
+  toneAmount, toneAmountText, shiftInTones,
 } from '../js/core/fretboard-model.js';
 import { noteName } from '../js/core/notation.js';
 import { chordPcs, mod12 } from '../js/core/theory.js';
@@ -52,6 +53,29 @@ test('los nombres de las notas, calculados, coinciden con la columna "Notas"', (
 test('la línea de cambios, calculada, coincide con la última columna', () => {
   for (const [id, , , changes] of PLAN) assert.equal(formatTuningChanges(getTuning(id).midi), changes, id);
   assert.deepEqual(tuningChanges(getTuning('drop-d').midi), [{ string: 6, semitones: -2 }]);
+});
+
+test('el cambio de cada cuerda, en tonos (2 semitonos = 1 tono), como la línea de cambios', () => {
+  assert.equal(toneAmount(1), '½');
+  assert.equal(toneAmount(2), '1');
+  assert.equal(toneAmount(3), '1½');
+  assert.equal(toneAmount(4), '2');
+  assert.equal(shiftInTones(0), null);
+  assert.equal(shiftInTones(-1), '↓½');
+  assert.equal(shiftInTones(-2), '↓1');
+  assert.equal(shiftInTones(2), '↑1');
+  assert.equal(toneAmountText(-1), '½ tono');
+  assert.equal(toneAmountText(5), '2½ tonos');
+  // En cada afinación, la flecha y la cantidad de cada cuerda aparecen tal cual en la línea de
+  // cambios (que dice, por ejemplo, «6ª ↓ 1 tono»): la ficha y la línea usan la misma unidad.
+  for (const tuning of TUNINGS) {
+    const line = formatTuningChanges(tuning.midi);
+    for (const { string, semitones } of tuningChanges(tuning.midi)) {
+      const cell = shiftInTones(semitones);
+      assert.ok(line.includes(`${cell[0]} ${toneAmountText(semitones)}`), `${tuning.id}, ${string}ª: ${cell} en «${line}»`);
+      assert.equal(cell.slice(1), toneAmount(semitones));
+    }
+  }
 });
 
 test('las abiertas suenan como su acorde mayor al aire (todas sus notas son de la tríada y están las tres)', () => {

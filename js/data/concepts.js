@@ -1160,7 +1160,7 @@ export const SCREEN_HELP = Object.freeze({
     title: 'Afinaciones',
     text: 'Cada ficha muestra las notas de las [[open-string|cuerdas al aire]], de la 6ª a la 1ª. '
       + 'Toca una nota para oírla, o «Tocar todas» para oírlas una a una, despacio, y afinar de oído. '
-      + 'Las cuerdas que cambian respecto a la [[standard-tuning|estándar]] se marcan en ámbar, con una flecha y los semitonos que suben o bajan.',
+      + 'Las cuerdas que cambian respecto a la [[standard-tuning|estándar]] se marcan en ámbar, con una flecha y los [[semitone-tone|tonos]] que suben o bajan (½ es medio tono).',
     concepts: ['standard-tuning', 'lowered-tuning', 'drop-tuning', 'open-tuning'],
   },
   glossary: {
@@ -1682,7 +1682,7 @@ export const EXERCISE_TEXTS = Object.freeze({
     howTo: 'Eliges una [[progression|progresión]] por [[scale-degree|grados]] y una [[key|tonalidad]] (o «Al azar»). '
       + 'La app enseña el acorde actual en grande, con su grado y su diagrama, y el siguiente en pequeño. '
       + 'Toca cada acorde al ritmo del [[metronome|metrónomo]] y cambia cuando toque: el último tiempo antes del cambio se marca en ámbar. '
-      + 'Si un acorde no tiene forma abierta, verás sus notas: se toca con [[barre-chord|cejilla]]. '
+      + 'Si un acorde no tiene forma abierta, verás sus notas: lo habitual es tocarlo con [[barre-chord|cejilla]]. '
       + 'Básico: {{key:0}}, {{key:7}} y {{key:2}} mayor, solo las progresiones que se tocan enteras con acordes abiertos, 60 BPM y cambio cada 8 tiempos. '
       + 'Intermedio: además {{key:9}}, {{key:4}} y {{key:5}} mayor, 80 BPM y cambio cada 4. '
       + 'Avanzado: las 12 tonalidades mayores, 100 BPM y cambio cada 2.',
@@ -1946,7 +1946,11 @@ export const UI_TEXTS = Object.freeze({
   keys: Object.freeze({
     qualities: Object.freeze({ major: 'mayor', minor: 'menor', diminished: 'disminuido' }),
     major: 'mayor',
-    noOpen: 'Sin forma abierta: se toca con cejilla.',
+    // Acorde sin forma abierta en la biblioteca, según cómo se suele tocar (noOpenKind, js/core/progressions.js).
+    noOpen: Object.freeze({
+      barre: 'Sin forma abierta: lo habitual es tocarlo con [[barre-chord|cejilla]].',
+      diminished: 'Sin forma abierta: lo habitual es tocarlo con una forma de 4 cuerdas, sin [[barre-chord|cejilla]].',
+    }),
     notes: 'Notas',
     random: 'Al azar',
     key: 'Tonalidad',

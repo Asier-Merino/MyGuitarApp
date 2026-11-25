@@ -10,7 +10,7 @@ import { ChordDiagram } from '../../ui/chord-diagram.js';
 import { Fretboard } from '../../ui/fretboard.js';
 import { FunctionLegend } from '../../ui/concept-diagram.js';
 import { CHORDS, getChord } from '../../data/chords.js';
-import { LEVELS } from '../../data/modules.js';
+import { LEVELS, getModule } from '../../data/modules.js';
 import { UI_TEXTS } from '../../data/concepts.js';
 import { strum, arpeggio } from '../../audio/synth.js';
 import { chordNotes, toneSpelling, chordMidis } from './common.js';
@@ -65,7 +65,7 @@ export function renderChordsReference(view, params, nav) {
   };
 
   renderScreen(view, {
-    title: 'Consulta',
+    title: getModule(params.module).title,
     nav,
     help: 'referenceChords',
     className: 'reference',

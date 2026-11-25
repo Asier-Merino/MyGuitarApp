@@ -169,7 +169,7 @@ export function renderSettings(view, params, nav) {
             options: [
               { value: 'auto', label: 'Auto', ariaLabel: 'Automática' },
               { value: 'vertical', label: 'Vertical' },
-              { value: 'horizontal', label: 'Horiz.', ariaLabel: 'Horizontal' },
+              { value: 'horizontal', label: 'Horizontal' },
             ],
             onChange: set('fretboardOrientation'),
           }),

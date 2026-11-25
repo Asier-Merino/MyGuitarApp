@@ -25,10 +25,14 @@ import { keyRootSpelling } from '../core/keys.js';
 
 const T = UI_TEXTS.chordPractice;
 
-/** Nombres de los acordes de una progresión, separados por guiones: Sol–Do–Re. */
-function chordLine(chords) {
+/**
+ * Nombres de los acordes de una progresión, separados por guiones: Sol–Do–Re. En las
+ * predefinidas no se dice la forma (Fa, no «Fa mini»): la elige la app y se ve en el diagrama.
+ * En las personalizadas sí, porque la ha elegido el usuario.
+ */
+function chordLine(chords, { showVariant = true } = {}) {
   const el = h('span', { class: 'prog-line' });
-  chords.forEach((c, i) => { if (i) el.append('–'); el.append(ChordLabel(c)); });
+  chords.forEach((c, i) => { if (i) el.append('–'); el.append(ChordLabel(c, { showVariant })); });
   return el;
 }
 
@@ -150,7 +154,7 @@ function progressionOption({ value, onChange, redraw }) {
     h('span', { class: 'prog-row__check', 'aria-hidden': 'true' }, prog.id === current ? '✓' : ''),
     h('span', { class: 'prog-row__text' },
       h('span', { class: 'prog-row__title' }, prog.kind === 'preset' ? prog.degrees.join('–') : prog.name),
-      chordLine(prog.chords))),
+      chordLine(prog.chords, { showVariant: prog.kind !== 'preset' }))),
     extra);
   return [
     h('h2', { class: 'section-title' }, 'Progresión'),

@@ -1,6 +1,6 @@
-// Versión visible en Ajustes y en Perfil → Acerca de: v0.N.x = fase N (1A = 0.1.0, 1B = 0.1.1, 2 = 0.2.0, 3 = 0.3.0, 4 = 0.4.0, 5 = 0.5.0, 5 (arreglo) = 0.5.1).
+// Versión visible en Ajustes y en Perfil → Acerca de: v0.N.x = fase N (1A = 0.1.0, 1B = 0.1.1, 2 = 0.2.0, 3 = 0.3.0, 4 = 0.4.0, 5 = 0.5.0, 5 (arreglo) = 0.5.1, revisión general = 0.5.2).
 // Se sube en cada despliegue junto a CACHE_VERSION (sw.js).
-export const APP_VERSION = '0.5.1';
+export const APP_VERSION = '0.5.2';
 
 export const APP_NAME = 'GuitarSeo';
 

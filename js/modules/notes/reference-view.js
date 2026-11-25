@@ -8,6 +8,7 @@ import { Fretboard, positionMarkers } from '../../ui/fretboard.js';
 import { NoteLabel } from '../../ui/note-label.js';
 import { positionsOf } from '../../core/fretboard-model.js';
 import { ALL_PCS } from './common.js';
+import { getModule } from '../../data/modules.js';
 
 const RANGE = Object.freeze({ from: 0, to: 12 });
 
@@ -42,7 +43,7 @@ export function renderNotesReference(view, params, nav) {
   };
 
   renderScreen(view, {
-    title: 'Consulta',
+    title: getModule(params.module).title,
     nav,
     help: 'referenceNotes',
     className: 'reference',

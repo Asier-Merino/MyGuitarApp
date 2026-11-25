@@ -77,6 +77,26 @@ export function tuningChanges(tuning, reference = STANDARD_TUNING) {
 
 const AMOUNT_TEXT = { 1: '½ tono', 2: '1 tono', 3: '1½ tonos', 4: '2 tonos' };
 
+/** Semitonos expresados en tonos (2 semitonos = 1 tono): 1 → '½', 2 → '1', 3 → '1½'. */
+export function toneAmount(semitones) {
+  const n = Math.abs(semitones);
+  const whole = Math.floor(n / 2);
+  return n % 2 ? `${whole || ''}½` : String(whole);
+}
+
+/** Texto hablado o largo de una cantidad de semitonos, en tonos: 2 → '1 tono'. */
+export const toneAmountText = (semitones) => AMOUNT_TEXT[Math.abs(semitones)] ?? `${toneAmount(semitones)} tonos`;
+
+/**
+ * Cambio de una cuerda respecto a la estándar, en tonos y con flecha, para las fichas de
+ * Afinaciones: -2 → '↓1', -1 → '↓½', 2 → '↑1'; 0 → null. Usa la misma unidad que
+ * formatTuningChanges, para que la ficha y la línea de cambios digan lo mismo.
+ */
+export function shiftInTones(semitones) {
+  if (!semitones) return null;
+  return `${semitones < 0 ? '↓' : '↑'}${toneAmount(semitones)}`;
+}
+
 function joinSpanish(items) {
   if (items.length <= 1) return items.join('');
   return `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`;
@@ -97,8 +117,7 @@ export function formatTuningChanges(tuning, reference = STANDARD_TUNING) {
   }
   return [...groups].map(([semitones, strings]) => {
     const who = strings.length === STRINGS.length ? 'todas' : joinSpanish(strings.map((s) => `${s}ª`));
-    const amount = AMOUNT_TEXT[Math.abs(semitones)] ?? `${Math.abs(semitones)} semitonos`;
-    return `${who} ${semitones < 0 ? '↓' : '↑'} ${amount}`;
+    return `${who} ${semitones < 0 ? '↓' : '↑'} ${toneAmountText(semitones)}`;
   }).join('; ');
 }
 

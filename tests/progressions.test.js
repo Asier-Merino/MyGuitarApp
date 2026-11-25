@@ -3,8 +3,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PRESETS, libraryChord, degreeChord, resolvePreset, customProgressions, isValidCustom, newCustomId,
-  resolveProgressionChoice, cleanName, keyProgression, allOpen,
+  resolveProgressionChoice, cleanName, keyProgression, allOpen, DIMINISHED_SHAPE, noOpenKind,
 } from '../js/core/progressions.js';
+import { pcAt } from '../js/core/fretboard-model.js';
+import { mod12 } from '../js/core/theory.js';
 import { PRESET_PROGRESSIONS, KEY_PROGRESSIONS, getKeyProgression } from '../js/data/progressions.js';
 import { ALL_KEYS } from '../js/core/keys.js';
 import { CHORDS, getChord } from '../js/data/chords.js';
@@ -132,4 +134,30 @@ test('progresiones de la tonalidad: cuáles se tocan enteras con acordes abierto
   assert.equal(keyProgression(2, ['vi'])[0].open, null);
   // Fa: Si♭ no tiene forma abierta.
   assert.equal(keyProgression(5, ['IV'])[0].open, null);
+});
+
+test('acordes sin forma abierta: los disminuidos, con una forma de 4 cuerdas sin cejilla; el resto, con cejilla', () => {
+  const triad = (root, quality) => new Set(CHORD_FORMULAS[quality].map((s) => mod12(root + s)));
+  for (const key of ALL_KEYS) {
+    const [dim] = keyProgression(key, ['vii°']);
+    assert.equal(dim.quality, 'diminished');
+    assert.equal(dim.open, null, `vii° de ${key}`);
+    assert.equal(noOpenKind(dim), 'diminished');
+    // La forma: fundamental en la 5ª cuerda y, desde ese traste, +1 en la 4ª, +2 en la 3ª y +1 en la 2ª.
+    const rootFret = mod12(dim.root - pcAt(5, 0));
+    const frets = Object.entries(DIMINISHED_SHAPE).map(([s, d]) => [Number(s), rootFret + d]);
+    assert.equal(frets.length, 4, 'cuatro cuerdas');
+    assert.equal(pcAt(5, rootFret), dim.root, 'la nota más grave es la fundamental');
+    // Suenan exactamente las notas de la tríada disminuida (fundamental, 3ª menor y 5ª disminuida).
+    assert.deepEqual(new Set(frets.map(([s, f]) => pcAt(s, f))), triad(dim.root, 'diminished'), `vii° de ${key}`);
+    // Sin cejilla: dos cuerdas vecinas nunca van en el mismo traste.
+    for (let i = 1; i < frets.length; i++) assert.notEqual(frets[i][1], frets[i - 1][1]);
+  }
+  // El Si° de Do mayor: x 2 3 4 3 x (Si, Fa, Si, Re), la forma que dan los diccionarios de acordes.
+  const [si] = keyProgression(0, ['vii°']);
+  const rootFret = mod12(si.root - pcAt(5, 0));
+  assert.deepEqual([6, 5, 4, 3, 2, 1].map((s) => (s in DIMINISHED_SHAPE ? rootFret + DIMINISHED_SHAPE[s] : 'x')), ['x', 2, 3, 4, 3, 'x']);
+  // Mayores y menores sin forma abierta (Sim en Re, Si♭ en Fa): con cejilla.
+  assert.equal(noOpenKind(keyProgression(2, ['vi'])[0]), 'barre');
+  assert.equal(noOpenKind(keyProgression(5, ['IV'])[0]), 'barre');
 });

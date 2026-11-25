@@ -23,18 +23,20 @@ export function noteNames(pc, { spelling, notation, accidentals } = {}) {
 
 /**
  * Nombre de un acorde con doble notación: **Lam** Am. El sufijo (m, 7) se añade a las dos,
- * y la variante (mini, cejilla) va detrás en pequeño. chord: { root, quality, variant?, spelling? }
+ * y la variante (mini, cejilla) va detrás en pequeño, salvo con opts.showVariant = false.
+ * chord: { root, quality, variant?, spelling? }
  * Los acordes de una tonalidad traen el deletreo de su fundamental (Si♭ en Fa mayor).
  */
 export function ChordLabel(chord, opts = {}) {
   const suffix = CHORD_SUFFIX[chord.quality] ?? '';
+  const variant = opts.showVariant === false ? null : chord.variant;
   const { primary, secondary, spoken } = noteNames(chord.root, { spelling: chord.spelling, ...opts });
   const lang = (opts.notation ?? settings.get('notation')) === 'en' ? 'en' : 'es';
   return h('span', { class: ['note-label', 'chord-label', opts.className].filter(Boolean).join(' ') },
     h('span', { class: 'nl-main', 'aria-hidden': 'true' }, primary + suffix),
     h('span', { class: 'nl-alt', 'aria-hidden': 'true' }, secondary + suffix),
-    chord.variant && h('span', { class: 'chord-label__variant', 'aria-hidden': 'true' }, chord.variant),
-    h('span', { class: 'sr-only' }, `${spoken}${CHORD_SPOKEN[lang][chord.quality] ?? ''}${chord.variant ? ` ${chord.variant}` : ''}`),
+    variant && h('span', { class: 'chord-label__variant', 'aria-hidden': 'true' }, variant),
+    h('span', { class: 'sr-only' }, `${spoken}${CHORD_SPOKEN[lang][chord.quality] ?? ''}${variant ? ` ${variant}` : ''}`),
   );
 }
 
